@@ -1,0 +1,18 @@
+{
+    "diff": true,
+    "extension": ["js"],
+    "package": "package.json",
+    "slow": 0,
+    "timeout": 99999999999999,
+    "recursive": true,
+    "file": [
+        "tests/multiple-nft-fa2-private-tests.js",
+        "tests/multiple-nft-fa2-public-tests.js",
+        "tests/single-nft-fa2-public-tests.js",
+        "tests/single-nft-fa2-private-tests.js",
+        "tests/utils.js"
+    ],
+    "ui": "bdd",
+    "watch-files": ["lib/**/*.js", "tests/**/*.js"],
+    "watch-ignore": ["lib/vendor"]
+}

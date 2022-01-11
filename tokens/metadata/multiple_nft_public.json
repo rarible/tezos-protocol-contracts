@@ -1,0 +1,8 @@
+{
+    "name": "Rarible",
+    "version": "1.0.0",
+    "homepage": "https://rarible.com",
+    "interfaces": [
+        "TZIP-12", "TZIP-16", "TZIP-17"
+    ]
+}
