@@ -1,0 +1,8 @@
+variable res_fillOrder : fill_result = {
+  make_value = 0;
+  take_value = 0
+}
+
+entry test_fillOrder(ileft : order, iright : order, leftOrderFill : nat, rightOrderFill : nat, leftIsMakeFill : bool, rightIsMakeFill : bool) {
+  res_fillOrder := fillOrder(ileft, iright, leftOrderFill, rightOrderFill, leftIsMakeFill, rightIsMakeFill)
+}

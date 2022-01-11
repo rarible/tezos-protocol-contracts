@@ -1,0 +1,24 @@
+{
+  "mnemonic": [
+    "strategy",
+    "core",
+    "street",
+    "mosquito",
+    "enough",
+    "nice",
+    "arrive",
+    "orient",
+    "device",
+    "tape",
+    "loud",
+    "parent",
+    "stand",
+    "almost",
+    "trap"
+  ],
+  "secret": "07172ff9a0fcf38f293b00634c461c9489fac207",
+  "amount": "12858181430",
+  "pkh": "tz1gjRZsXZCgRjfM1EdcAw8t4UyvXZySNGnC",
+  "password": "t6iH0J1DIK",
+  "email": "xghffsvp.ibuzouhy@tezos.example.org"
+}

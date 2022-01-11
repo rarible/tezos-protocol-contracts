@@ -1,0 +1,24 @@
+{
+  "mnemonic": [
+    "display",
+    "swallow",
+    "control",
+    "buyer",
+    "help",
+    "donor",
+    "found",
+    "toward",
+    "arch",
+    "history",
+    "inhale",
+    "reopen",
+    "topic",
+    "soup",
+    "awake"
+  ],
+  "secret": "c3dcad77b17fc8002b597e73a9d84bf8fdea810d",
+  "amount": "2051316191",
+  "pkh": "tz1W4hrb26GBZjHwgGpi5kzSqkNBiy1QHVV2",
+  "password": "zrFU3irMaV",
+  "email": "xhasxduv.gdzoyvtm@tezos.example.org"
+}

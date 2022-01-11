@@ -1,0 +1,18 @@
+{
+  "name": "tezos-rarible-contract",
+  "version": "1.0.0",
+  "description": "A tezos portage for rarible.",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make -C tests/contracts clean all && mocha ./tests/*.js --timeout 0 --slow 9999999999",
+    "deploy": "mocha ./scripts/deploy.js --timeout 0 --slow 9999999999"
+  },
+  "dependencies": {
+    "@completium/completium-cli": "^0.3.14",
+    "@taquito/taquito": "^11.0.2",
+    "chai": "^4.3.4",
+    "mocha": "^9.1.2"
+  }
+}

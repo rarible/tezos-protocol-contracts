@@ -1,0 +1,565 @@
+/**
+ * The Exchange contract provides the main entrypoints: match_orders and cancel
+ * It validates that orders match and then calls the Transfer Manager contract
+ */
+archetype exchange(
+  owner             : address,
+  transfer_manager  : address,
+  royalties         : address,
+  fill              : address)
+with metadata ""
+
+constant LEFT_ORDER_TAKER_VALID_FAILED  : string = "LEFT_ORDER_TAKER_VALID_FAILED"
+constant RIGHT_ORDER_TAKER_VALID_FAILED : string = "RIGHT_ORDER_TAKER_VALID_FAILED"
+constant BAD_SIGNATURE                  : string = "BAD_SIGNATURE"
+constant ORDER_START_VALID_FAILED       : string = "ORDER_START_VALID_FAILED"
+constant ORDER_END_VALID_FAILED         : string = "ORDER_END_VALID_FAILED"
+constant SIGNATURE_NONE                 : string = "SIGNATURE_NONE"
+constant MAKER_NOT_TX_SENDER            : string = "MAKER_NOT_TX_SENDER"
+constant TAKE_MATCH_NONE                : string = "TAKE_MATCH_NONE"
+constant MAKE_MATCH_NONE                : string = "MAKE_MATCH_NONE"
+constant ORDER_DATA_TYPE_UNKNOWN        : string = "ORDER_DATA_TYPE_UNKNOWN"
+constant CANNOT_UNPACK_DATA_V2          : string = "CANNOT_UNPACK_DATA_V2"
+constant CANNOT_UNPACK_DATA_V1          : string = "CANNOT_UNPACK_DATA_V1"
+constant NOTHING_TO_FILL                : string = "NOTHING_TO_FILL"
+constant CANNOT_UNPACK_FA_2             : string = "CANNOT_UNPACK_FA_2"
+constant CANNOT_UNPACK_FA_2_LAZY        : string = "CANNOT_UNPACK_FA_2_LAZY"
+constant CANNOT_GET_ROYALTIES           : string = "CANNOT_GET_ROYALTIES"
+constant INVALID_FILL                   : string = "INVALID_FILL"
+constant ORDER_CANCELED                 : string = "ORDER_CANCELED"
+constant CANNOT_FILL_RIGHT              : string = "CANNOT_FILL_RIGHT"
+constant CANNOT_FILL_LEFT               : string = "CANNOT_FILL_LEFT"
+constant CALCULATE_REMAINING_FAILED     : string = "CALCULATE_REMAINING_FAILED"
+constant DIVISION_BY_ZERO               : string = "DIVISION_BY_ZERO"
+constant ROUNDING_ERROR                 : string = "ROUNDING_ERROR"
+constant CANNOT_USE_0_SALT              : string = "CANNOT_USE_0_SALT"
+constant CONTRACT_PAUSED                : string = "CONTRACT_PAUSED"
+constant CONTRACT_NOT_PAUSED            : string = "CONTRACT_NOT_PAUSED"
+
+//----------------------------------------------------------------------------
+// Owner role transfer
+//----------------------------------------------------------------------------
+
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  called by opt_get(owner_candidate)
+  effect {
+    owner := opt_get(owner_candidate);
+    owner_candidate := none
+  }
+}
+
+entry set_transfer_manager(itransfer_manager : address) {
+  called by owner
+  effect { transfer_manager := itransfer_manager }
+}
+
+entry set_royalties(iroyalties_contract : address) {
+  called by owner
+  effect {
+    royalties := iroyalties_contract
+  }
+}
+
+//----------------------------------------------------------------------------
+// Metadata
+//----------------------------------------------------------------------------
+
+entry set_metadata_uri(idata : bytes) {
+  called by owner
+  effect {
+    metadata := put(metadata, "", idata)
+  }
+}
+
+//----------------------------------------------------------------------------
+// Contract execution pause/resume
+//----------------------------------------------------------------------------
+
+variable paused : bool = false
+
+entry pause() {
+  called by owner
+  effect {
+    dorequire(not paused, CONTRACT_PAUSED);
+    paused := true
+  }
+}
+
+entry unpause() {
+  called by owner
+  effect {
+    dorequire(paused, CONTRACT_NOT_PAUSED);
+    paused := false
+  }
+}
+
+function isNotPaused() : bool {
+  if (not paused)
+  then return true
+  else fail(CONTRACT_PAUSED)
+}
+
+//----------------------------------------------------------------------------
+// Asset & Order types
+//----------------------------------------------------------------------------
+
+enum fa2_class =
+| Fungible
+| NonFungible
+| Unknown
+
+enum enum_asset_class =
+| XTZ
+| FA_1_2
+| FA_2<fa2_class>
+| FA_2_LAZY<fa2_class>
+| OTHER<bytes>
+
+record rec_asset_type {
+  asset_class : enum_asset_class;
+  asset_data : bytes;
+}
+
+record %asset {
+  asset_type : rec_asset_type;
+  asset_value : nat;
+}
+
+record order {
+  maker      : option<key>;
+  make_asset : %asset;
+  taker      : option<key>;
+  take_asset : %asset;
+  salt       : nat;
+  start      : option<date>;
+  %end       : option<date>;
+  data_type  : bytes;
+  data       : bytes;
+}
+
+record fill_result {
+  make_value : nat;
+  take_value : nat;
+}
+
+enum fee_side =
+| NONE
+| MAKE
+| TAKE
+
+record part {
+  part_account : address;
+  part_value   : nat;
+}
+
+constant V1 : bytes = keccak(pack("V1"))
+constant V2 : bytes = keccak(pack("V2"))
+
+record DataV1 {
+  v1_payouts : list<part>;
+  v1_origin_fees : list<part>;
+}
+
+record DataV2 {
+  v2_payouts : list<part>;
+  v2_origin_fees : list<part>;
+  v2_is_make_fill : bool
+}
+
+//----------------------------------------------------------------------------
+// Exchange
+//----------------------------------------------------------------------------
+
+entry set_fill(f : address) {
+  called by owner
+  effect {
+    fill := f
+  }
+}
+
+entry cancel(iorder : order) {
+  called by owner or key_address(opt_get(iorder.maker))
+  require {
+    r0: isNotPaused();
+    r1: iorder.salt <> 0 otherwise CANNOT_USE_0_SALT;
+  }
+  effect {
+    transfer 0tz to fill call remove<bytes>(hashKeyOrder(iorder))
+  }
+}
+
+// who fills asset collection `fill` ?
+function hashKeyOrder(iorder : order) : bytes {
+  if (iorder.data_type = V2) then
+    return keccak(concat([
+      pack(iorder.maker);
+      keccak(pack(iorder.make_asset.asset_type));
+      keccak(pack(iorder.take_asset.asset_type));
+      pack(iorder.salt);
+      pack(iorder.data)])
+    )
+  else return keccak(concat([
+    pack(iorder.maker);
+    keccak(pack(iorder.make_asset.asset_type));
+    keccak(pack(iorder.take_asset.asset_type));
+    pack(iorder.salt)]))
+}
+
+function safeGetPartialAmountFloor(
+    numerator: nat,
+    denominator: nat,
+    target: nat) : nat {
+  var num = numerator * target;
+  match num /% denominator with
+  | some(p) -> begin
+    if (num <> 0) then dofailif (p[1] * 1_000 >= num, ROUNDING_ERROR);
+    return p[0]
+    end
+  | none -> fail(DIVISION_BY_ZERO)
+  end
+}
+
+function calculateRemaining(iorder : order, ifill : nat, isMakeFill : bool) : (nat * nat) {
+  if not isMakeFill then begin
+    if (iorder.take_asset.asset_value < ifill) then (
+      fail((CALCULATE_REMAINING_FAILED, iorder.take_asset.asset_value, ifill))
+    );
+    var takeValue = sub_nat(iorder.take_asset.asset_value, ifill);
+    var makeValue = safeGetPartialAmountFloor(iorder.make_asset.asset_value, iorder.take_asset.asset_value, takeValue);
+    return ((makeValue, takeValue))
+  end else begin
+    if (iorder.make_asset.asset_value < ifill) then (
+      fail((CALCULATE_REMAINING_FAILED, iorder.make_asset.asset_value, ifill))
+    );
+    var makeValue = sub_nat(iorder.make_asset.asset_value, ifill);
+    var takeValue = safeGetPartialAmountFloor(iorder.take_asset.asset_value, iorder.make_asset.asset_value, makeValue);
+    return ((makeValue, takeValue))
+  end
+}
+
+function fillLeft(leftMakeValue : nat, leftTakeValue : nat, rightMakeValue : nat, rightTakeValue : nat) : fill_result {
+  var rightTake = safeGetPartialAmountFloor(leftTakeValue, rightMakeValue, rightTakeValue);
+  dorequire(rightTake <= leftMakeValue, CANNOT_FILL_LEFT);
+  return ({leftMakeValue; leftTakeValue})
+}
+
+function fillRight(leftMakeValue : nat, leftTakeValue : nat, rightMakeValue : nat, rightTakeValue : nat) : fill_result {
+  var makerValue = safeGetPartialAmountFloor(rightTakeValue, leftMakeValue, leftTakeValue);
+  dorequire(makerValue <= rightMakeValue, CANNOT_FILL_RIGHT);
+  return ({rightTakeValue; makerValue})
+}
+
+function fillOrder(leftOrder : order, rightOrder : order, leftOrderFill : nat, rightOrderFill : nat, leftIsMakeFill : bool, rightIsMakeFill : bool) : fill_result {
+  var leftPair  = calculateRemaining(leftOrder, leftOrderFill, leftIsMakeFill);
+  var rightPair = calculateRemaining(rightOrder, rightOrderFill, rightIsMakeFill);
+
+  var leftMakeValue  = leftPair[0];
+  var leftTakeValue  = leftPair[1];
+  var rightMakeValue = rightPair[0];
+  var rightTakeValue = rightPair[1];
+
+  return
+  (if (rightTakeValue > leftMakeValue)
+  then fillLeft(leftMakeValue, leftTakeValue, rightOrder.make_asset.asset_value, rightOrder.take_asset.asset_value)
+  else fillRight(leftOrder.make_asset.asset_value, leftOrder.take_asset.asset_value, rightMakeValue, rightTakeValue))
+}
+
+function getOrderFill(iorder : order, ihash : bytes) : nat {
+  var res : nat = 0;
+  var fillcontains = match callview<bool>(fill, "contains", ihash) with | some(v) -> v | none -> false end;
+  if (iorder.salt <> 0 and fillcontains) then
+    match callview<option<nat>>(fill, "get", ihash) with
+      | some(optv) ->
+        match optv with
+        | some(v) -> res := v
+        | none -> fail(ORDER_CANCELED)
+        end
+      | none -> fail(INVALID_FILL)
+    end;
+  return res
+}
+
+function getFeeSide(imake : enum_asset_class, itake : enum_asset_class) : fee_side {
+  if imake = XTZ
+  then return MAKE
+  else if itake = XTZ
+  then return TAKE
+  else if imake = FA_1_2
+  then return MAKE
+  else if itake = FA_1_2
+  then return TAKE
+  else if imake = FA_2(Fungible)
+  then return MAKE
+  else if itake = FA_2(Fungible)
+  then return TAKE
+  else return NONE
+}
+
+record MintFA2Data {
+  mfd_tokenId : nat;
+  mfd_tokenURI : string;
+  mfd_supply : nat;
+  mfd_creators : list<part>;
+  mfd_royalties : list<part>;
+  mfd_signatures : list<bytes>;
+}
+
+function getRoyaltiesByAssetType(matchNft : rec_asset_type, idata : bytes, s : address) : list<part> {
+  var empty_royalties : list<part> = [];
+  var res = empty_royalties;
+
+  match matchNft.asset_class with
+  | FA_2_LAZY(fa2t) -> begin
+    match unpack<address * MintFA2Data>(matchNft.asset_data) with
+    | some (v) -> res := v[1].mfd_royalties
+    | none -> fail((CANNOT_UNPACK_FA_2_LAZY, matchNft.asset_data))
+    end
+  end
+  | FA_2(fa2t) -> begin
+    match unpack<address * nat>(matchNft.asset_data) with
+    | some (v) ->
+      var token : address = v[0];
+      var tokenId : nat   = v[1];
+      match callview<list<part>>(royalties, "get_royalties", (token,tokenId)) with
+      | some(roy) -> res := roy
+      | none -> fail(CANNOT_GET_ROYALTIES)
+      end
+    | none -> fail((CANNOT_UNPACK_FA_2, matchNft.asset_data))
+    end
+  end
+  | _ -> ()
+  end;
+
+  return res
+}
+
+function getFillSetNew(
+  orderLeft         : order,
+  orderRight        : order,
+  leftOrderKeyHash  : bytes,
+  rightOrderKeyHash : bytes,
+  leftOrderData     : DataV2,
+  rightOrderData    : DataV2) : (fill_result * option<nat> * option<nat>) {
+  var leftOrderFill = getOrderFill(orderLeft, leftOrderKeyHash);
+  var rightOrderFill = getOrderFill(orderRight, rightOrderKeyHash);
+  var newFill = fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill, leftOrderData.v2_is_make_fill, rightOrderData.v2_is_make_fill);
+  dorequire(newFill.take_value > 0 and newFill.make_value > 0, NOTHING_TO_FILL);
+  var leftOrderNewFill : option<nat> = none;
+  if (orderLeft.salt <> 0) then
+    if leftOrderData.v2_is_make_fill then
+      leftOrderNewFill := some((leftOrderFill + newFill.make_value))
+    else
+      leftOrderNewFill := some((leftOrderFill + newFill.take_value));
+
+  var rightOrderNewFill : option<nat> = none;
+  if (orderRight.salt <> 0) then
+    if rightOrderData.v2_is_make_fill then
+      rightOrderNewFill := some((rightOrderFill + newFill.take_value))
+    else
+      rightOrderNewFill := some((rightOrderFill + newFill.make_value));
+
+  return ((newFill, leftOrderNewFill, rightOrderNewFill))
+}
+
+function payoutSet(orderAddress : address, dataOrderOnePayoutIn : DataV2) : DataV2 {
+  return { dataOrderOnePayoutIn with v2_payouts = [{ part_account = orderAddress; part_value = 10000 }] }
+}
+
+function parse(iorder : order) : DataV2 {
+  var addr_maker : address = key_address(opt_get(iorder.maker));
+  if (iorder.data_type = V1) then (
+    match unpack<DataV1>(iorder.data) with
+    | some(dataOrder) -> begin
+      var res : DataV2 = {
+        dataOrder.v1_payouts;
+        dataOrder.v1_origin_fees;
+        false
+       };
+       if (length(dataOrder.v1_payouts) = 0) then (
+         res := payoutSet(addr_maker, res);
+       );
+      return res
+    end
+    | none -> fail(CANNOT_UNPACK_DATA_V2)
+    end
+  ) else if (iorder.data_type = V2) then (
+    match unpack<DataV2>(iorder.data) with
+    | some(dataOrder) -> begin
+      var res = dataOrder;
+      if (length(dataOrder.v2_payouts) = 0) then (
+        res := payoutSet(addr_maker, dataOrder);
+      );
+      return res
+    end
+    | none -> fail(CANNOT_UNPACK_DATA_V2)
+    end
+  ) else if (iorder.data_type = 0xffffffff) then (
+    var res : DataV2 = { []; []; false };
+    return payoutSet(addr_maker, res)
+  ) else (
+    fail(ORDER_DATA_TYPE_UNKNOWN)
+  )
+}
+
+entry match_and_transfer(order_left : order, order_right : order, imake_match : option<rec_asset_type>, itake_match : option<rec_asset_type>) {
+  called by selfaddress
+  effect {
+    var makeMatch = require_some(imake_match, MAKE_MATCH_NONE);
+    var takeMatch = require_some(itake_match, TAKE_MATCH_NONE);
+    var leftOrderKeyHash  = hashKeyOrder(order_left);
+    var rightOrderKeyHash = hashKeyOrder(order_right);
+    var leftOrderData     = parse(order_left);
+    var rightOrderData    = parse(order_right);
+
+    var getFillSetNewRes  = getFillSetNew(order_left, order_right, leftOrderKeyHash, rightOrderKeyHash, leftOrderData, rightOrderData);
+    var newFill           = getFillSetNewRes[0];
+    var leftOrderNewFill  = getFillSetNewRes[1];
+    var rightOrderNewFill = getFillSetNewRes[2];
+
+    match leftOrderNewFill with
+    | some(v) -> transfer 0tz to fill call put<bytes * nat>((leftOrderKeyHash, v))
+    | none -> ()
+    end;
+    match rightOrderNewFill with
+    | some(v) -> transfer 0tz to fill call put<bytes * nat>((rightOrderKeyHash, v))
+    | none -> ()
+    end;
+
+    var feeSide = getFeeSide(makeMatch.asset_class, takeMatch.asset_class);
+    var packedData = pack((makeMatch, takeMatch, newFill, order_left, order_right, feeSide));
+    var empty_royalties : list<part> = [];
+    var roy : list<part> =
+      match feeSide with
+      | MAKE -> getRoyaltiesByAssetType(takeMatch, packedData, selfaddress)
+      | TAKE -> getRoyaltiesByAssetType(makeMatch, packedData, selfaddress)
+      | NONE -> empty_royalties
+      end;
+
+    transfer transferred to transfer_manager call do_transfers<order * order * rec_asset_type * rec_asset_type * DataV2 * DataV2 * fill_result * fee_side * list<part>>
+    ((order_left, order_right, makeMatch, takeMatch, leftOrderData, rightOrderData, newFill, feeSide, roy))
+
+  }
+}
+
+enum time_pos = | PAST | FUTURE
+
+function validateDate(d : option<date>, pos : time_pos) : bool {
+  return
+    match d with
+      | some(v) ->
+        match pos with
+        | PAST   -> v < now
+        | FUTURE -> v > now
+        end
+      | none -> true
+    end
+}
+
+function validate (iorder : order, isig : option<signature>) : bool {
+  var key_maker : key = opt_get(iorder.maker);
+  var addr_maker : address = key_address(key_maker);
+  if (iorder.salt = 0) then (
+    dorequire(source = addr_maker, MAKER_NOT_TX_SENDER);
+    return true
+  ) else (
+    if (source <> addr_maker) then (
+      var s = require_some(isig, SIGNATURE_NONE);
+      return check_signature(key_maker, s, pack(iorder))
+    ) else (
+      return true
+    )
+  )
+}
+
+function is_caller(k : option<key>) : bool {
+  match k with
+    | some(k) -> return (key_address(k) = caller)
+    | none -> return false
+  end
+}
+
+function validateFull(iorder : order, isignature : option<signature>) : bool {
+  dorequire(validateDate(iorder.start, PAST), ORDER_START_VALID_FAILED);
+  dorequire(validateDate(iorder.%end, FUTURE), ORDER_END_VALID_FAILED);
+  dorequire(validate(iorder, isignature), (BAD_SIGNATURE, opt_get(iorder.maker), pack(iorder), isignature));
+  return true
+}
+
+
+function simpleMatch(leftAssetType : rec_asset_type, rightAssetType : rec_asset_type) : option<rec_asset_type> {
+  var leftHash  = keccak(leftAssetType.asset_data);
+  var rightHash = keccak(rightAssetType.asset_data);
+  if (leftHash = rightHash)
+  then return some(leftAssetType)
+  else return none<rec_asset_type>
+}
+
+function isOther(iasset_class : enum_asset_class) : bool {
+  return
+    match iasset_class with
+    | OTHER(v) -> true
+    | _ -> false
+    end
+}
+
+function eqOther(iLeftClass : enum_asset_class, iRightClass : enum_asset_class) : bool {
+  return (isOther(iLeftClass) and isOther(iRightClass) and
+    match iLeftClass with
+    | OTHER(v) -> some(v)
+    | _ -> none<bytes>
+    end
+    =
+    match iRightClass with
+    | OTHER(v) -> some(v)
+    | _ -> none<bytes>
+    end
+  )
+}
+
+// matchAssetOneSide
+function matchAssetTypes(leftAssetType : rec_asset_type, rightAssetType : rec_asset_type) : option<rec_asset_type> {
+  var classLeft = leftAssetType.asset_class;
+  var classRight = rightAssetType.asset_class;
+  var classPair = (classLeft, classRight);
+
+  if (classPair = (XTZ, XTZ))
+  then return some(leftAssetType)
+  else if
+    classPair = (FA_1_2, FA_1_2) or
+    classPair = (FA_2(Fungible), FA_2(Fungible)) or
+    classPair = (FA_2(NonFungible), FA_2(NonFungible)) or
+    eqOther(classLeft, classRight)
+  then return simpleMatch(leftAssetType, rightAssetType)
+  else return none<rec_asset_type>
+}
+
+entry match_orders(
+  order_left : order,
+  signature_left : option<signature>,
+  order_right : order,
+  signature_right : option<signature>) {
+  require {
+    r2 : isNotPaused()
+  }
+  effect {
+    var a_ = validateFull(order_left, signature_left);
+    var b_ = validateFull(order_right, signature_right);
+    if (issome(order_left.taker))
+    then dorequire(order_right.maker = order_left.taker, LEFT_ORDER_TAKER_VALID_FAILED);
+    if (issome(order_right.taker))
+    then dorequire(order_right.taker = order_left.maker, RIGHT_ORDER_TAKER_VALID_FAILED);
+
+    var makeMatch = matchAssetTypes(order_left.make_asset.asset_type, order_right.take_asset.asset_type);
+    var takeMatch = matchAssetTypes(order_left.take_asset.asset_type, order_right.make_asset.asset_type);
+    transfer transferred to entry self.match_and_transfer(order_left, order_right, makeMatch, takeMatch)
+  }
+}

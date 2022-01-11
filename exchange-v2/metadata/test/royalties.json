@@ -1,0 +1,7 @@
+{
+    "name": "Royalties Provider",
+    "version": "1.0.0",
+    "interfaces": [
+      "TZIP-16"
+    ]
+  }

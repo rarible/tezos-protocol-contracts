@@ -1,0 +1,5 @@
+variable res_matchAssetTypes : option<asset_type> = none
+
+entry test_matchAssetTypes(leftAssetType : asset_type, rightAssetType : asset_type) {
+  res_matchAssetTypes := matchAssetTypes(leftAssetType, rightAssetType)
+}

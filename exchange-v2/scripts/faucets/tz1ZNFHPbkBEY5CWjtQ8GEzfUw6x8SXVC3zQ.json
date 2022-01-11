@@ -1,0 +1,24 @@
+{
+  "mnemonic": [
+    "clog",
+    "hint",
+    "exercise",
+    "pipe",
+    "review",
+    "radio",
+    "post",
+    "tissue",
+    "boss",
+    "maid",
+    "course",
+    "jeans",
+    "teach",
+    "stock",
+    "trash"
+  ],
+  "secret": "7c996a0e133ca3eedb3d868451a69dae10ed0da9",
+  "amount": "62570101857",
+  "pkh": "tz1ZNFHPbkBEY5CWjtQ8GEzfUw6x8SXVC3zQ",
+  "password": "fP3wUml5YQ",
+  "email": "agsqkwlm.kqrdifgn@tezos.example.org"
+}

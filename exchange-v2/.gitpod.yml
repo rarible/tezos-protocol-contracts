@@ -1,0 +1,20 @@
+image:
+  file: gitpod.Dockerfile
+vscode:
+  extensions:
+    - edukera.archetype
+tasks:
+  - name: Setup Completium JS lib
+    command: |
+      npm link '@completium/completium-cli' ;
+      clear
+#
+#
+#
+#
+#
+#
+#
+#
+#      '
+#

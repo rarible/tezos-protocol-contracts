@@ -1,0 +1,12 @@
+#! /bin/bash
+
+completium-cli set endpoint 'https://hangzhounet.smartpy.io'
+
+completium-cli import privatekey edsk323VUZXdnKGESLDmG39RnoBV2bqUgTKaS85ecHBXEugqE25ibC as rarible_admin --force
+completium-cli import privatekey edsk44DaAgiNjGSGX9n25d5CZAByhNpWWpPmt5vQimN4QM6Wavjkap as rarible_account1 --force
+completium-cli import privatekey edsk2xAFhJHSvFyum9LpuMabiTusEZbCHWRaaT8v2NKy2uu1WJ1LTm as rarible_account2 --force
+completium-cli import privatekey edsk4N85fdvcQPkZhFSkE2LCb4NANRbsuJ4TezjhhNK9Ay6s9df6eD as rarible_account3 --force
+completium-cli import privatekey edsk2waDDuMyfVHZCB3nxbyquZHkCbmaxcq5GmBxiiNDbcXEGMF8iN as rarible_account4 --force
+completium-cli import privatekey edsk4BGPC5ixjyhRtBCWaz38axTNWoroty2N47AkLdRFJbRteAkc7R as rarible_account5 --force
+completium-cli import privatekey edsk3jrSPMAbV42Sy7ec3uvdto5gc5zJyPwJtwGwL3FxbMoUyzQocy as rarible_account6 --force
+completium-cli import privatekey edsk3b6AqPtWNVnYqt2kjgGNQHPXgW3muMKgUMeRTRVghvwgkH5Ee1 as rarible_account7 --force

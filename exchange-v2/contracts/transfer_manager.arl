@@ -1,0 +1,446 @@
+/**
+ * The Transfer Manager contract is called by the Exchange contract via the do_transfers entrypoint.
+ * It generates a list of operations and sends them to the Transfer Proxy contract to inject.
+ */
+archetype transfer_manager(
+  owner                 : address,
+  default_fee_receiver  : address,
+  protocol_fee          : nat
+)
+with metadata ""
+
+constant CANNOT_UNPACK_FA_1_2_ADDR      : string = "CANNOT_UNPACK_FA_1_2_ADDR"
+constant CANNOT_UNPACK_FA_2_ADDR        : string = "CANNOT_UNPACK_FA_2_ADDR"
+constant ASSET_TYPE_UNSUPPORTED         : string = "ASSET_TYPE_UNSUPPORTED"
+constant SUM_PAYOUTS_NOT_100_PERCENT    : string = "SUM_PAYOUTS_NOT_100_PERCENT"
+constant ROYALTIES_TOO_HIGH             : string = "ROYALTIES_TOO_HIGH"
+constant TAKE_ASSET_IS_NOT_XTZ          : string = "TAKE_ASSET_IS_NOT_XTZ"
+constant NOT_ENOUGH_XTZ                 : string = "NOT_ENOUGH_XTZ"
+constant NO_OPERATION_TO_SEND           : string = "NO_OPERATION_TO_SEND"
+
+//----------------------------------------------------------------------------
+// Metadata
+//----------------------------------------------------------------------------
+
+entry set_metadata_uri(idata : bytes) {
+  called by owner
+  effect {
+    metadata := put(metadata, "", idata)
+  }
+}
+
+//----------------------------------------------------------------------------
+// Owner role transfer
+//----------------------------------------------------------------------------
+
+variable owner_candidate : option<address>       = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  called by opt_get(owner_candidate)
+  effect {
+    owner := opt_get(owner_candidate);
+    owner_candidate := none
+  }
+}
+
+//----------------------------------------------------------------------------
+// Exchange role
+//----------------------------------------------------------------------------
+
+asset exchange {
+  addr : address
+}
+
+entry add_exchange(new_exchange : address) {
+  called by owner
+  effect { exchange.add({ new_exchange }) }
+}
+
+entry rm_exchange(new_exchange : address) {
+  called by owner
+  effect { exchange.remove(new_exchange) }
+}
+
+//----------------------------------------------------------------------------
+// Fee receivers
+//----------------------------------------------------------------------------
+
+variable fee_receivers   : map<address, address> = []
+
+entry set_fee_receiver(token : address, wallet : address) {
+  called by owner
+  effect {
+    fee_receivers.put(token, wallet)
+  }
+}
+
+entry set_default_fee_receiver(idefault_fee_receiver : address) {
+  called by owner
+  effect {
+    default_fee_receiver := idefault_fee_receiver
+  }
+}
+
+//----------------------------------------------------------------------------
+// Protocol Fee
+//----------------------------------------------------------------------------
+
+entry set_protocol_fee(n : nat) {
+  called by owner
+  effect {
+    protocol_fee := n
+  }
+}
+
+//----------------------------------------------------------------------------
+// Transfer Proxy
+//----------------------------------------------------------------------------
+
+variable transfer_proxy  : option<address>       = none
+
+entry set_transfer_proxy(itransfer_proxy : address) {
+  called by owner
+  effect {
+    transfer_proxy := some(itransfer_proxy)
+  }
+}
+
+//----------------------------------------------------------------------------
+// Transfer Manager Contract
+//----------------------------------------------------------------------------
+
+function getFeeReceiver(token : option<address>) : address {
+  return
+    match token with
+    | some (v) ->
+        match fee_receivers.getopt(v) with
+        | some (wallet) -> wallet
+        | none -> default_fee_receiver
+        end
+    | none -> default_fee_receiver
+    end
+}
+
+enum fa2_class =
+| Fungible
+| NonFungible
+| Unknown
+
+enum enum_asset_class =
+| XTZ
+| FA_1_2
+| FA_2<fa2_class>
+| FA_2_LAZY<fa2_class>
+| OTHER<bytes>
+
+record rec_asset_type {
+  asset_class : enum_asset_class;
+  asset_data : bytes;
+}
+
+record %asset {
+  asset_type : rec_asset_type;
+  asset_value : nat;
+}
+
+record order {
+  maker      : option<key>;
+  make_asset : %asset;
+  taker      : option<key>;
+  take_asset : %asset;
+  salt       : nat;
+  start      : option<date>;
+  %end       : option<date>;
+  data_type  : bytes;
+  data       : bytes;
+}
+
+record fill_result {
+  make_value : nat;
+  take_value : nat;
+}
+
+enum fee_side =
+| NONE
+| MAKE
+| TAKE
+
+record part {
+  partAccount : address;
+  partValue   : nat;
+}
+
+constant V1 : bytes = keccak(pack("V1"))
+constant V2 : bytes = keccak(pack("V2"))
+
+record DataV1 {
+  v1_payouts : list<part>;
+  v1_origin_fees : list<part>;
+}
+
+record DataV2 {
+  v2_payouts : list<part>;
+  v2_origin_fees : list<part>;
+  v2_is_make_fill : bool
+}
+
+function bp(value : nat, bpValue : nat) : nat {
+  return abs(floor(value * bpValue / 10000))
+}
+
+enum transfer_arg =
+| XTZ_ARG<tez * address>
+| FA_1_2_ARG<address * address * address * nat>
+| FA_2_ARG<address * list<address * list<address * nat * nat>>>
+
+function get_transfer(
+  iasset : %asset,
+  ifrom : address,
+  ito : address) : transfer_arg {
+    match iasset.asset_type.asset_class with
+    | XTZ -> begin
+      var vamount : tez = iasset.asset_value * 1utz;
+      return XTZ_ARG(vamount,ito)
+    end
+    | FA_1_2 -> begin
+      var addr_fa_1_2 = require_some(unpack<address>(iasset.asset_type.asset_data), CANNOT_UNPACK_FA_1_2_ADDR);
+      return FA_1_2_ARG(addr_fa_1_2, ifrom, ito, iasset.asset_value);
+    end
+    | FA_2(fa2t) -> begin
+      var u = require_some(unpack<address * nat>(iasset.asset_type.asset_data), CANNOT_UNPACK_FA_2_ADDR);
+      var arg : list<address * list<address * nat * nat>> = [(ifrom, [(ito, u[1], iasset.asset_value)])];
+      return FA_2_ARG(u[0], arg)
+    end
+    | FA_2_LAZY(fa2t) -> fail (ASSET_TYPE_UNSUPPORTED)
+    | OTHER(v) -> fail (ASSET_TYPE_UNSUPPORTED)
+    end
+}
+
+function transferPayouts(
+  matchCalculate : rec_asset_type,
+  iamount : nat,
+  ifrom : address,
+  ipayouts : list<part>) : list<transfer_arg> {
+    var ops : list<transfer_arg> = [];
+    match reverse(ipayouts) with
+    | lastPayout::rPayouts -> begin
+      var sumBps : nat = 0;
+      var restValue : nat = iamount;
+      for item in rPayouts do
+          var currentAmount = bp(iamount, item.partValue);
+          sumBps += item.partValue;
+          if (currentAmount > 0) then (
+            restValue := sub_nat(restValue, currentAmount);
+            ops.prepend(get_transfer(
+              {asset_type = matchCalculate;
+               asset_value = currentAmount}, ifrom, item.partAccount));
+          )
+      done;
+      ops.reverse();
+      sumBps += lastPayout.partValue;
+      dorequire(sumBps = 10_000, SUM_PAYOUTS_NOT_100_PERCENT);
+      if (restValue > 0) then (
+          ops.prepend(get_transfer(
+              {asset_type = matchCalculate;
+               asset_value = restValue}, ifrom, lastPayout.partAccount));
+      )
+    end
+    | [] -> ()
+    end;
+    return ops
+}
+
+function calculateTotalAmount(iamount : nat, feeOnTopBp : nat, orderOriginFees : list<part>) : nat {
+  var total = iamount + bp(iamount, feeOnTopBp);
+  for item in orderOriginFees do
+    total += bp(iamount, item.partValue)
+  done;
+  return total
+}
+
+function subFee(value : nat, fee : nat) : nat * nat {
+  return (if value > fee then (sub_nat (value, fee), fee) else (0, value))
+}
+
+function subFeeInBp(value : nat, total : nat, feeInBp : nat) : nat * nat {
+  return subFee(value, bp(total, feeInBp))
+}
+
+function get_tokenAddress(matchCalculate : rec_asset_type) : option<address> {
+  return
+  match matchCalculate.asset_class with
+  | FA_1_2 -> unpack<address>(matchCalculate.asset_data)
+  | FA_2(fa2t) -> begin
+      match unpack<address * nat>(matchCalculate.asset_data) with
+      | some(v) -> some(v[0])
+      | none -> none<address>
+      end
+    end
+  | _ -> none<address>
+  end
+}
+
+function transferProtocolFee(
+    itotalAmount : nat,
+    iamount : nat,
+    ifrom : address,
+    matchCalculate : rec_asset_type
+) : nat * list<transfer_arg> {
+    var ops : list<transfer_arg> = [];
+    var rest_fee = subFeeInBp(itotalAmount, iamount, protocol_fee * 2);
+    var fee = rest_fee[1];
+    if (fee > 0) then (
+      var tokenAddress = get_tokenAddress(matchCalculate);
+      ops.prepend(get_transfer({matchCalculate; fee}, ifrom, getFeeReceiver(tokenAddress)/*, transferDirection, PROTOCOL*/));
+    );
+    return ((rest_fee[0], ops))
+}
+
+function transferFees(
+  matchCalculate : rec_asset_type,
+  rest : nat,
+  amount : nat,
+  fees : list<part>,
+  ifrom : address) : nat * nat * list<transfer_arg> {
+  var totalFees = 0;
+  var restValue = rest;
+  var ops : list<transfer_arg> = [];
+  for fee in fees do
+    totalFees += fee.partValue;
+    var p = subFeeInBp(restValue, amount, fee.partValue);
+    var newRestValue = p[0];
+    var feeValue = p[1];
+    restValue := newRestValue;
+    if (feeValue > 0) then (
+      ops.prepend(get_transfer({matchCalculate; feeValue}, ifrom, fee.partAccount));
+    )
+  done;
+  return ((restValue, totalFees, reverse(ops)))
+}
+
+function transferRoyalties(
+    matchCalculate : rec_asset_type,
+    matchNft : rec_asset_type,
+    rest : nat,
+    iamount : nat,
+    ifrom : address,
+    fees : list<part>) : nat * list<transfer_arg> {
+    var r = transferFees(matchCalculate, rest, iamount, fees, ifrom);
+    var result = r[0];
+    var totalRoyalties = r[1];
+    var ops = r[2];
+    dorequire(totalRoyalties <= 5000, ROYALTIES_TOO_HIGH);
+    return ((result, ops))
+}
+
+function doTransfersWithFees(
+  iamount : nat,
+  ifrom : address,
+  dataCalculate : DataV2,
+  dataNft : DataV2,
+  matchCalculate : rec_asset_type,
+  matchNft : rec_asset_type,
+  iroyalties : list<part>) : nat * list<transfer_arg> {
+    var totalAmount = calculateTotalAmount(iamount, protocol_fee, dataCalculate.v2_origin_fees);
+    var restpf = transferProtocolFee(totalAmount, iamount, ifrom, matchCalculate);
+    var ops_rest = restpf[1];
+    var restr = transferRoyalties(matchCalculate, matchNft, restpf[0], iamount, ifrom, iroyalties);
+    var ops_restr = restr[1];
+    var r = transferFees(matchCalculate, restr[0], iamount, dataCalculate.v2_origin_fees, ifrom);
+    var ops_r = r[2];
+    var p = transferFees(matchCalculate, r[0], iamount, dataNft.v2_origin_fees, ifrom);
+    var ops_p = p[2];
+    var ops_payouts = transferPayouts(matchCalculate, p[0], ifrom, dataNft.v2_payouts);
+    var ops = concat(ops_rest, concat(ops_restr, concat(ops_r, concat(ops_p, ops_payouts))));
+    return ((totalAmount, ops))
+}
+
+entry do_transfers(
+  order_left        : order,
+  order_right       : order,
+  make_match        : rec_asset_type,
+  take_match        : rec_asset_type,
+  left_order_data   : DataV2,
+  right_order_data  : DataV2,
+  ifill             : fill_result,
+  side_of_fee       : fee_side,
+  iroyalties        : list<part>) {
+    called by exchange
+    effect {
+      var totalMakeValue = ifill.make_value;
+      var totalTakeValue = ifill.take_value;
+
+      var left_order_maker  : address = key_address(opt_get(order_left.maker));
+      var right_order_maker : address = key_address(opt_get(order_right.maker));
+
+      var ops1 : list<transfer_arg> = [];
+      var ops2 : list<transfer_arg> = [];
+      if (side_of_fee = MAKE) then (
+        var r = doTransfersWithFees(ifill.make_value, left_order_maker, left_order_data, right_order_data, make_match, take_match, iroyalties);
+        totalMakeValue := r[0];
+        ops1 := r[1];
+        ops2 := transferPayouts(take_match, ifill.take_value, right_order_maker, left_order_data.v2_payouts);
+      ) else if (side_of_fee = TAKE) then (
+        var r = doTransfersWithFees(ifill.take_value, right_order_maker, right_order_data, left_order_data, take_match, make_match, iroyalties);
+        totalTakeValue := r[0];
+        ops1 := r[1];
+        ops2 := transferPayouts(make_match, ifill.make_value, left_order_maker, right_order_data.v2_payouts);
+      ) else (
+        ops1 := transferPayouts(make_match, ifill.make_value, left_order_maker, right_order_data.v2_payouts);
+        ops2 := transferPayouts(take_match, ifill.take_value, right_order_maker, left_order_data.v2_payouts);
+      );
+
+      var ops3 : list<transfer_arg> = [];
+      if (make_match.asset_class = XTZ) then (
+        dorequire(take_match.asset_class <> XTZ, TAKE_ASSET_IS_NOT_XTZ);
+        var ntransferred = mutez_to_nat(transferred);
+        dorequire(ntransferred >= totalMakeValue, NOT_ENOUGH_XTZ);
+        if (ntransferred > totalMakeValue) then (
+          var n : nat = ntransferred;
+          var a : tez = sub_nat(n, totalMakeValue) * 1utz;
+          ops3 := [XTZ_ARG(a, source)]
+        )
+      ) else if (take_match.asset_class = XTZ) then (
+        var ntransferred = mutez_to_nat(transferred);
+        dorequire(ntransferred >= totalTakeValue, NOT_ENOUGH_XTZ);
+        if (ntransferred > totalTakeValue) then (
+          var n : nat = ntransferred;
+          var a : tez = sub_nat(n, totalTakeValue) * 1utz;
+          ops3 := [XTZ_ARG(a, source)]
+        )
+      );
+      var transfer_args = ops1.concat(concat(ops2, ops3));
+
+      var mkops = lambda<list<operation>>((p:(list<transfer_arg> * unit)) ->
+        fold(left<list<operation>> ((emptylist<operation>(), p[0])), x ->
+          begin
+            match x[1] with
+             | hd::tail -> left<list<operation>>((
+              (prepend(x[0],
+                match hd with
+                | XTZ_ARG(amount, %to) ->
+                  mkoperation(amount, address_to_contract(%to), ())
+                | FA_1_2_ARG(c, %from, %to, amount) ->
+                  mkoperation(0tz, require_entrypoint<address * address * nat>("%transfer", c, "ENTRY_FA_1_2_NOT_FOUND"), (%from, %to, amount))
+                | FA_2_ARG(c, txs) ->
+                  mkoperation(0tz, require_entrypoint<list<address * list<address * nat * nat>>>("%transfer", c, "ENTRY_FA_2_NOT_FOUND"), txs)
+                end)), tail))
+             | [] -> right<list<operation> * list<transfer_arg>>(x[0])
+            end
+          end)
+      );
+
+      var lambdaops = apply_lambda(mkops, transfer_args);
+
+      transfer transferred to opt_get(transfer_proxy) call do_transfers<lambda<unit,list<operation>>>(lambdaops);
+      dorequire(operations.length() > 0, NO_OPERATION_TO_SEND)
+    }
+}
+

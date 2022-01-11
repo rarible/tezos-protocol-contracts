@@ -1,0 +1,5 @@
+variable res_getFeeSide : option<fee_side> = none
+
+entry test_getFeeSide(imake : enum_asset_class, itake : enum_asset_class) {
+  res_getFeeSide := some(getFeeSide(imake, itake))
+}

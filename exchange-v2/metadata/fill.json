@@ -1,0 +1,11 @@
+{
+    "extras": {
+      "repository": "https://gitlab.com/tezos-paris-hub/rarible/rarible-smart-contracts"
+    },
+    "name": "Rarible Fill Storage",
+    "version": "1.0.0",
+    "homepage": "https://rarible.com",
+    "interfaces": [
+      "TZIP-16"
+    ]
+  }

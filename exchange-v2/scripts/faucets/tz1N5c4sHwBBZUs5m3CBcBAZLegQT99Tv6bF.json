@@ -1,0 +1,24 @@
+{
+  "mnemonic": [
+    "dune",
+    "advice",
+    "system",
+    "arctic",
+    "spy",
+    "cactus",
+    "shed",
+    "middle",
+    "draft",
+    "survey",
+    "wrist",
+    "practice",
+    "example",
+    "pill",
+    "wreck"
+  ],
+  "secret": "f258dceb74b353c2c83f8eed9f93252856cfd41a",
+  "amount": "18935043283",
+  "pkh": "tz1N5c4sHwBBZUs5m3CBcBAZLegQT99Tv6bF",
+  "password": "lAvcGbMNTu",
+  "email": "ihmwtswk.lmepowoo@tezos.example.org"
+}
