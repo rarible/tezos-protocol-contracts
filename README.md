@@ -7,7 +7,9 @@ Consists of:
 - Auctions: for managing auction sales
 
 # Compile, test, deploy
-
+For details regarding the way to use and deploy the contracts, please refer to their respective documentation:
+- [Exchange contracts](exchange-v2/README.md)
+- [NFT Contracts](tokens/README.md)
 
 ## Overview of the protocol
 
