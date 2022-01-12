@@ -1,0 +1,15 @@
+{
+    "diff": true,
+    "extension": ["js"],
+    "package": "package.json",
+    "slow": 0,
+    "timeout": 0,
+    "recursive": true,
+    "file": [
+        "tests/auction-tests.js",
+        "tests/utils.js"
+    ],
+    "ui": "bdd",
+    "watch-files": ["lib/**/*.js", "tests/**/*.js"],
+    "watch-ignore": ["lib/vendor"]
+}

@@ -1,0 +1,19 @@
+{
+    "name": "rarible-tezos-auction",
+    "version": "1.0.0",
+    "description": "Rarible Tezos auction contract",
+    "main": "index.js",
+    "scripts": {
+        "test": "mocha --timeout 0 --slow 0"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@completium/completium-cli": "^0.3.19",
+        "chai": "^4.3.4",
+        "mocha": "^9.1.2"
+    },
+    "devDependencies": {
+        "prettier": "2.4.1"
+    }
+}

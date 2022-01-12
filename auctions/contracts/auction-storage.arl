@@ -1,0 +1,131 @@
+archetype auction_storage(
+  owner: address
+)
+with metadata ""
+
+constant MISSING_AUCTION_CONTRACT: string = "MISSING_AUCTION_CONTRACT"
+constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
+
+enum fa2_class =
+| Fungible
+| NonFungible
+| Unknown
+
+enum enum_asset_class =
+| XTZ
+| FA_1_2
+| FA_2<fa2_class>
+| FA_2_LAZY<fa2_class>
+| OTHER<bytes>
+
+record rec_asset_type {
+  asset_class : enum_asset_class;
+}
+
+record %asset {
+  asset_type : rec_asset_type;
+  asset_value : nat;
+  asset_contract : address;
+  asset_id: option<nat>;
+}
+
+record part {
+  part_account : address;
+  part_value   : nat;
+}
+
+record operator_param {
+  opp_owner    : address;
+  opp_operator : address;
+  opp_token_id : nat
+} as ((owner, (operator, token_id)))
+
+//----------------------------------------------------------------------------
+// Owner role transfer
+//----------------------------------------------------------------------------
+
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  called by opt_get(owner_candidate)
+  effect {
+    owner := opt_get(owner_candidate);
+    owner_candidate := none
+  }
+}
+
+//----------------------------------------------------------------------------
+// Admin
+//----------------------------------------------------------------------------
+entry set_auction_contract(sac_contract : option<address>) {
+  called by owner
+  effect {
+    auction_contract := sac_contract;
+  }
+}
+
+//----------------------------------------------------------------------------
+// Auction
+//----------------------------------------------------------------------------
+variable auction_contract : option<address> = none
+
+record bid {
+  bid_payouts : list<part>;
+  bid_origin_fees : list<part>;
+  bid_amount : nat;
+}
+
+record auction {
+  auction_sell_asset : %asset;
+  auction_buy_asset : %asset;
+  auction_last_bid: option<bid>;
+  auction_seller: address;
+  auction_buyer: option<address>;
+  auction_start_time: option<date>;
+  auction_end_time: date;
+  auction_duration: duration;
+  auction_minimal_price: nat;
+  auction_buy_out_price: nat;
+  auction_minimal_step: nat;
+  auction_protocol_fee: nat;
+  auction_payouts : list<part>;
+  auction_origin_fees : list<part>;
+}
+
+
+asset auctions identified by auction_asset auction_asset_id to big_map {
+  auction_asset : address;
+  auction_asset_id: nat;
+  auction_data : auction;
+}
+
+entry set_auction(sa_auction : auction) {
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  effect {
+    var sa_asset_id = require_some(sa_auction.auction_sell_asset.asset_id, MISSING_ASSET_ID);
+    auctions.add({auction_asset = sa_auction.auction_sell_asset.asset_contract; auction_asset_id = sa_asset_id; auction_data = sa_auction});
+    transfer 0tz to sa_auction.auction_sell_asset.asset_contract call update_operators<list<or<operator_param, operator_param>>>(
+      [
+          left<operator_param>({ opp_owner = selfaddress; opp_operator = opt_get(auction_contract); opp_token_id = sa_asset_id})
+      ]
+    );
+  }
+}
+
+entry remove_auction(ra_asset : address, ra_asset_id : nat) {
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  effect {
+    auctions.remove((ra_asset, ra_asset_id));
+  }
+}
+
+view auction_exists(ae_asset : address, ae_asset_id : nat) : bool {
+  return auctions.contains((ae_asset, ae_asset_id))
+}

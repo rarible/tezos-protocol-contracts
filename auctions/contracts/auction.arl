@@ -1,0 +1,207 @@
+archetype auction(
+    owner: address,
+    fee_receiver: address,
+    protocol_fee: nat,
+    royalties_provider: address
+)
+with metadata ""
+
+constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
+constant MISSING_START_DATE: string = "MISSING_START_DATE"
+constant MISSING_AUCTION_STORAGE_CONTRACT: string = "MISSING_AUCTION_STORAGE_CONTRACT"
+constant MISSING_AUCTION_CUSTODY_CONTRACT: string = "MISSING_AUCTION_CUSTODY_CONTRACT"
+constant AUCTION_ALREADY_EXISTS: string = "AUCTION_ALREADY_EXISTS"
+constant AUCTION_START_DATE_IN_THE_PAST: string = "AUCTION_START_DATE_IN_THE_PAST"
+
+//----------------------------------------------------------------------------
+// Owner role transfer
+//----------------------------------------------------------------------------
+
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  called by opt_get(owner_candidate)
+  effect {
+    owner := opt_get(owner_candidate);
+    owner_candidate := none
+  }
+}
+
+//----------------------------------------------------------------------------
+// Auction variables
+//----------------------------------------------------------------------------
+variable extension_duration : duration = 15m
+variable max_duration : duration = 1000d
+variable auction_storage: option<address> = none
+
+//----------------------------------------------------------------------------
+// Admin
+//----------------------------------------------------------------------------
+entry set_auction_storage_contract(sacs_contract : option<address>) {
+  called by owner
+  effect {
+    auction_storage := sacs_contract;
+  }
+}
+
+entry set_extension_duration(sed : duration) {
+  called by owner
+  effect {
+    extension_duration := sed;
+  }
+}
+
+entry set_max_duration(smd : duration) {
+  called by owner
+  effect {
+    max_duration := smd;
+  }
+}
+
+entry set_protocol_fee(spf : nat) {
+  called by owner
+  effect {
+    protocol_fee := spf;
+  }
+}
+
+entry set_fee_receiver(sfr : address) {
+  called by owner
+  effect {
+    fee_receiver := sfr;
+  }
+}
+
+entry set_royalties_provider(srp : address) {
+  called by owner
+  effect {
+    fee_receiver := srp;
+  }
+}
+
+//----------------------------------------------------------------------------
+// Types
+//----------------------------------------------------------------------------
+
+enum fa2_class =
+| Fungible
+| NonFungible
+| Unknown
+
+enum enum_asset_class =
+| XTZ
+| FA_1_2
+| FA_2<fa2_class>
+| FA_2_LAZY<fa2_class>
+| OTHER<bytes>
+
+record rec_asset_type {
+  asset_class : enum_asset_class;
+}
+
+record %asset {
+  asset_type : rec_asset_type;
+  asset_value : nat;
+  asset_contract : address;
+  asset_id: option<nat>;
+}
+
+record transfer_param {
+  destination_address: address;
+  token_id: nat;
+  token_amount: nat
+} as ((%to, (token_id, amount)))
+
+record part {
+  part_account : address;
+  part_value   : nat;
+}
+
+record bid {
+  bid_payouts : list<part>;
+  bid_origin_fees : list<part>;
+  bid_amount : nat;
+}
+
+record auction {
+  auction_sell_asset : %asset;
+  auction_sell_asset_amount: nat;
+  auction_buy_asset : %asset;
+  auction_last_bid: option<bid>;
+  auction_seller: address;
+  auction_buyer: option<address>;
+  auction_start_time: option<date>;
+  auction_end_time: date;
+  auction_duration: duration;
+  auction_minimal_price: nat;
+  auction_buy_out_price: nat;
+  auction_minimal_step: nat;
+  auction_protocol_fee: nat;
+  auction_payouts : list<part>;
+  auction_origin_fees : list<part>;
+}
+
+//----------------------------------------------------------------------------
+// Auction entries
+//----------------------------------------------------------------------------
+
+entry start_auction(
+    sa_auction: auction
+) {
+    require{
+        r0: sa_auction.auction_sell_asset.asset_type.asset_class <> FA_1_2;
+        r1: sa_auction.auction_sell_asset.asset_type.asset_class <> FA_2(Fungible);
+        r2: sa_auction.auction_duration > extension_duration;
+        r3: sa_auction.auction_duration < max_duration;
+    }
+    effect {
+        var auction_storage_contract = require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT);
+        var auction_asset_id = require_some(sa_auction.auction_sell_asset.asset_id, MISSING_ASSET_ID);
+        var auction_exists = match callview<bool>(
+            auction_storage_contract,
+            "auction_exists",
+            (
+                sa_auction.auction_sell_asset.asset_contract,
+                auction_asset_id
+            )
+        )
+        with
+            | some(v) -> v
+            | none -> false
+        end;
+
+        dorequire(auction_exists = false, AUCTION_ALREADY_EXISTS);
+
+        if (sa_auction.auction_start_time <> none<date>) then(
+            var start_date = require_some(sa_auction.auction_start_time, MISSING_START_DATE);
+            dorequire(start_date >= now, AUCTION_START_DATE_IN_THE_PAST);
+            sa_auction.auction_end_time := start_date + sa_auction.auction_duration;
+        ) else (
+            sa_auction.auction_start_time := some(now);
+            sa_auction.auction_end_time := now + sa_auction.auction_duration;
+        );
+
+        transfer 0tz to auction_storage_contract call set_auction<auction>(sa_auction);
+        transfer 0tz to sa_auction.auction_sell_asset.asset_contract call %transfer<list<address * list<transfer_param>>>(
+            [
+                (
+                    sa_auction.auction_seller,
+                    [
+                        {
+                            destination_address = auction_storage_contract;
+                            token_id = auction_asset_id;
+                            token_amount = sa_auction.auction_sell_asset_amount
+                        }
+                    ]
+                )
+            ]
+        );
+    }
+}
