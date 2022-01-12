@@ -64,10 +64,10 @@ entry claim_ownership() {
 //----------------------------------------------------------------------------
 // Admin
 //----------------------------------------------------------------------------
-entry set_auction_contract(sac_contract : option<address>) {
+entry set_auction_contract(sac_contract : address) {
   called by owner
   effect {
-    auction_contract := sac_contract;
+    auction_contract := some(sac_contract);
   }
 }
 
@@ -128,4 +128,8 @@ entry remove_auction(ra_asset : address, ra_asset_id : nat) {
 
 view auction_exists(ae_asset : address, ae_asset_id : nat) : bool {
   return auctions.contains((ae_asset, ae_asset_id))
+}
+
+view get_auction(ae_asset : address, ae_asset_id : nat) : auction {
+  return auctions[(ae_asset, ae_asset_id)].auction_data
 }

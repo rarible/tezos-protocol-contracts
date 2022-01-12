@@ -6,10 +6,10 @@
     "timeout": 0,
     "recursive": true,
     "file": [
-        "tests/auction-tests.js",
-        "tests/utils.js"
+        "test/auction-tests.js",
+        "test/utils.js"
     ],
     "ui": "bdd",
-    "watch-files": ["lib/**/*.js", "tests/**/*.js"],
+    "watch-files": ["lib/**/*.js", "test/**/*.js"],
     "watch-ignore": ["lib/vendor"]
 }

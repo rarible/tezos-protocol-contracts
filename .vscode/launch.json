@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Auction Tests",
+            "program": "${workspaceFolder}/auctions/node_modules/mocha/bin/_mocha",
+            "args": [
+                "--slow",
+                "0",
+                "--timeout",
+                "0",
+                "${workspaceFolder}/auctions/test"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "cwd": "${workspaceFolder}/auctions",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        }
+    ]
+}

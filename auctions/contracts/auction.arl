@@ -82,7 +82,7 @@ entry set_fee_receiver(sfr : address) {
 entry set_royalties_provider(srp : address) {
   called by owner
   effect {
-    fee_receiver := srp;
+    royalties_provider := srp;
   }
 }
 
