@@ -168,8 +168,12 @@ entry start_auction(
     sa_auction: auction_args
 ) {
     require{
-        r0: sa_auction.auction_args_sell_asset.asset_type.asset_class <> FA_1_2;
-        r1: sa_auction.auction_args_sell_asset.asset_type.asset_class <> FA_2(Fungible);
+        r0: sa_auction.auction_args_sell_asset.asset_type.asset_class = FA_2(NonFungible);
+        r1: sa_auction.auction_args_buy_asset.asset_type.asset_class = FA_2(Fungible)
+            or
+            sa_auction.auction_args_buy_asset.asset_type.asset_class = FA_1_2
+            or
+            sa_auction.auction_args_buy_asset.asset_type.asset_class = XTZ;
         r2: sa_auction.auction_args_duration > extension_duration;
         r3: sa_auction.auction_args_duration < max_duration;
         r4: sa_auction.auction_args_buy_out_price > sa_auction.auction_args_minimal_price;
@@ -182,7 +186,7 @@ entry start_auction(
             auction_storage_contract,
             "auction_exists",
             (
-                sa_auction.auction_args_sell_asset.asset_contract,
+                auction_asset_contract,
                 auction_asset_id
             )
         )

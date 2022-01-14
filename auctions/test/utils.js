@@ -63,6 +63,7 @@ exports.mkAuctionFungibleFA2Asset = (assetContract, assetId) => {
     };
 };
 
+
 exports.mkAuctionNonFungibleFA2Asset = (assetContract, assetId) => {
     return {
         "prim": "Pair",
@@ -111,7 +112,12 @@ exports.mkAuctionFA12Asset = (assetContract) => {
         }, {
             "prim": "Pair",
             "args": [{
-                "string": assetContract
+                "args": [
+                    {
+                        "string": assetContract
+                    }
+                ],
+                "prim": "Some"
             }, {
                 "prim": "None"
             }]
@@ -195,6 +201,276 @@ exports.mkAuction = (
         "prim": "Pair",
         "args": [
             this.mkAuctionNonFungibleFA2Asset(sellAssetContract, sellAssetId),
+            {
+                "prim": "Pair",
+                "args": [
+                    {
+                        "int": `${assetQty}`,
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [
+                            this.mkBuyAsset(buyAssetType, buyAssetContract, buyAssetId),
+                            {
+                                "prim": "Pair",
+                                "args": [
+                                    {
+                                        "string": `${seller}`
+                                    },
+                                    {
+                                        "prim": "Pair",
+                                        "args": [
+                                            this.mkStartDate(startDate),
+                                            {
+                                                "prim": "Pair",
+                                                "args": [
+                                                    {
+                                                        "int": `${auctionDuration}`
+                                                    },
+                                                    {
+                                                        "prim": "Pair",
+                                                        "args": [
+                                                            {
+                                                                "int": `${minPrice}`
+                                                            },
+                                                            {
+                                                                "prim": "Pair",
+                                                                "args": [
+                                                                    {
+                                                                        "int": `${buyOutPrice}`
+                                                                    },
+                                                                    {
+                                                                        "prim": "Pair",
+                                                                        "args": [
+                                                                            {
+                                                                                "int": `${minStep}`
+                                                                            },
+                                                                            {
+                                                                                "prim": "Pair",
+                                                                                "args": [
+                                                                                    payouts,
+                                                                                    originFees
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+};
+
+exports.mkFungibleFA2Auction = (
+    sellAssetContract,
+    sellAssetId,
+    buyAssetContract,
+    buyAssetId,
+    buyAssetType,
+    assetQty,
+    seller,
+    startDate,
+    auctionDuration,
+    minPrice,
+    buyOutPrice,
+    minStep,
+    payouts,
+    originFees
+) => {
+    return {
+        "prim": "Pair",
+        "args": [
+            this.mkAuctionFungibleFA2Asset(sellAssetContract, sellAssetId),
+            {
+                "prim": "Pair",
+                "args": [
+                    {
+                        "int": `${assetQty}`,
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [
+                            this.mkBuyAsset(buyAssetType, buyAssetContract, buyAssetId),
+                            {
+                                "prim": "Pair",
+                                "args": [
+                                    {
+                                        "string": `${seller}`
+                                    },
+                                    {
+                                        "prim": "Pair",
+                                        "args": [
+                                            this.mkStartDate(startDate),
+                                            {
+                                                "prim": "Pair",
+                                                "args": [
+                                                    {
+                                                        "int": `${auctionDuration}`
+                                                    },
+                                                    {
+                                                        "prim": "Pair",
+                                                        "args": [
+                                                            {
+                                                                "int": `${minPrice}`
+                                                            },
+                                                            {
+                                                                "prim": "Pair",
+                                                                "args": [
+                                                                    {
+                                                                        "int": `${buyOutPrice}`
+                                                                    },
+                                                                    {
+                                                                        "prim": "Pair",
+                                                                        "args": [
+                                                                            {
+                                                                                "int": `${minStep}`
+                                                                            },
+                                                                            {
+                                                                                "prim": "Pair",
+                                                                                "args": [
+                                                                                    payouts,
+                                                                                    originFees
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+};
+
+exports.mkFA12Auction = (
+    sellAssetContract,
+    buyAssetContract,
+    buyAssetId,
+    buyAssetType,
+    assetQty,
+    seller,
+    startDate,
+    auctionDuration,
+    minPrice,
+    buyOutPrice,
+    minStep,
+    payouts,
+    originFees
+) => {
+    return {
+        "prim": "Pair",
+        "args": [
+            this.mkAuctionFA12Asset(sellAssetContract),
+            {
+                "prim": "Pair",
+                "args": [
+                    {
+                        "int": `${assetQty}`,
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [
+                            this.mkBuyAsset(buyAssetType, buyAssetContract, buyAssetId),
+                            {
+                                "prim": "Pair",
+                                "args": [
+                                    {
+                                        "string": `${seller}`
+                                    },
+                                    {
+                                        "prim": "Pair",
+                                        "args": [
+                                            this.mkStartDate(startDate),
+                                            {
+                                                "prim": "Pair",
+                                                "args": [
+                                                    {
+                                                        "int": `${auctionDuration}`
+                                                    },
+                                                    {
+                                                        "prim": "Pair",
+                                                        "args": [
+                                                            {
+                                                                "int": `${minPrice}`
+                                                            },
+                                                            {
+                                                                "prim": "Pair",
+                                                                "args": [
+                                                                    {
+                                                                        "int": `${buyOutPrice}`
+                                                                    },
+                                                                    {
+                                                                        "prim": "Pair",
+                                                                        "args": [
+                                                                            {
+                                                                                "int": `${minStep}`
+                                                                            },
+                                                                            {
+                                                                                "prim": "Pair",
+                                                                                "args": [
+                                                                                    payouts,
+                                                                                    originFees
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+};
+
+exports.mkXTZAuction = (
+    buyAssetContract,
+    buyAssetId,
+    buyAssetType,
+    assetQty,
+    seller,
+    startDate,
+    auctionDuration,
+    minPrice,
+    buyOutPrice,
+    minStep,
+    payouts,
+    originFees
+) => {
+    return {
+        "prim": "Pair",
+        "args": [
+            this.mkAuctionXTZAsset(),
             {
                 "prim": "Pair",
                 "args": [

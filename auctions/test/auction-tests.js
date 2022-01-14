@@ -10,7 +10,7 @@ const {
     isMockup,
     setEndpoint
 } = require('@completium/completium-cli');
-const { errors, mkTransferPermit, mkApproveForAllSingle, mkDeleteApproveForAllSingle, mkTransferGaslessArgs, mkAuction, FA_2_FT, mkPart } = require('./utils');
+const { errors, mkTransferPermit, mkApproveForAllSingle, mkDeleteApproveForAllSingle, mkTransferGaslessArgs, mkAuction, FA_2_FT, mkPart, mkFA12Auction, mkFungibleFA2Auction, mkXTZAuction, FA_2_NFT } = require('./utils');
 const assert = require('assert');
 const BigNumber = require('bignumber.js');
 
@@ -386,7 +386,211 @@ describe('Tokens setup', async () => {
 });
 
 describe('Start Auction tests', async () => {
-    it('Starting auction should succeed', async () => {
+    it('Starting auction for FA12 to purchase should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkFA12Auction(
+                    fa12_ft.address,
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r0")');
+    });
+
+    it('Starting auction for Fungible FA2 to purchase should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkFungibleFA2Auction(
+                    nft.address,
+                    nft_token_id.toString(),
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r0")');
+    });
+
+    it('Starting auction for XTZ to purchase should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkXTZAuction(
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r0")');
+    });
+
+    it('Starting auction for buying with Non Fungible FA2 should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    nft.address,
+                    nft_token_id.toString(),
+                    FA_2_NFT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r1")');
+    });
+
+    it('Starting auction with duration < extension duration should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    nft_token_id.toString(),
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r2")');
+    });
+
+    it('Starting auction with duration > max_duration should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    nft_token_id.toString(),
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "999999999999999999999",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r3")');
+    });
+
+    it('Starting auction with buyout price < min price should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    nft_token_id.toString(),
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "100",
+                    "1",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r4")');
+    });
+
+    it('Starting auction with missing asset contract should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    "",
+                    nft_token_id.toString(),
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '"MISSING_ASSET_CONTRACT"');
+    });
+
+    it('Starting auction with missing asset id should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    "",
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '"MISSING_ASSET_ID"');
+    });
+
+    it('Starting auction buying with Fungible FA2 should succeed', async () => {
         await auction.start_auction({
             argJsonMichelson: mkAuction(
                 nft.address,
@@ -405,5 +609,28 @@ describe('Start Auction tests', async () => {
                 [mkPart(alice.pkh, "100")]),
             as: alice.pkh,
         });
+    });
+
+    it('Starting auction buying with Fungible FA2 that already exists should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    nft_token_id.toString(),
+                    fa2_ft.address,
+                    fa2_ft_token_id.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '"AUCTION_ALREADY_EXISTS"');
     });
 });
