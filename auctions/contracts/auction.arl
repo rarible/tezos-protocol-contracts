@@ -7,7 +7,7 @@ archetype auction(
 with metadata ""
 
 constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
-constant MISSING_START_DATE: string = "MISSING_START_DATE"
+constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
 constant MISSING_AUCTION_STORAGE_CONTRACT: string = "MISSING_AUCTION_STORAGE_CONTRACT"
 constant MISSING_AUCTION_CUSTODY_CONTRACT: string = "MISSING_AUCTION_CUSTODY_CONTRACT"
 constant AUCTION_ALREADY_EXISTS: string = "AUCTION_ALREADY_EXISTS"
@@ -108,8 +108,7 @@ record rec_asset_type {
 
 record %asset {
   asset_type : rec_asset_type;
-  asset_value : nat;
-  asset_contract : address;
+  asset_contract : option<address>;
   asset_id: option<nat>;
 }
 
@@ -130,16 +129,15 @@ record bid {
   bid_amount : nat;
 }
 
-record auction {
+record auction_record {
   auction_sell_asset : %asset;
   auction_sell_asset_amount: nat;
   auction_buy_asset : %asset;
   auction_last_bid: option<bid>;
   auction_seller: address;
   auction_buyer: option<address>;
-  auction_start_time: option<date>;
+  auction_start_time: date;
   auction_end_time: date;
-  auction_duration: duration;
   auction_minimal_price: nat;
   auction_buy_out_price: nat;
   auction_minimal_step: nat;
@@ -148,27 +146,43 @@ record auction {
   auction_origin_fees : list<part>;
 }
 
+record auction_args {
+  auction_args_sell_asset : %asset;
+  auction_args_sell_asset_amount: nat;
+  auction_args_buy_asset : %asset;
+  auction_args_seller: address;
+  auction_args_start_time: option<date>;
+  auction_args_duration: duration;
+  auction_args_minimal_price: nat;
+  auction_args_buy_out_price: nat;
+  auction_args_minimal_step: nat;
+  auction_args_payouts : list<part>;
+  auction_args_origin_fees : list<part>;
+}
+
 //----------------------------------------------------------------------------
 // Auction entries
 //----------------------------------------------------------------------------
 
 entry start_auction(
-    sa_auction: auction
+    sa_auction: auction_args
 ) {
     require{
-        r0: sa_auction.auction_sell_asset.asset_type.asset_class <> FA_1_2;
-        r1: sa_auction.auction_sell_asset.asset_type.asset_class <> FA_2(Fungible);
-        r2: sa_auction.auction_duration > extension_duration;
-        r3: sa_auction.auction_duration < max_duration;
+        r0: sa_auction.auction_args_sell_asset.asset_type.asset_class <> FA_1_2;
+        r1: sa_auction.auction_args_sell_asset.asset_type.asset_class <> FA_2(Fungible);
+        r2: sa_auction.auction_args_duration > extension_duration;
+        r3: sa_auction.auction_args_duration < max_duration;
+        r4: sa_auction.auction_args_buy_out_price > sa_auction.auction_args_minimal_price;
     }
     effect {
         var auction_storage_contract = require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT);
-        var auction_asset_id = require_some(sa_auction.auction_sell_asset.asset_id, MISSING_ASSET_ID);
+        var auction_asset_id = require_some(sa_auction.auction_args_sell_asset.asset_id, MISSING_ASSET_ID);
+        var auction_asset_contract = require_some(sa_auction.auction_args_sell_asset.asset_contract, MISSING_ASSET_CONTRACT);
         var auction_exists = match callview<bool>(
             auction_storage_contract,
             "auction_exists",
             (
-                sa_auction.auction_sell_asset.asset_contract,
+                sa_auction.auction_args_sell_asset.asset_contract,
                 auction_asset_id
             )
         )
@@ -179,25 +193,44 @@ entry start_auction(
 
         dorequire(auction_exists = false, AUCTION_ALREADY_EXISTS);
 
-        if (sa_auction.auction_start_time <> none<date>) then(
-            var start_date = require_some(sa_auction.auction_start_time, MISSING_START_DATE);
-            dorequire(start_date >= now, AUCTION_START_DATE_IN_THE_PAST);
-            sa_auction.auction_end_time := start_date + sa_auction.auction_duration;
+        var start_time: date = now;
+        var end_time: date = now;
+        if (sa_auction.auction_args_start_time <> none<date>) then (
+            start_time := opt_get(sa_auction.auction_args_start_time);
+            dorequire(start_time >= now, AUCTION_START_DATE_IN_THE_PAST);
+            end_time := start_time + sa_auction.auction_args_duration;
         ) else (
-            sa_auction.auction_start_time := some(now);
-            sa_auction.auction_end_time := now + sa_auction.auction_duration;
+            start_time := now;
+            end_time := now + sa_auction.auction_args_duration;
         );
 
-        transfer 0tz to auction_storage_contract call set_auction<auction>(sa_auction);
-        transfer 0tz to sa_auction.auction_sell_asset.asset_contract call %transfer<list<address * list<transfer_param>>>(
+        var storage_auction: auction_record = {
+            auction_sell_asset = sa_auction.auction_args_sell_asset;
+            auction_sell_asset_amount = sa_auction.auction_args_sell_asset_amount;
+            auction_buy_asset = sa_auction.auction_args_buy_asset;
+            auction_last_bid = none;
+            auction_seller = sa_auction.auction_args_seller;
+            auction_buyer = none;
+            auction_start_time = start_time;
+            auction_end_time = end_time;
+            auction_minimal_price = sa_auction.auction_args_minimal_price;
+            auction_buy_out_price = sa_auction.auction_args_buy_out_price;
+            auction_minimal_step = sa_auction.auction_args_minimal_step;
+            auction_protocol_fee = protocol_fee;
+            auction_payouts = sa_auction.auction_args_payouts;
+            auction_origin_fees = sa_auction.auction_args_origin_fees
+        };
+
+        transfer 0tz to auction_storage_contract call set_auction<auction_record>(storage_auction);
+        transfer 0tz to auction_asset_contract call %transfer<list<address * list<transfer_param>>>(
             [
                 (
-                    sa_auction.auction_seller,
+                    sa_auction.auction_args_seller,
                     [
                         {
                             destination_address = auction_storage_contract;
                             token_id = auction_asset_id;
-                            token_amount = sa_auction.auction_sell_asset_amount
+                            token_amount = sa_auction.auction_args_sell_asset_amount
                         }
                     ]
                 )

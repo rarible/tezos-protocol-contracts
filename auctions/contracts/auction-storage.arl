@@ -5,6 +5,7 @@ with metadata ""
 
 constant MISSING_AUCTION_CONTRACT: string = "MISSING_AUCTION_CONTRACT"
 constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
+constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
 
 enum fa2_class =
 | Fungible
@@ -24,8 +25,7 @@ record rec_asset_type {
 
 record %asset {
   asset_type : rec_asset_type;
-  asset_value : nat;
-  asset_contract : address;
+  asset_contract : option<address>;
   asset_id: option<nat>;
 }
 
@@ -82,15 +82,15 @@ record bid {
   bid_amount : nat;
 }
 
-record auction {
+record auction_record {
   auction_sell_asset : %asset;
+  auction_sell_asset_amount: nat;
   auction_buy_asset : %asset;
   auction_last_bid: option<bid>;
   auction_seller: address;
   auction_buyer: option<address>;
-  auction_start_time: option<date>;
+  auction_start_time: date;
   auction_end_time: date;
-  auction_duration: duration;
   auction_minimal_price: nat;
   auction_buy_out_price: nat;
   auction_minimal_step: nat;
@@ -103,15 +103,22 @@ record auction {
 asset auctions identified by auction_asset auction_asset_id to big_map {
   auction_asset : address;
   auction_asset_id: nat;
-  auction_data : auction;
+  auction_data : auction_record;
 }
 
-entry set_auction(sa_auction : auction) {
+entry set_auction(sa_auction : auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  require {
+      r0: issome(auction_contract);
+      r1: issome(sa_auction.auction_sell_asset.asset_id);
+      r2: issome(sa_auction.auction_sell_asset.asset_id)
+  }
   effect {
-    var sa_asset_id = require_some(sa_auction.auction_sell_asset.asset_id, MISSING_ASSET_ID);
-    auctions.add({auction_asset = sa_auction.auction_sell_asset.asset_contract; auction_asset_id = sa_asset_id; auction_data = sa_auction});
-    transfer 0tz to sa_auction.auction_sell_asset.asset_contract call update_operators<list<or<operator_param, operator_param>>>(
+    var sa_asset_id = opt_get(sa_auction.auction_sell_asset.asset_id);
+    var sa_asset_contract = opt_get(sa_auction.auction_sell_asset.asset_contract);
+
+    auctions.add({auction_asset = sa_asset_contract; auction_asset_id = sa_asset_id; auction_data = sa_auction});
+    transfer 0tz to sa_asset_contract call update_operators<list<or<operator_param, operator_param>>>(
       [
           left<operator_param>({ opp_owner = selfaddress; opp_operator = opt_get(auction_contract); opp_token_id = sa_asset_id})
       ]
@@ -130,6 +137,6 @@ view auction_exists(ae_asset : address, ae_asset_id : nat) : bool {
   return auctions.contains((ae_asset, ae_asset_id))
 }
 
-view get_auction(ae_asset : address, ae_asset_id : nat) : auction {
+view get_auction(ae_asset : address, ae_asset_id : nat) : auction_record {
   return auctions[(ae_asset, ae_asset_id)].auction_data
 }

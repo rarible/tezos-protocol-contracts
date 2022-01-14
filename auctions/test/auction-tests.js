@@ -10,7 +10,7 @@ const {
     isMockup,
     setEndpoint
 } = require('@completium/completium-cli');
-const { errors, mkTransferPermit, mkApproveForAllSingle, mkDeleteApproveForAllSingle, mkTransferGaslessArgs } = require('./utils');
+const { errors, mkTransferPermit, mkApproveForAllSingle, mkDeleteApproveForAllSingle, mkTransferGaslessArgs, mkAuction, FA_2_FT, mkPart } = require('./utils');
 const assert = require('assert');
 const BigNumber = require('bignumber.js');
 
@@ -18,7 +18,7 @@ require('mocha/package.json');
 
 setQuiet('true');
 
-const mockup_mode = true;
+const mockup_mode = false;
 
 // contracts
 let auction_storage;
@@ -28,17 +28,22 @@ let nft;
 let fa12_ft;
 let fa2_ft;
 
-
+const initial_fa2_ft_amount = 10000000;
+const initial_fa12_ft_amount = 10000000;
+const initial_nft_amount = 100;
+const nft_token_id = 0;
+const fa2_ft_token_id = 0;
 
 // accounts
-const alice  = getAccount(mockup_mode ? 'alice'      : 'alice');
-const bob    = getAccount(mockup_mode ? 'bob'        : 'bob');
-const carl   = getAccount(mockup_mode ? 'carl'       : 'carl');
+const alice = getAccount(mockup_mode ? 'alice' : 'alice');
+const bob = getAccount(mockup_mode ? 'bob' : 'bob');
+const carl = getAccount(mockup_mode ? 'carl' : 'carl');
 const daniel = getAccount(mockup_mode ? 'bootstrap1' : 'bootstrap1');
 
 //set endpointhead
-setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
+//setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
 
+const a = exprMichelineToJson('(Pair (Pair (Right (Right (Left 1))) (Pair (Some "KT1WJ4kHmQW5v6pBs3wLFMcpFS81eWCCLaUJ") (Some 0))) (Pair 1 (Pair (Pair (Right (Right (Left 0))) (Pair (Some "KT1B69UKZVwPP1tnjCDXJH7tDUZTjmJ21QF7") (Some 0))) (Pair "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" (Pair (Some 1642148097) (Pair 6 (Pair 5 (Pair 4 (Pair 3 (Pair { Pair "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" 2 } { Pair "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" 1 }))))))))))');
 describe('Contract deployments', async () => {
 
     it('Fungible token (FA1.2) contract deployment should succeed', async () => {
@@ -47,7 +52,7 @@ describe('Contract deployments', async () => {
             {
                 parameters: {
                     initialholder: alice.pkh,
-                    totalsupply: 100000000000
+                    totalsupply: initial_fa12_ft_amount
                 },
                 as: alice.pkh,
             }
@@ -115,10 +120,11 @@ describe('Contract deployments', async () => {
                 as: alice.pkh,
             }
         );
+        console.log();
     });
 });
 
-describe('Auction storage Auction contract setter tests', async () => {
+describe('Auction storage setter tests', async () => {
     it('Set auction contract as non admin should fail', async () => {
         await expectToThrow(async () => {
             await auction_storage.set_auction_contract({
@@ -145,7 +151,6 @@ describe('Auction storage Auction contract setter tests', async () => {
 });
 
 describe('Auction contract setter tests', async () => {
-
     describe('Auction storage contract setter tests', async () => {
         it('Set auction storage contract as non admin should fail', async () => {
             await expectToThrow(async () => {
@@ -304,6 +309,101 @@ describe('Auction contract setter tests', async () => {
             });
             const post_test_storage = await auction.getStorage();
             assert(post_test_storage.royalties_provider == provider);
+        });
+    });
+});
+
+describe('Tokens setup', async () => {
+    describe('FA1.2 tokens setup', async () => {
+        it('Distribute FA1.2 tokens should succeed', async () => {
+            await fa12_ft.approve({
+                arg: {
+                    spender: alice.pkh,
+                    value: initial_fa12_ft_amount / 2,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft.transfer({
+                arg: {
+                    from: alice.pkh,
+                    to: bob.pkh,
+                    value: initial_fa12_ft_amount / 2,
+                },
+                as: alice.pkh,
+            });
+        });
+    });
+
+    describe('Fungible FA2 tokens setup', async () => {
+        it('Mint and transfer Fungible FA2 tokens should succeed', async () => {
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: fa2_ft_token_id,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, 0, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+        });
+    });
+
+    describe('NFT FA2 tokens setup', async () => {
+        it('Mint NFT FA2 tokens should succeed', async () => {
+            await nft.mint({
+                arg: {
+                    itokenid: nft_token_id,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: 1000,
+                    iroyalties: [
+                        [alice.pkh, 100],
+                        [bob.pkh, 100],
+                    ],
+                },
+                as: alice.pkh,
+            });
+        });
+    });
+
+    it('Add auction contract as operator for NFT and FT', async () => {
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${nft_token_id})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${fa2_ft_token_id})}`,
+            as: alice.pkh,
+        });
+    });
+});
+
+describe('Start Auction tests', async () => {
+    it('Starting auction should succeed', async () => {
+        await auction.start_auction({
+            argJsonMichelson: mkAuction(
+                nft.address,
+                nft_token_id.toString(),
+                fa2_ft.address,
+                fa2_ft_token_id.toString(),
+                FA_2_FT,
+                "1",
+                alice.pkh,
+                Date.now(),
+                "1000000",
+                "10",
+                "100",
+                "2",
+                [mkPart(alice.pkh, "100")],
+                [mkPart(alice.pkh, "100")]),
+            as: alice.pkh,
         });
     });
 });

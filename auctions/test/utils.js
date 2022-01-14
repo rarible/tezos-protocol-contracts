@@ -1,396 +1,268 @@
 const {
     getValueFromBigMap,
-    exprMichelineToJson,
-    packTyped,
-    packTypedAll,
-    blake2b,
     getAccount,
-    getAddress,
-    sign,
-    taquitoExecuteSchema,
-    keccak,
-    isMockup,
+
     getEndpoint,
 } = require('@completium/completium-cli');
 
-// or unit (or unit (or unit (or unit bytes)))
-exports.XTZ = {
-    prim: 'Left',
-    args: [{ prim: 'Unit' }],
-};
-exports.FA_1_2 = {
-    prim: 'Right',
-    args: [
-        {
-            prim: 'Left',
-            args: [{ prim: 'Unit' }],
-        },
-    ],
+exports.XTZ = 'XTZ';
+exports.FA_1_2 = 'FA_1_2';
+exports.FA_2_NFT = 'FA_2_NFT';
+exports.FA_2_FT = 'FA_2_FT';
+
+exports.mkBuyAsset = (assetType, assetContract, assetId) => {
+    let payload = {};
+    switch (assetType) {
+        case this.XTZ:
+            payload = this.mkAuctionXTZAsset();
+            break;
+        case this.FA_1_2:
+            payload = this.mkAuctionFA12Asset(assetContract);
+            break;
+        case this.FA_2_NFT:
+            payload = this.mkAuctionNonFungibleFA2Asset(assetContract, assetId);
+            break;
+        case this.FA_2_FT:
+            payload = this.mkAuctionFungibleFA2Asset(assetContract, assetId);
+            break;
+    }
+    return payload;
 };
 
-const FA_2 = {
-    prim: 'Right',
-    args: [
-        {
-            prim: 'Right',
-            args: [
+exports.mkAuctionFungibleFA2Asset = (assetContract, assetId) => {
+    return {
+        "prim": "Pair",
+        "args": [{
+            "prim": "Right",
+            "args": [{
+                "prim": "Right",
+                "args": [{
+                    "prim": "Left",
+                    "args": [{
+                        "int": "0"
+                    }]
+                }]
+            }]
+        }, {
+            "prim": "Pair",
+            "args": [
                 {
-                    prim: 'Left',
-                    args: [{ prim: 'Unit' }],
-                },
-            ],
-        },
-    ],
+                    "args": [
+                        {
+                            "string": assetContract
+                        }
+                    ],
+                    "prim": "Some"
+                }, {
+                    "prim": "Some",
+                    "args": [{
+                        "int": `${assetId}`
+                    }]
+                }]
+        }]
+    };
 };
-exports.FA_2 = FA_2;
 
-exports.OTHER = (x) => {
+exports.mkAuctionNonFungibleFA2Asset = (assetContract, assetId) => {
     return {
-        prim: 'Right',
-        args: [
+        "prim": "Pair",
+        "args": [{
+            "prim": "Right",
+            "args": [{
+                "prim": "Right",
+                "args": [{
+                    "prim": "Left",
+                    "args": [{
+                        "int": "1"
+                    }]
+                }]
+            }]
+        }, {
+            "prim": "Pair",
+            "args": [
+                {
+                    "args": [
+                        {
+                            "string": assetContract
+                        }
+                    ],
+                    "prim": "Some"
+                }, {
+                    "prim": "Some",
+                    "args": [{
+                        "int": `${assetId}`
+                    }]
+                }]
+        }]
+    };
+};
+
+exports.mkAuctionFA12Asset = (assetContract) => {
+    return {
+        "prim": "Pair",
+        "args": [{
+            "prim": "Right",
+            "args": [{
+                "prim": "Left",
+                "args": [{
+                    "prim": "Unit"
+                }]
+            }]
+        }, {
+            "prim": "Pair",
+            "args": [{
+                "string": assetContract
+            }, {
+                "prim": "None"
+            }]
+        }]
+    };
+};
+
+exports.mkAuctionXTZAsset = () => {
+    return {
+        "prim": "Pair",
+        "args": [
             {
-                prim: 'Right',
-                args: [
+                "prim": "Left",
+                "args": [
                     {
-                        prim: 'Right',
-                        args: [
-                            {
-                                prim: 'Right',
-                                args: [{ bytes: x }],
-                            },
-                        ],
-                    },
-                ],
+                        "prim": "Unit"
+                    }
+                ]
             },
-        ],
-    };
-};
-
-exports.FEE_SIDE_NONE = 0;
-exports.FEE_SIDE_MAKE = 1;
-exports.FEE_SIDE_TAKE = 2;
-
-exports.packPair = (l, tl, r, tr) => {
-    let pair = exprMichelineToJson('(Pair "' + l + '" "' + r + '")');
-    let typ = exprMichelineToJson('(pair ' + tl + ' ' + tr + ')');
-    return packTyped(pair, typ);
-};
-
-exports.mkSome = (v) => {
-    return {
-        prim: 'Some',
-        args: [{ string: v }],
-    };
-};
-
-exports.mkSomeInt = (v) => {
-    return {
-        prim: 'Some',
-        args: [{ int: v }],
-    };
-};
-
-exports.mkNone = { prim: 'None' };
-
-exports.mkAssetType = (assetclass, data) => {
-    return {
-        prim: 'Pair',
-        args: [assetclass, { bytes: data }],
-    };
-};
-
-const mkAsset = (assetclass, data, value) => {
-    return {
-        prim: 'Pair',
-        args: [
             {
-                prim: 'Pair',
-                args: [assetclass, { bytes: data }],
-            },
-            { int: value },
-        ],
+                "prim": "Pair",
+                "args": [
+                    {
+                        "prim": "None"
+                    },
+                    {
+                        "prim": "None"
+                    }
+                ]
+            }
+        ]
     };
 };
-exports.mkAsset = mkAsset;
 
-// record order {
-//   maker: option < key >;
-//   makeAsset: % asset;
-//   taker: option < key >;
-//   takeAsset: % asset;
-//   salt: nat;
-//   start: option < date >;
-//   % end : option < date >;
-//   dataType: bytes;
-//   data: bytes;
-// }
+exports.mkStartDate = (startDate) => {
+    if (startDate) {
+        return {
+            "prim": "Some",
+            "args": [
+                {
+                    "int": `${startDate}`
+                }
+            ]
+        };
+    } else {
+        return { "prim": "None" };
+    }
+};
 
-exports.mkOrder = (
-    maker,
-    makeAsset,
-    taker,
-    takeAsset,
-    salt,
-    start,
-    end,
-    datatype,
-    data
+exports.mkPart = (address, value) => {
+    return {
+        "prim": "Pair",
+        "args": [
+            {
+                "string": address
+            },
+            {
+                "int": `${value}`
+            }
+        ]
+    };
+};
+
+exports.mkAuction = (
+    sellAssetContract,
+    sellAssetId,
+    buyAssetContract,
+    buyAssetId,
+    buyAssetType,
+    assetQty,
+    seller,
+    startDate,
+    auctionDuration,
+    minPrice,
+    buyOutPrice,
+    minStep,
+    payouts,
+    originFees
 ) => {
     return {
-        prim: 'Pair',
-        args: [
-            maker,
+        "prim": "Pair",
+        "args": [
+            this.mkAuctionNonFungibleFA2Asset(sellAssetContract, sellAssetId),
             {
-                prim: 'Pair',
-                args: [
-                    makeAsset,
+                "prim": "Pair",
+                "args": [
                     {
-                        prim: 'Pair',
-                        args: [
-                            taker,
+                        "int": `${assetQty}`,
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [
+                            this.mkBuyAsset(buyAssetType, buyAssetContract, buyAssetId),
                             {
-                                prim: 'Pair',
-                                args: [
-                                    takeAsset,
+                                "prim": "Pair",
+                                "args": [
                                     {
-                                        prim: 'Pair',
-                                        args: [
-                                            { int: salt },
-                                            {
-                                                prim: 'Pair',
-                                                args: [
-                                                    start,
-                                                    {
-                                                        prim: 'Pair',
-                                                        args: [
-                                                            end,
-                                                            {
-                                                                prim: 'Pair',
-                                                                args: [
-                                                                    {
-                                                                        bytes: datatype,
-                                                                    },
-                                                                    {
-                                                                        bytes: data,
-                                                                    },
-                                                                ],
-                                                            },
-                                                        ],
-                                                    },
-                                                ],
-                                            },
-                                        ],
+                                        "string": `${seller}`
                                     },
-                                ],
-                            },
-                        ],
-                    },
-                ],
-            },
-        ],
-    };
-};
-
-exports.mkDoTransfersArg = (leftOrder, leftSig, rightOrder, rightSig) => {
-    return {
-        prim: 'Pair',
-        args: [
-            leftOrder,
-            {
-                prim: 'Pair',
-                args: [
-                    leftSig,
-                    {
-                        prim: 'Pair',
-                        args: [rightOrder, rightSig],
-                    },
-                ],
-            },
-        ],
-    };
-};
-
-exports.mkApproveForAllSingle = (operator) => {
-    return [{
-      prim: 'Left',
-      args: [{ string: operator }]
-    }]
-  }
-
-const assetClassType = exprMichelineToJson(
-    '(or %assetClass unit (or unit (or unit (or unit bytes))))'
-);
-exports.assetClassType = assetClassType;
-
-const assetType = {
-    prim: 'pair',
-    annots: ['%assetType'],
-    args: [
-        assetClassType,
-        {
-            prim: 'bytes',
-            annots: ['%assetData'],
-        },
-    ],
-};
-exports.assetType = assetType;
-
-exports.orderType = {
-    prim: 'pair',
-    args: [
-        {
-            prim: 'option',
-            annots: ['%maker'],
-            args: [
-                {
-                    prim: 'key',
-                },
-            ],
-        },
-        {
-            prim: 'pair',
-            args: [
-                {
-                    prim: 'pair',
-                    annots: ['%makeAsset'],
-                    args: [
-                        assetType,
-                        {
-                            prim: 'nat',
-                            annots: ['%assetValue'],
-                        },
-                    ],
-                },
-                {
-                    prim: 'pair',
-                    args: [
-                        {
-                            prim: 'option',
-                            annots: ['%taker'],
-                            args: [
-                                {
-                                    prim: 'key',
-                                },
-                            ],
-                        },
-                        {
-                            prim: 'pair',
-                            args: [
-                                {
-                                    prim: 'pair',
-                                    annots: ['%takeAsset'],
-                                    args: [
-                                        assetType,
-                                        {
-                                            prim: 'nat',
-                                            annots: ['%assetValue'],
-                                        },
-                                    ],
-                                },
-                                {
-                                    prim: 'pair',
-                                    args: [
-                                        {
-                                            prim: 'nat',
-                                            annots: ['%salt'],
-                                        },
-                                        {
-                                            prim: 'pair',
-                                            args: [
-                                                {
-                                                    prim: 'option',
-                                                    annots: ['%start'],
-                                                    args: [
-                                                        {
-                                                            prim: 'timestamp',
-                                                        },
-                                                    ],
-                                                },
-                                                {
-                                                    prim: 'pair',
-                                                    args: [
-                                                        {
-                                                            prim: 'option',
-                                                            annots: ['%end'],
-                                                            args: [
-                                                                {
-                                                                    prim: 'timestamp',
-                                                                },
-                                                            ],
-                                                        },
-                                                        {
-                                                            prim: 'pair',
-                                                            args: [
-                                                                {
-                                                                    prim: 'bytes',
-                                                                    annots: [
-                                                                        '%dataType',
-                                                                    ],
-                                                                },
-                                                                {
-                                                                    prim: 'bytes',
-                                                                    annots: [
-                                                                        '%data',
-                                                                    ],
-                                                                },
-                                                            ],
-                                                        },
-                                                    ],
-                                                },
-                                            ],
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        },
-    ],
-};
-
-//exports.orderType = exprMichelineToJson("\
-//  (pair \
-//    (option %maker key) \
-//    (pair (pair %makeAsset \
-//             (pair %assetType (nat %assetClass) (bytes %assetData)) \
-//             (nat %assetValue)) \
-//          (pair (option %taker key) \
-//                (pair (pair %takeAsset \
-//                         (pair %assetType (nat %assetClass) (bytes %assetData)) \
-//                         (nat %assetValue)) \
-//                      (pair (nat %salt) \
-//                            (pair (option %start timestamp) \
-//                                  (pair (option %end timestamp) (pair (bytes %dataType) (bytes %data)))))))))");
-
-const mkPairs = (l) => {
-    if (l.length == 1) {
-        return l[0];
-    } else
-        return {
-            prim: 'Pair',
-            args: [l[0], mkPairs(l.slice(1, l.length))],
-        };
-};
-
-exports.DataV1type = exprMichelineToJson(
-    '(pair (list %payouts (pair (address %partAccount) (nat %partValue))) (list %originFees (pair (address %partAccount) (nat %partValue))))'
-);
-
-exports.mkPairs = (args) => mkPairs(args);
-
-exports.mkDataV1 = (payouts, originFees) => {
-    return {
-        prim: 'Pair',
-        args: [
-            payouts.map((p) =>
-                mkPairs([{ string: p[0] }, { int: p[1].toString() }])
-            ),
-            originFees.map((p) =>
-                mkPairs([{ string: p[0] }, { int: p[1].toString() }])
-            ),
-        ],
+                                    {
+                                        "prim": "Pair",
+                                        "args": [
+                                            this.mkStartDate(startDate),
+                                            {
+                                                "prim": "Pair",
+                                                "args": [
+                                                    {
+                                                        "int": `${auctionDuration}`
+                                                    },
+                                                    {
+                                                        "prim": "Pair",
+                                                        "args": [
+                                                            {
+                                                                "int": `${minPrice}`
+                                                            },
+                                                            {
+                                                                "prim": "Pair",
+                                                                "args": [
+                                                                    {
+                                                                        "int": `${buyOutPrice}`
+                                                                    },
+                                                                    {
+                                                                        "prim": "Pair",
+                                                                        "args": [
+                                                                            {
+                                                                                "int": `${minStep}`
+                                                                            },
+                                                                            {
+                                                                                "prim": "Pair",
+                                                                                "args": [
+                                                                                    payouts,
+                                                                                    originFees
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     };
 };
 
@@ -442,9 +314,9 @@ exports.checkFA12Balance = async (c, a, d, f) => {
     if (delta !== d) {
         throw new Error(
             'Invalid delta balance of ' +
-                delta +
-                ' tokens for ' +
-                getAccount(a).name
+            delta +
+            ' tokens for ' +
+            getAccount(a).name
         );
     }
 };
@@ -460,166 +332,13 @@ exports.checkFA2Balance = async (c, token, address, d, f) => {
     if (delta !== d) {
         throw new Error(
             'Invalid delta balance of ' +
-                delta +
-                " tokens '" +
-                token +
-                "' for " +
-                getAccount(address).name
+            delta +
+            " tokens '" +
+            token +
+            "' for " +
+            getAccount(address).name
         );
     }
-};
-
-exports.mkApproveForAllSingle = (operator) => {
-    return [
-        {
-            prim: 'Left',
-            args: [{ string: operator }],
-        },
-    ];
-};
-
-exports.mkDeleteApproveForAllSingle = (operator) => {
-    return [
-        {
-            prim: 'Right',
-            args: [{ string: operator }],
-        },
-    ];
-};
-
-exports.mkApproveSingle = (owner, operator, tokenid) => {
-    return [
-        {
-            prim: 'Left',
-            args: [
-                {
-                    prim: 'Pair',
-                    args: [
-                        { string: owner },
-                        {
-                            prim: 'Pair',
-                            args: [{ string: operator }, { int: '' + tokenid }],
-                        },
-                    ],
-                },
-            ],
-        },
-    ];
-};
-
-exports.mkSetRoyaltiesByToken = (address, tokenid, royalties) => {
-    return mkPairs([
-        { string: address },
-        { int: '' + tokenid },
-        royalties.map((p) =>
-            mkPairs([{ string: p[0] }, { int: p[1].toString() }])
-        ),
-    ]);
-};
-
-exports.mkFA2Asset = (address, tokenid, value) => {
-    let typ = {
-        prim: 'pair',
-        args: [{ prim: 'address' }, { prim: 'nat' }],
-    };
-    let data = packTyped(
-        mkPairs([{ string: address }, { int: '' + tokenid }]),
-        typ
-    );
-    return mkAsset(FA_2, data, value);
-};
-
-const assert = require('assert');
-
-function getRandomInt(max) {
-    return Math.floor(Math.random() * max);
-}
-
-exports.pauseAndVerify = async (c, a) => {
-    await c.pause({ as: a.pkh });
-    let storage = await c.getStorage();
-    assert(storage.paused == true, 'contract should be paused');
-};
-
-exports.unpauseAndVerify = async (c, a) => {
-    await c.unpause({ as: a.pkh });
-    let storage = await c.getStorage();
-    assert(storage.paused == false, 'contract should not be paused');
-};
-
-exports.initUsds = (owner, minter, pauser) => {
-    return {
-        prim: 'Pair',
-        args: [
-            {
-                prim: 'Pair',
-                args: [
-                    {
-                        prim: 'Pair',
-                        args: [
-                            {
-                                prim: 'Pair',
-                                args: [
-                                    {
-                                        int: '300000',
-                                    },
-                                    [],
-                                ],
-                            },
-                            [],
-                            [],
-                        ],
-                    },
-                    {
-                        prim: 'Pair',
-                        args: [
-                            [],
-                            {
-                                prim: 'False',
-                            },
-                        ],
-                    },
-                    {
-                        int: '0',
-                    },
-                    [],
-                ],
-            },
-            {
-                prim: 'Pair',
-                args: [
-                    {
-                        prim: 'Pair',
-                        args: [
-                            {
-                                prim: 'Pair',
-                                args: [
-                                    {
-                                        string: minter,
-                                    },
-                                    {
-                                        string: owner,
-                                    },
-                                ],
-                            },
-                            {
-                                string: pauser,
-                            },
-                            {
-                                prim: 'None',
-                            },
-                        ],
-                    },
-                    {
-                        int: '79971450000',
-                    },
-                ],
-            },
-            {
-                prim: 'None',
-            },
-        ],
-    };
 };
 
 exports.getFA2Balance = (gbfa2) => {
@@ -646,92 +365,9 @@ exports.checkFA2Balance = (gbfa2) => {
         }
     };
 };
-const transferParamType = exprMichelineToJson(
-    '(list (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))'
-);
-
-const singleStepTransferParamType = exprMichelineToJson("(list (pair (address %from_) (list %txs (pair (address %to_) (nat %token_id) (nat %amount)))))");
-
-
-const permitDataType = exprMichelineToJson(
-    '(pair (pair address chain_id) (pair nat bytes))'
-);
-
-const gaslessDataType = exprMichelineToJson(
-    '(pair address (pair nat bytes))'
-);
 
 const isSandbox = () => {
     return getEndpoint() == 'http://localhost:8732' ? true : false;
-};
-
-exports.mkTransferPermit = async (
-    from,
-    to,
-    contract,
-    amount,
-    tokenid,
-    permit_counter
-) => {
-    const michelsonData = `{ Pair "${from.pkh}" { Pair "${to.pkh}" (Pair ${tokenid} ${amount}) } }`;
-    const transferParam = exprMichelineToJson(michelsonData);
-    const permit = packTyped(transferParam, transferParamType);
-    const hashPermit = blake2b(permit);
-    const chainid = isMockup()
-        ? 'NetXynUjJNZm7wi'
-        : isSandbox()
-        ? 'NetXzcB5DmnBoxG'
-        : 'NetXz969SFaFn8k'; // else granada
-    const permitData = exprMichelineToJson(
-        `(Pair (Pair "${contract}" "${chainid}") (Pair ${permit_counter} 0x${hashPermit}))`
-    );
-    const tosign = packTyped(permitData, permitDataType);
-    const signature = await sign(tosign, { as: from.name });
-    return { hash: hashPermit, sig: signature };
-};
-
-exports.mkTransferGaslessArgs = async (
-    from,
-    to,
-    contract,
-    amount,
-    tokenid,
-    permit_counter
-) => {
-    const michelsonData = `{ Pair "${from.pkh}" { Pair "${to.pkh}" (Pair ${tokenid} ${amount}) } }`;
-    const transferParam = exprMichelineToJson(michelsonData);
-    const permit = packTyped(transferParam, singleStepTransferParamType);
-    const hashPermit = blake2b(permit);
-    const chainid = isMockup()
-        ? 'NetXynUjJNZm7wi'
-        : isSandbox()
-        ? 'NetXzcB5DmnBoxG'
-        : 'NetXz969SFaFn8k'; // else granada
-    const permitData = exprMichelineToJson(
-        `(Pair "${contract}" (Pair ${permit_counter} 0x${hashPermit}))`
-    );
-    const tosign = packTyped(permitData, gaslessDataType);
-    const signature = await sign(tosign, { as: from.name });
-    return { hash: hashPermit, sig: signature };
-};
-
-
-
-const tokenIdType = {
-    prim: 'pair',
-    args: [{ prim: 'nat' }, { prim: 'nat' }],
-};
-
-exports.getTokenId = (archetypeid, serial) => {
-    const a = mkPairs([
-        { int: archetypeid.toString() },
-        { int: serial.toString() },
-    ]);
-    const packed = packTyped(a, tokenIdType);
-    const hexStr = keccak(packed).substring(0, 8);
-    const b = '0x' + hexStr;
-    const c = Number(b);
-    return c.toString();
 };
 
 exports.errors = {

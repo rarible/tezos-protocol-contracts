@@ -1,0 +1,190 @@
+{
+    "prim": "Pair",
+    "args": [
+      {
+        "prim": "Pair",
+        "args": [
+          {
+            "prim": "Right",
+            "args": [
+              {
+                "prim": "Right",
+                "args": [
+                  {
+                    "prim": "Left",
+                    "args": [
+                      {
+                        "int": "1"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "prim": "Pair",
+            "args": [
+              {
+                "prim": "Some",
+                "args": [
+                  {
+                    "string": "KT1WJ4kHmQW5v6pBs3wLFMcpFS81eWCCLaUJ"
+                  }
+                ]
+              },
+              {
+                "prim": "Some",
+                "args": [
+                  {
+                    "int": "0"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "prim": "Pair",
+        "args": [
+          {
+            "int": "1"
+          },
+          {
+            "prim": "Pair",
+            "args": [
+              {
+                "prim": "Pair",
+                "args": [
+                  {
+                    "prim": "Right",
+                    "args": [
+                      {
+                        "prim": "Right",
+                        "args": [
+                          {
+                            "prim": "Left",
+                            "args": [
+                              {
+                                "int": "0"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "prim": "Some",
+                        "args": [
+                          {
+                            "string": "KT1B69UKZVwPP1tnjCDXJH7tDUZTjmJ21QF7"
+                          }
+                        ]
+                      },
+                      {
+                        "prim": "Some",
+                        "args": [
+                          {
+                            "int": "0"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "prim": "Pair",
+                "args": [
+                  {
+                    "string": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"
+                  },
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      {
+                        "prim": "Some",
+                        "args": [
+                          {
+                            "int": "1642148097"
+                          }
+                        ]
+                      },
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": "6"
+                          },
+                          {
+                            "prim": "Pair",
+                            "args": [
+                              {
+                                "int": "5"
+                              },
+                              {
+                                "prim": "Pair",
+                                "args": [
+                                  {
+                                    "int": "4"
+                                  },
+                                  {
+                                    "prim": "Pair",
+                                    "args": [
+                                      {
+                                        "int": "3"
+                                      },
+                                      {
+                                        "prim": "Pair",
+                                        "args": [
+                                          [
+                                            {
+                                              "prim": "Pair",
+                                              "args": [
+                                                {
+                                                  "string": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"
+                                                },
+                                                {
+                                                  "int": "2"
+                                                }
+                                              ]
+                                            }
+                                          ],
+                                          [
+                                            {
+                                              "prim": "Pair",
+                                              "args": [
+                                                {
+                                                  "string": "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb"
+                                                },
+                                                {
+                                                  "int": "1"
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
