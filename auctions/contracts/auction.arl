@@ -186,9 +186,10 @@ entry start_auction(
         r_sa5: sa_auction.auction_args_minimal_price > 0;
         r_sa6: sa_auction.auction_args_minimal_step > 0;
         r_sa7: sa_auction.auction_args_seller = caller;
+        r_sa8: issome(auction_storage);
     }
     effect {
-        var auction_storage_contract = require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT);
+        var auction_storage_contract = opt_get(auction_storage);
         var auction_asset_id = require_some(sa_auction.auction_args_sell_asset.asset_id, MISSING_ASSET_ID);
         var auction_asset_contract = require_some(sa_auction.auction_args_sell_asset.asset_contract, MISSING_ASSET_CONTRACT);
 
@@ -243,26 +244,64 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
   require{
         r_pb0: pb_bid.bid_amount > 0;
         r_pb1: pb_bid.bid_bidder = caller;
+        r_pb2: issome(auction_storage);
     }
     effect {
       var auction = require_some(get_auction_record(pb_asset_contract, pb_asset_id), MISSING_AUCTION);
+      var pb_auction_storage = opt_get(auction_storage);
+      var is_xtz = (auction.auction_buy_asset.asset_type.asset_class = XTZ);
+      var previous_bid = auction.auction_last_bid;
+
       dorequire(auction.auction_start_time < now, AUCTION_NOT_IN_PROGRESS);
       dorequire(auction.auction_end_time > now, AUCTION_FINISHED);
 
       if (auction.auction_buy_out_price > 0 and auction.auction_buy_out_price < pb_bid.bid_amount) then (
-        if(auction.auction_buy_asset.asset_type.asset_class = XTZ) then (
-          dorequire(transferred = (pb_bid.bid_amount * 1mtz), AUCTION_BID_AMOUNT_MISMATCH);
-        );
-        transfer 0tz to require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT) call update_bid_for_auction<address * nat * bid>((pb_asset_contract, pb_asset_id, pb_bid))
+        transfer 0tz to pb_auction_storage call update_bid_for_auction<address * nat * bid>((pb_asset_contract, pb_asset_id, pb_bid))
       );
 
-      if(isnone(auction.auction_last_bid)) then (
+      if(isnone(previous_bid)) then (
         dorequire(auction.auction_minimal_price <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(auction.auction_minimal_step <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
       ) else (
-        dorequire(opt_get(auction.auction_last_bid).bid_amount < pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
-        dorequire(auction.auction_minimal_step <= pb_bid.bid_amount - opt_get(auction.auction_last_bid).bid_amount, AUCTION_BID_TOO_LOW);
-        dorequire(opt_get(auction.auction_last_bid).bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
+        var last_bid = opt_get(previous_bid);
+        dorequire(last_bid.bid_amount < pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
+        dorequire(auction.auction_minimal_step <= pb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
+        dorequire(last_bid.bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
+        if(is_xtz) then (
+          dorequire(transferred = (pb_bid.bid_amount * 1mtz), AUCTION_BID_AMOUNT_MISMATCH);
+          //Send back last user funds
+          transfer 0tz to pb_auction_storage call transfer_custody_tez<address * tez>((last_bid.bid_bidder, (last_bid.bid_amount*1mtz)));
+        ) else (
+          //Send back last user funds
+          transfer 0tz to selfaddress call manage_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
+            auction.auction_buy_asset.asset_type.asset_class,
+            auction.auction_buy_asset.asset_contract,
+            auction.auction_buy_asset.asset_id,
+            last_bid.bid_amount,
+            pb_auction_storage,
+            last_bid.bid_bidder
+          ));
+
+        );
+      );
+
+      if(is_xtz) then (
+        //Send new funds to custody
+        transfer transferred to pb_auction_storage;
+      ) else (
+        //Send new funds to custody
+        transfer 0tz to selfaddress call manage_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
+          auction.auction_buy_asset.asset_type.asset_class,
+          auction.auction_buy_asset.asset_contract,
+          auction.auction_buy_asset.asset_id,
+          pb_bid.bid_amount,
+          pb_bid.bid_bidder,
+          pb_auction_storage
+        ));
+      );
+
+      if(auction.auction_end_time - now < extension_duration) then (
+        transfer 0tz to pb_auction_storage call extend_auction_duration<address * nat * duration>((pb_asset_contract, pb_asset_id, extension_duration));
       );
     }
 }
@@ -297,27 +336,9 @@ function get_auction_record(gar_asset_contract: address, gar_asset_id: nat) : op
     end
 }
 
-function do_fa2_transfer(dt2_contract: address, dt2_token_id: nat, dt2_amount: nat, dt2_origin: address, dt2_destination: address ) {
-  transfer 0tz to dt2_contract call %transfer<list<address * list<transfer_param>>>(
-            [
-                (
-                    dt2_origin,
-                    [
-                        {
-                            destination_address = dt2_destination;
-                            token_id = dt2_token_id;
-                            token_amount = dt2_amount
-                        }
-                    ]
-                )
-            ]
-        )
-}
-
 entry manage_transfer(mt_asset_class: enum_asset_class, mt_asset_contract: option<address>, mt_asset_id: option<nat>, mt_amount: nat, mt_origin: address, mt_destination: address){
   called by selfaddress
   effect {
-    var res = 0;
     match mt_asset_class with
     | FA_2(fa2t)  -> (
       dorequire(issome(mt_asset_contract), MISSING_ASSET_CONTRACT);
@@ -342,17 +363,7 @@ entry manage_transfer(mt_asset_class: enum_asset_class, mt_asset_contract: optio
       dorequire(issome(mt_asset_contract), MISSING_ASSET_CONTRACT);
       transfer 0tz to opt_get(mt_asset_contract) call %transfer<address * address * nat>((mt_origin, mt_destination, mt_amount))
       )
-    | XTZ -> transfer (mt_amount * 1mtz) to mt_destination
     | _ -> ()
     end;
   }
-}
-
-
-function do_fa12_transfer(dt12_contract: address, dt12_amount: nat, dt12_origin: address, dt12_destination: address ) {
-  transfer 0tz to dt12_contract call %transfer<address * address * nat>((dt12_origin, dt12_destination, dt12_amount))
-}
-
-function update_bid_for_auction(ubfa_asset_contract: address, ubfa_asset_id: nat, ubfa_bid: bid) {
-  transfer 0tz to require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT) call update_bid_for_auction<address * nat * bid>((ubfa_asset_contract, ubfa_asset_id, ubfa_bid))
 }

@@ -69,6 +69,14 @@ entry set_auction_contract(sac_contract : address) {
   called by owner
   effect {
     auction_contract := some(sac_contract);
+    authorizations.clear();
+  }
+}
+
+entry clear_authorizations() {
+  called by owner
+  effect {
+    authorizations.clear();
   }
 }
 
@@ -76,6 +84,7 @@ entry set_auction_contract(sac_contract : address) {
 // Auction
 //----------------------------------------------------------------------------
 variable auction_contract : option<address> = none
+variable max_transferrable_fa12_amount : nat = 10000000000000000000
 
 record bid {
   bid_payouts : list<part>;
@@ -107,6 +116,11 @@ asset auctions identified by auction_asset auction_asset_id to big_map {
   auction_data : auction_record;
 }
 
+asset authorizations identified by authorization_contract authorization_contract_token_id to big_map {
+  authorization_contract : address;
+  authorization_contract_token_id: option<nat>;
+}
+
 entry set_auction(sa_auction : auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   require {
@@ -115,15 +129,48 @@ entry set_auction(sa_auction : auction_record) {
       r2: issome(sa_auction.auction_sell_asset.asset_id)
   }
   effect {
+    var sa_auction_contract = opt_get(auction_contract);
     var sa_asset_id = opt_get(sa_auction.auction_sell_asset.asset_id);
     var sa_asset_contract = opt_get(sa_auction.auction_sell_asset.asset_contract);
+    var sa_buy_asset = sa_auction.auction_buy_asset;
 
     auctions.add({auction_asset = sa_asset_contract; auction_asset_id = sa_asset_id; auction_data = sa_auction});
-    transfer 0tz to sa_asset_contract call update_operators<list<or<operator_param, operator_param>>>(
+    //Since we only create auctions for NFTs (FA2), we need to declare the auction contract as operator for this NFT to allow
+    //it to transfer from custody
+    if(not authorizations.contains((sa_asset_contract, sa_auction.auction_sell_asset.asset_id))) then (
+      authorizations.add({authorization_contract = sa_asset_contract; authorization_contract_token_id = sa_auction.auction_sell_asset.asset_id});
+      transfer 0tz to sa_asset_contract call update_operators<list<or<operator_param, operator_param>>>(
       [
-          left<operator_param>({ opp_owner = selfaddress; opp_operator = opt_get(auction_contract); opp_token_id = sa_asset_id})
+          left<operator_param>({ opp_owner = selfaddress; opp_operator = sa_auction_contract; opp_token_id = sa_asset_id})
       ]
     );
+    );
+
+
+    //If the asset is a FA2, we need to declare the auction contract as operator for the buy asset to allow it to transfer
+    //from custody
+    //It is more tricky for FA12 as it needs to be approved for a decreasing amount transfer
+    if(issome(sa_buy_asset.asset_contract) and issome(sa_buy_asset.asset_id)) then (
+      if(not authorizations.contains((sa_asset_contract, sa_auction.auction_sell_asset.asset_id))) then (
+        var buy_asset_contract = opt_get(sa_buy_asset.asset_contract);
+        var buy_asset_id = opt_get(sa_buy_asset.asset_id);
+        authorizations.add({authorization_contract = buy_asset_contract; authorization_contract_token_id = sa_buy_asset.asset_id});
+        transfer 0tz to buy_asset_contract call update_operators<list<or<operator_param, operator_param>>>(
+          [
+              left<operator_param>({ opp_owner = selfaddress; opp_operator = sa_auction_contract; opp_token_id = opt_get(sa_buy_asset.asset_id)})
+          ]
+        );
+      )
+    ) else if(issome(sa_buy_asset.asset_contract) and isnone(sa_buy_asset.asset_id)) then (
+      if(not authorizations.contains((sa_asset_contract, sa_auction.auction_sell_asset.asset_id))) then (
+        //TODO
+        //Attention point: we will need to reset the allowance on regular basis because it will decrease for every tx
+        var buy_asset_contract = opt_get(sa_buy_asset.asset_contract);
+        authorizations.add({authorization_contract = buy_asset_contract; authorization_contract_token_id = sa_buy_asset.asset_id});
+        transfer 0tz to opt_get(sa_buy_asset.asset_contract) call approve<address * nat>((sa_auction_contract, max_transferrable_fa12_amount));
+      )
+    );
+
   }
 }
 
@@ -132,6 +179,16 @@ entry update_bid_for_auction(ubfa_asset_contract: address, ubfa_asset_id: nat, u
   effect {
     dorequire(auctions.contains((ubfa_asset_contract, ubfa_asset_id)), MISSING_AUCTION);
     auctions[(ubfa_asset_contract, ubfa_asset_id)].auction_data.auction_last_bid := some(ubfa_bid);
+  }
+}
+
+entry extend_auction_duration(ead_asset_contract: address, ead_asset_id: nat, ead_duration: duration) {
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  effect {
+    dorequire(auctions.contains((ead_asset_contract, ead_asset_id)), MISSING_AUCTION);
+    var ead_auction: auction_record = auctions[(ead_asset_contract, ead_asset_id)].auction_data;
+    var new_end_time = now + ead_duration;
+    auctions[(ead_asset_contract, ead_asset_id)].auction_data.auction_end_time := new_end_time;
   }
 }
 
@@ -148,4 +205,11 @@ view auction_exists(ae_asset : address, ae_asset_id : nat) : bool {
 
 view get_auction(ga_asset : address, ga_asset_id : nat) : auction_record {
   return auctions[(ga_asset, ga_asset_id)].auction_data
+}
+
+entry transfer_custody_tez(tct_destination: address, amount: tez) {
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  effect {
+    transfer amount to tct_destination;
+  }
 }
