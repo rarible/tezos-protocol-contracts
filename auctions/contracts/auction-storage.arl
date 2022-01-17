@@ -110,7 +110,7 @@ entry set_auction(sa_auction : auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   require {
       r0: issome(auction_contract);
-      r1: issome(sa_auction.auction_sell_asset.asset_id);
+      r1: issome(sa_auction.auction_sell_asset.asset_contract);
       r2: issome(sa_auction.auction_sell_asset.asset_id)
   }
   effect {

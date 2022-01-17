@@ -177,6 +177,9 @@ entry start_auction(
         r2: sa_auction.auction_args_duration > extension_duration;
         r3: sa_auction.auction_args_duration < max_duration;
         r4: sa_auction.auction_args_buy_out_price > sa_auction.auction_args_minimal_price;
+        r5: sa_auction.auction_args_minimal_price > 0;
+        r6: sa_auction.auction_args_minimal_step > 0;
+        r7: sa_auction.auction_args_seller = caller;
     }
     effect {
         var auction_storage_contract = require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT);
