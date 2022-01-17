@@ -542,6 +542,55 @@ exports.mkXTZAuction = (
     };
 };
 
+exports.mkBid = (
+    assetContract,
+    assetId,
+    amount,
+    bidder,
+    payouts,
+    originFees
+) => {
+    return {
+        "prim": "Pair",
+        "args": [
+          {
+            "string": `${assetContract}`
+          },
+          {
+            "prim": "Pair",
+            "args": [
+              {
+                "int": `${assetId}`
+              },
+              {
+                "prim": "Pair",
+                "args": [
+                  payouts,
+                  {
+                    "prim": "Pair",
+                    "args": [
+                      originFees,
+                      {
+                        "prim": "Pair",
+                        "args": [
+                          {
+                            "int": `${amount}`
+                          },
+                          {
+                            "string": `${bidder}`
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      };
+};
+
 // Taquito & Mockup-compliant get big map value
 const getBigMapValue = async (id, key, keytyp) => {
     let res = await getValueFromBigMap(id, key, keytyp);
