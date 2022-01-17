@@ -6,6 +6,7 @@ with metadata ""
 constant MISSING_AUCTION_CONTRACT: string = "MISSING_AUCTION_CONTRACT"
 constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
 constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
+constant MISSING_AUCTION: string = "MISSING_AUCTION"
 
 enum fa2_class =
 | Fungible
@@ -80,6 +81,7 @@ record bid {
   bid_payouts : list<part>;
   bid_origin_fees : list<part>;
   bid_amount : nat;
+  bid_bidder: address;
 }
 
 record auction_record {
@@ -88,7 +90,6 @@ record auction_record {
   auction_buy_asset : %asset;
   auction_last_bid: option<bid>;
   auction_seller: address;
-  auction_buyer: option<address>;
   auction_start_time: date;
   auction_end_time: date;
   auction_minimal_price: nat;
@@ -126,6 +127,14 @@ entry set_auction(sa_auction : auction_record) {
   }
 }
 
+entry update_bid_for_auction(ubfa_asset_contract: address, ubfa_asset_id: nat, ubfa_bid: bid) {
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  effect {
+    dorequire(auctions.contains((ubfa_asset_contract, ubfa_asset_id)), MISSING_AUCTION);
+    auctions[(ubfa_asset_contract, ubfa_asset_id)].auction_data.auction_last_bid := some(ubfa_bid);
+  }
+}
+
 entry remove_auction(ra_asset : address, ra_asset_id : nat) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   effect {
@@ -137,6 +146,6 @@ view auction_exists(ae_asset : address, ae_asset_id : nat) : bool {
   return auctions.contains((ae_asset, ae_asset_id))
 }
 
-view get_auction(ae_asset : address, ae_asset_id : nat) : auction_record {
-  return auctions[(ae_asset, ae_asset_id)].auction_data
+view get_auction(ga_asset : address, ga_asset_id : nat) : auction_record {
+  return auctions[(ga_asset, ga_asset_id)].auction_data
 }
