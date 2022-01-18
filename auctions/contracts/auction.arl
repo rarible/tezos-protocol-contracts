@@ -21,6 +21,7 @@ constant AUCTION_BID_ALREADY_EXISTS: string = "AUCTION_BID_ALREADY_EXISTS"
 constant AUCTION_BID_AMOUNT_MISMATCH: string = "AUCTION_BID_AMOUNT_MISMATCH"
 constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
 constant ROYALTIES_TOO_HIGH: string = "ROYALTIES_TOO_HIGH"
+constant SUM_PAYOUTS_NOT_100_PERCENT: string = "SUM_PAYOUTS_NOT_100_PERCENT"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -481,6 +482,11 @@ entry do_transfers_with_fees(
     var total_after_auction_origin_fees = rest_auction_origin_fees[0];
     var auction_origin_fees_operations = rest_auction_origin_fees[2];
     //Finally process the auction payouts, and the matching operations
+    var payouts_operations = process_payouts(
+      dtwf_sell_asset,
+      dtwf_amount,
+      dtwf_from,
+      dtwf_auction_fees.payouts);
 }
 
 function bp(bp_value : nat, bp_op_value : nat) : nat {
@@ -564,11 +570,12 @@ function process_payouts(
     pr_amount: nat,
     pr_from: address,
     pr_payouts: list<part>
-): nat * list<process_transfer_param> {
+): list<process_transfer_param> {
     var sum_bps: nat = 0;
     var total_rest: nat = pr_amount;
+    var transfers: list<process_transfer_param> = [];
     for payout in pr_payouts do
-      var current_amount = bp(pramount, payout.part_value);
+      var current_amount = bp(pr_amount, payout.part_value);
       sum_bps += payout.part_value;
       if(current_amount > 0) then (
         total_rest -= current_amount;
@@ -577,12 +584,26 @@ function process_payouts(
           tp_asset_contract = pr_sell_asset.asset_contract;
           tp_asset_id = pr_sell_asset.asset_id;
           tp_amount = current_amount;
-          tp_origin = pf_from;
+          tp_origin = pr_from;
           tp_destination = payout.part_account
         });
       );
-
     done;
+
+    var last_payout = pr_payouts.nth(abs(length(pr_payouts) - 1));
+    sum_bps += last_payout.part_value;
+    dorequire(sum_bps = 10_000, SUM_PAYOUTS_NOT_100_PERCENT);
+    if(total_rest > 0) then (
+       transfers.prepend({
+          tp_asset_class = pr_sell_asset.asset_type.asset_class;
+          tp_asset_contract = pr_sell_asset.asset_contract;
+          tp_asset_id = pr_sell_asset.asset_id;
+          tp_amount = total_rest;
+          tp_origin = pr_from;
+          tp_destination = last_payout.part_account
+        });
+    );
+    return transfers
 }
 
 entry process_transfer(mt_asset_class: enum_asset_class, mt_asset_contract: option<address>, mt_asset_id: option<nat>, mt_amount: nat, mt_origin: address, mt_destination: address){
