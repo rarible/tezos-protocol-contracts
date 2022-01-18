@@ -1,6 +1,6 @@
 archetype auction(
     owner: address,
-    fee_receiver: address,
+    default_fee_receiver: address,
     protocol_fee: nat,
     royalties_provider: address
 )
@@ -13,11 +13,14 @@ constant MISSING_AUCTION_CUSTODY_CONTRACT: string = "MISSING_AUCTION_CUSTODY_CON
 constant AUCTION_ALREADY_EXISTS: string = "AUCTION_ALREADY_EXISTS"
 constant AUCTION_NOT_IN_PROGRESS: string = "AUCTION_NOT_IN_PROGRESS"
 constant AUCTION_FINISHED: string = "AUCTION_FINISHED"
+constant AUCTION_NOT_FINISHED: string = "AUCTION_NOT_FINISHED"
 constant AUCTION_START_DATE_IN_THE_PAST: string = "AUCTION_START_DATE_IN_THE_PAST"
 constant MISSING_AUCTION: string = "MISSING_AUCTION"
 constant AUCTION_BID_TOO_LOW: string = "AUCTION_BID_TOO_LOW"
 constant AUCTION_BID_ALREADY_EXISTS: string = "AUCTION_BID_ALREADY_EXISTS"
 constant AUCTION_BID_AMOUNT_MISMATCH: string = "AUCTION_BID_AMOUNT_MISMATCH"
+constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
+constant ROYALTIES_TOO_HIGH: string = "ROYALTIES_TOO_HIGH"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -46,6 +49,19 @@ entry claim_ownership() {
 variable extension_duration : duration = 15m
 variable max_duration : duration = 1000d
 variable auction_storage: option<address> = none
+variable fee_receivers   : map<address, address> = []
+
+function get_fee_receiver(gfr_token : option<address>) : address {
+  return
+    match gfr_token with
+    | some (v) ->
+        match fee_receivers.getopt(v) with
+        | some (wallet) -> wallet
+        | none -> default_fee_receiver
+        end
+    | none -> default_fee_receiver
+    end
+}
 
 //----------------------------------------------------------------------------
 // Admin
@@ -78,10 +94,10 @@ entry set_protocol_fee(spf : nat) {
   }
 }
 
-entry set_fee_receiver(sfr : address) {
+entry set_default_fee_receiver(sfr : address) {
   called by owner
   effect {
-    fee_receiver := sfr;
+    default_fee_receiver := sfr;
   }
 }
 
@@ -92,9 +108,20 @@ entry set_royalties_provider(srp : address) {
   }
 }
 
+entry set_fee_receiver(token : address, wallet : address) {
+  called by owner
+  effect {
+    fee_receivers.put(token, wallet)
+  }
+}
 //----------------------------------------------------------------------------
 // Types
 //----------------------------------------------------------------------------
+
+enum transfer_direction =
+| TO_MAKER
+| TO_TAKER
+| Unknown
 
 enum fa2_class =
 | Fungible
@@ -124,9 +151,23 @@ record transfer_param {
   token_amount: nat
 } as ((%to, (token_id, amount)))
 
+record process_transfer_param {
+  tp_asset_class: enum_asset_class;
+  tp_asset_contract: option<address>;
+  tp_asset_id: option<nat>;
+  tp_amount: nat;
+  tp_origin: address;
+  tp_destination: address;
+}
+
 record part {
   part_account : address;
   part_value   : nat;
+}
+
+record fees {
+  origin_fees : list<part>;
+  payouts: list<part>;
 }
 
 record bid {
@@ -241,7 +282,7 @@ entry start_auction(
 }
 
 entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
-  require{
+    require {
         r_pb0: pb_bid.bid_amount > 0;
         r_pb1: pb_bid.bid_bidder = caller;
         r_pb2: issome(auction_storage);
@@ -273,7 +314,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
           transfer 0tz to pb_auction_storage call transfer_custody_tez<address * tez>((last_bid.bid_bidder, (last_bid.bid_amount*1mtz)));
         ) else (
           //Send back last user funds
-          transfer 0tz to selfaddress call manage_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
+          transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
             auction.auction_buy_asset.asset_type.asset_class,
             auction.auction_buy_asset.asset_contract,
             auction.auction_buy_asset.asset_id,
@@ -290,7 +331,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
         transfer transferred to pb_auction_storage;
       ) else (
         //Send new funds to custody
-        transfer 0tz to selfaddress call manage_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
+        transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
           auction.auction_buy_asset.asset_type.asset_class,
           auction.auction_buy_asset.asset_contract,
           auction.auction_buy_asset.asset_id,
@@ -306,6 +347,23 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
     }
 }
 
+entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
+    require {
+        r_fa0: issome(auction_storage);
+    }
+    effect {
+      var auction = require_some(get_auction_record(fa_asset_contract, fa_asset_id), MISSING_AUCTION);
+      var fa_auction_storage = opt_get(auction_storage);
+      var is_xtz = (auction.auction_buy_asset.asset_type.asset_class = XTZ);
+
+      dorequire(auction.auction_start_time > now, AUCTION_NOT_IN_PROGRESS);
+      dorequire(auction.auction_end_time < now, AUCTION_NOT_FINISHED);
+      dorequire(auction.auction_last_bid <> none<bid>, NO_BID_FOR_AUCTION);
+
+
+
+    }
+}
 function auction_exists(ae_asset_contract: address, ae_asset_id: nat) : bool {
     return match callview<bool>(
         require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT),
@@ -336,7 +394,198 @@ function get_auction_record(gar_asset_contract: address, gar_asset_id: nat) : op
     end
 }
 
-entry manage_transfer(mt_asset_class: enum_asset_class, mt_asset_contract: option<address>, mt_asset_id: option<nat>, mt_amount: nat, mt_origin: address, mt_destination: address){
+function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part> {
+    return match callview<list<part>>(
+        royalties_provider,
+        "get_auction",
+        (
+            gr_asset_contract,
+            gr_asset_id
+        )
+    )
+    with
+        | some(v) -> v
+        | none -> emptylist<part>()
+    end
+}
+
+entry manage_transfers_for_auction(mtfa_auction: auction_record) {
+  called by selfaddress
+  require {
+    r_mtfa0: issome(auction_storage);
+    r_mtfa1: issome(mtfa_auction.auction_last_bid);
+  }
+  effect{
+    var is_xtz = (mtfa_auction.auction_buy_asset.asset_type.asset_class = XTZ);
+    var last_bid = opt_get(mtfa_auction.auction_last_bid);
+
+    if(length(last_bid.bid_payouts) = 0) then (
+      last_bid.bid_payouts := [{
+        part_account = last_bid.bid_bidder;
+        part_value = 10000
+      }];
+    );
+
+    if(length(mtfa_auction.auction_payouts) = 0) then (
+      mtfa_auction.auction_payouts := [{
+        part_account = mtfa_auction.auction_seller;
+        part_value = 10000
+      }];
+    );
+
+
+
+  }
+}
+
+entry do_transfers_with_fees(
+  dtwf_amount: nat,
+  dtwf_from: address,
+  dtwf_protocol_fees: nat,
+  dtwf_bid_fees: fees,
+  dtwf_auction_fees: fees,
+  dtwf_buy_asset: %asset,
+  dtwf_sell_asset: %asset,
+  dtwf_transfer_direction: transfer_direction){
+    //First process the total amount of the order, and the protocol fees
+    var total = process_total_amount(dtwf_amount, dtwf_protocol_fees, dtwf_bid_fees.origin_fees);
+    var rest_fee = process_protocol_fees(total, dtwf_amount, dtwf_protocol_fees * 2);
+    var protocol_fees = rest_fee[1];
+    var total_after_protocol_fees = rest_fee[0];
+    //Then process the amount of royalties, and the matching operations
+    var rest_royalties = process_royalties(
+      dtwf_buy_asset,
+      dtwf_sell_asset,
+      total_after_protocol_fees,
+      dtwf_amount,
+      dtwf_from
+    );
+    var total_after_royalties = rest_royalties[0];
+    var royalty_operations = rest_royalties[1];
+    //Then process the bid origin fees, and the matching operations
+    var rest_bid_origin_fees = process_fees(
+      dtwf_buy_asset,
+      total_after_royalties,
+      dtwf_amount,
+      dtwf_bid_fees.origin_fees,
+      dtwf_from);
+    var total_after_bid_origin_fees = rest_bid_origin_fees[0];
+    var bid_origin_fees_operations = rest_bid_origin_fees[2];
+    //Then process the auction origin fees, and the matching operations
+    var rest_auction_origin_fees = process_fees(
+      dtwf_buy_asset,
+      total_after_royalties,
+      dtwf_amount,
+      dtwf_auction_fees.origin_fees,
+      dtwf_from);
+    var total_after_auction_origin_fees = rest_auction_origin_fees[0];
+    var auction_origin_fees_operations = rest_auction_origin_fees[2];
+    //Finally process the auction payouts, and the matching operations
+}
+
+function bp(bp_value : nat, bp_op_value : nat) : nat {
+  return abs(floor(bp_value * bp_op_value / 10000))
+}
+
+function sub_fee(sf_value : nat, sf_fee : nat) : nat * nat {
+  return (if sf_value > sf_fee then (sub_nat (sf_value, sf_fee), sf_fee) else (0, sf_value))
+}
+
+function sub_fee_in_bp(sbib_value : nat, sbib_total : nat, sbib_fee_in_bp : nat) : nat * nat {
+  return sub_fee(sbib_value, bp(sbib_total, sbib_fee_in_bp))
+}
+
+function process_total_amount(cta_amount: nat, cta_fees: nat, cta_order_origin_fees: list<part>) : nat {
+ var total = cta_amount + bp(cta_amount, cta_fees);
+  for item in cta_order_origin_fees do
+    total += bp(cta_amount, item.part_value)
+  done;
+  return total
+}
+
+function process_protocol_fees(
+    tpf_total_amount : nat,
+    tpf_amount : nat,
+    tpf_protocol_fees : nat,
+): nat * nat {
+    return sub_fee_in_bp(tpf_total_amount, tpf_amount, tpf_protocol_fees * 2)
+}
+
+function process_fees(
+    pf_asset: %asset,
+    pf_rest: nat,
+    pf_amount: nat,
+    pf_fees: list<part>,
+    pf_from: address
+) : nat * nat * list<process_transfer_param> {
+  var total_fees: nat = 0;
+  var post_process_rest: nat = pf_rest;
+  var transfers: list<process_transfer_param> = [];
+  for fee in pf_fees do
+    total_fees += fee.part_value;
+    var rest_fee = sub_fee_in_bp(post_process_rest, pf_amount, fee.part_value);
+    var processed_rest = rest_fee[0];
+    var processed_fee = rest_fee[1];
+    post_process_rest := processed_rest;
+
+    if (processed_fee > 0) then (
+      transfers.prepend({
+        tp_asset_class = pf_asset.asset_type.asset_class;
+        tp_asset_contract = pf_asset.asset_contract;
+        tp_asset_id = pf_asset.asset_id;
+        tp_amount = processed_fee;
+        tp_origin = pf_from;
+        tp_destination = fee.part_account
+      }))
+  done;
+  return ((post_process_rest, total_fees, transfers))
+}
+
+function process_royalties(
+    pr_buy_asset: %asset,
+    pr_sell_asset: %asset,
+    pr_rest: nat,
+    pr_amount: nat,
+    pr_from: address
+): nat * list<process_transfer_param> {
+    dorequire(issome(pr_sell_asset.asset_contract), MISSING_ASSET_CONTRACT);
+    dorequire(issome(pr_sell_asset.asset_id), MISSING_ASSET_ID);
+    var royalties_fees: list<part> = get_royalties(opt_get(pr_sell_asset.asset_contract), opt_get(pr_sell_asset.asset_id));
+    var rest_royalties = process_fees(pr_buy_asset, pr_rest, pr_amount, royalties_fees, pr_from);
+    var rest = rest_royalties[0];
+    var royalties = rest_royalties[1];
+    var transactions = rest_royalties[2];
+    dorequire(royalties <= 5000, ROYALTIES_TOO_HIGH);
+    return ((rest, transactions))
+}
+
+function process_payouts(
+    pr_sell_asset: %asset,
+    pr_amount: nat,
+    pr_from: address,
+    pr_payouts: list<part>
+): nat * list<process_transfer_param> {
+    var sum_bps: nat = 0;
+    var total_rest: nat = pr_amount;
+    for payout in pr_payouts do
+      var current_amount = bp(pramount, payout.part_value);
+      sum_bps += payout.part_value;
+      if(current_amount > 0) then (
+        total_rest -= current_amount;
+        transfers.prepend({
+          tp_asset_class = pr_sell_asset.asset_type.asset_class;
+          tp_asset_contract = pr_sell_asset.asset_contract;
+          tp_asset_id = pr_sell_asset.asset_id;
+          tp_amount = current_amount;
+          tp_origin = pf_from;
+          tp_destination = payout.part_account
+        });
+      );
+
+    done;
+}
+
+entry process_transfer(mt_asset_class: enum_asset_class, mt_asset_contract: option<address>, mt_asset_id: option<nat>, mt_amount: nat, mt_origin: address, mt_destination: address){
   called by selfaddress
   effect {
     match mt_asset_class with
@@ -363,6 +612,7 @@ entry manage_transfer(mt_asset_class: enum_asset_class, mt_asset_contract: optio
       dorequire(issome(mt_asset_contract), MISSING_ASSET_CONTRACT);
       transfer 0tz to opt_get(mt_asset_contract) call %transfer<address * address * nat>((mt_origin, mt_destination, mt_amount))
       )
+    | XTZ -> (transfer (1mtz * mt_amount) to mt_destination)
     | _ -> ()
     end;
   }
