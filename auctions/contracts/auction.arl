@@ -153,12 +153,12 @@ record transfer_param {
 } as ((%to, (token_id, amount)))
 
 record process_transfer_param {
-  tp_asset_class: enum_asset_class;
-  tp_asset_contract: option<address>;
-  tp_asset_id: option<nat>;
-  tp_amount: nat;
-  tp_origin: address;
-  tp_destination: address;
+  ptp_asset_class: enum_asset_class;
+  ptp_asset_contract: option<address>;
+  ptp_asset_id: option<nat>;
+  ptp_amount: nat;
+  ptp_origin: address;
+  ptp_destination: address;
 }
 
 record part {
@@ -487,6 +487,33 @@ entry do_transfers_with_fees(
       dtwf_amount,
       dtwf_from,
       dtwf_auction_fees.payouts);
+
+    //Now that we have processed all the fees, we need to process the operations
+    //1st: transfer protocol fees
+    transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+        ptp_asset_class = dtwf_buy_asset.asset_type.asset_class;
+        ptp_asset_contract = dtwf_buy_asset.asset_contract;
+        ptp_asset_id = dtwf_buy_asset.asset_id;
+        ptp_amount = protocol_fees;
+        ptp_origin = dtwf_from;
+        ptp_destination = get_fee_receiver(dtwf_buy_asset.asset_contract)
+      });
+    //2nd: transfer royalties
+    for royalty_operation in royalty_operations do
+          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(royalty_operation)
+    done;
+    //3rd: bid origin fees
+    for bid_origin_fees_operation in bid_origin_fees_operations do
+          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(bid_origin_fees_operation)
+    done;
+    //4th: auction origin fees
+    for auction_origin_fees_operation in auction_origin_fees_operations do
+          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(auction_origin_fees_operation)
+    done;
+    //5th: payouts
+    for payouts_operation in payouts_operations do
+          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
+    done;
 }
 
 function bp(bp_value : nat, bp_op_value : nat) : nat {
@@ -536,12 +563,12 @@ function process_fees(
 
     if (processed_fee > 0) then (
       transfers.prepend({
-        tp_asset_class = pf_asset.asset_type.asset_class;
-        tp_asset_contract = pf_asset.asset_contract;
-        tp_asset_id = pf_asset.asset_id;
-        tp_amount = processed_fee;
-        tp_origin = pf_from;
-        tp_destination = fee.part_account
+        ptp_asset_class = pf_asset.asset_type.asset_class;
+        ptp_asset_contract = pf_asset.asset_contract;
+        ptp_asset_id = pf_asset.asset_id;
+        ptp_amount = processed_fee;
+        ptp_origin = pf_from;
+        ptp_destination = fee.part_account
       }))
   done;
   return ((post_process_rest, total_fees, transfers))
@@ -580,12 +607,12 @@ function process_payouts(
       if(current_amount > 0) then (
         total_rest -= current_amount;
         transfers.prepend({
-          tp_asset_class = pr_sell_asset.asset_type.asset_class;
-          tp_asset_contract = pr_sell_asset.asset_contract;
-          tp_asset_id = pr_sell_asset.asset_id;
-          tp_amount = current_amount;
-          tp_origin = pr_from;
-          tp_destination = payout.part_account
+          ptp_asset_class = pr_sell_asset.asset_type.asset_class;
+          ptp_asset_contract = pr_sell_asset.asset_contract;
+          ptp_asset_id = pr_sell_asset.asset_id;
+          ptp_amount = current_amount;
+          ptp_origin = pr_from;
+          ptp_destination = payout.part_account
         });
       );
     done;
@@ -595,34 +622,34 @@ function process_payouts(
     dorequire(sum_bps = 10_000, SUM_PAYOUTS_NOT_100_PERCENT);
     if(total_rest > 0) then (
        transfers.prepend({
-          tp_asset_class = pr_sell_asset.asset_type.asset_class;
-          tp_asset_contract = pr_sell_asset.asset_contract;
-          tp_asset_id = pr_sell_asset.asset_id;
-          tp_amount = total_rest;
-          tp_origin = pr_from;
-          tp_destination = last_payout.part_account
+          ptp_asset_class = pr_sell_asset.asset_type.asset_class;
+          ptp_asset_contract = pr_sell_asset.asset_contract;
+          ptp_asset_id = pr_sell_asset.asset_id;
+          ptp_amount = total_rest;
+          ptp_origin = pr_from;
+          ptp_destination = last_payout.part_account
         });
     );
     return transfers
 }
 
-entry process_transfer(mt_asset_class: enum_asset_class, mt_asset_contract: option<address>, mt_asset_id: option<nat>, mt_amount: nat, mt_origin: address, mt_destination: address){
+entry process_transfer(pt_transfer: process_transfer_param){
   called by selfaddress
   effect {
-    match mt_asset_class with
+    match pt_transfer.ptp_asset_class with
     | FA_2(fa2t)  -> (
-      dorequire(issome(mt_asset_contract), MISSING_ASSET_CONTRACT);
-      dorequire(issome(mt_asset_id), MISSING_ASSET_CONTRACT);
+      dorequire(issome(pt_transfer.ptp_asset_contract), MISSING_ASSET_CONTRACT);
+      dorequire(issome(pt_transfer.ptp_asset_id), MISSING_ASSET_CONTRACT);
 
-      transfer 0tz to opt_get(mt_asset_contract) call %transfer<list<address * list<transfer_param>>>(
+      transfer 0tz to opt_get(pt_transfer.ptp_asset_contract) call %transfer<list<address * list<transfer_param>>>(
             [
                 (
-                    mt_origin,
+                    pt_transfer.ptp_origin,
                     [
                         {
-                            destination_address = mt_destination;
-                            token_id = opt_get(mt_asset_id);
-                            token_amount = mt_amount
+                            destination_address = pt_transfer.ptp_destination;
+                            token_id = opt_get(pt_transfer.ptp_asset_id);
+                            token_amount = pt_transfer.ptp_amount
                         }
                     ]
                 )
@@ -630,10 +657,10 @@ entry process_transfer(mt_asset_class: enum_asset_class, mt_asset_contract: opti
         )
     )
     | FA_1_2 -> (
-      dorequire(issome(mt_asset_contract), MISSING_ASSET_CONTRACT);
-      transfer 0tz to opt_get(mt_asset_contract) call %transfer<address * address * nat>((mt_origin, mt_destination, mt_amount))
+      dorequire(issome(pt_transfer.ptp_asset_contract), MISSING_ASSET_CONTRACT);
+      transfer 0tz to opt_get(pt_transfer.ptp_asset_contract) call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
       )
-    | XTZ -> (transfer (1mtz * mt_amount) to mt_destination)
+    | XTZ -> (transfer (1mtz * pt_transfer.ptp_amount) to pt_transfer.ptp_destination)
     | _ -> ()
     end;
   }
