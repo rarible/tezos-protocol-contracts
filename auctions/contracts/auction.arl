@@ -12,6 +12,7 @@ constant MISSING_AUCTION_STORAGE_CONTRACT: string = "MISSING_AUCTION_STORAGE_CON
 constant MISSING_AUCTION_CUSTODY_CONTRACT: string = "MISSING_AUCTION_CUSTODY_CONTRACT"
 constant AUCTION_ALREADY_EXISTS: string = "AUCTION_ALREADY_EXISTS"
 constant AUCTION_NOT_IN_PROGRESS: string = "AUCTION_NOT_IN_PROGRESS"
+constant AUCTION_NOT_FINISHABLE: string = "AUCTION_NOT_FINISHABLE"
 constant AUCTION_FINISHED: string = "AUCTION_FINISHED"
 constant AUCTION_NOT_FINISHED: string = "AUCTION_NOT_FINISHED"
 constant AUCTION_START_DATE_IN_THE_PAST: string = "AUCTION_START_DATE_IN_THE_PAST"
@@ -295,8 +296,8 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
       var previous_bid = auction.auction_last_bid;
       var is_buyout = auction.auction_buy_out_price > 0 and auction.auction_buy_out_price <= pb_bid.bid_amount;
       var destination = pb_auction_storage;
-      
-      dorequire(auction.auction_start_time < now, (AUCTION_NOT_IN_PROGRESS, auction.auction_start_time));
+
+      dorequire(auction.auction_start_time < now, (AUCTION_NOT_IN_PROGRESS, (auction.auction_start_time, now)));
       dorequire(auction.auction_end_time > now, AUCTION_FINISHED);
 
       if(isnone(previous_bid)) then (
@@ -409,8 +410,11 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
       var auction = require_some(get_auction_record(fa_asset_contract, fa_asset_id), MISSING_AUCTION);
       var fa_auction_storage = opt_get(auction_storage);
 
-      dorequire(auction.auction_start_time > now, AUCTION_NOT_IN_PROGRESS);
-      dorequire(auction.auction_end_time < now, AUCTION_NOT_FINISHED);
+      dorequire(auction.auction_start_time < now < auction.auction_end_time, (
+        AUCTION_NOT_FINISHABLE,
+        (auction.auction_start_time, now, auction.auction_end_time)
+      ));
+
       dorequire(issome(auction.auction_last_bid), NO_BID_FOR_AUCTION);
 
       var last_bid = opt_get(auction.auction_last_bid);

@@ -622,7 +622,7 @@ describe('Start Auction tests', async () => {
         if (isMockup()){
             await setMockupNow((Date.now() / 1000));
         }
-        const start_time = Date.now();
+        const start_time = Math.floor(Date.now() / 1000 + 1);
         const duration = 10000;
         const storage = await auction_storage.getStorage();
         const minimal_price = 10;
@@ -715,9 +715,9 @@ describe('Start Auction tests', async () => {
             }, {
                 "string": "${alice.pkh}"
             }, {
-                "int": "${start_time}"
+                "string": "${new Date(start_time* 1000).toISOString().split('.')[0]+"Z"}"
             }, {
-                "int": "${start_time + duration}"
+                "string": "${new Date((start_time + duration)*1000).toISOString().split('.')[0]+"Z"}"
             }, {
                 "int": "${minimal_price}"
             }, {
