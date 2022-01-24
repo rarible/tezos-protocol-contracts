@@ -182,6 +182,27 @@ entry update_bid_for_auction(ubfa_asset_contract: address, ubfa_asset_id: nat, u
   }
 }
 
+entry update_auction(auction: auction_record) {
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  require {
+      ua_0: issome(auction_contract);
+      ua_1: issome(auction.auction_sell_asset.asset_contract);
+      ua_2: issome(auction.auction_sell_asset.asset_id)
+  }
+  effect {
+    //TODO: add checks for fields that should not be updated
+    auctions.addupdate(
+      (
+        opt_get(auction.auction_sell_asset.asset_contract),
+        opt_get(auction.auction_sell_asset.asset_id)
+      ),
+      {
+        auction_data = auction
+      }
+    );
+  }
+}
+
 entry extend_auction_duration(ead_asset_contract: address, ead_asset_id: nat, ead_duration: duration) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   effect {

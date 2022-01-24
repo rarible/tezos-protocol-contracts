@@ -8,7 +8,8 @@ const {
     setMockupNow,
     getEndpoint,
     isMockup,
-    setEndpoint
+    setEndpoint,
+    setNow
 } = require('@completium/completium-cli');
 const { errors, mkTransferPermit, mkApproveForAllSingle, mkDeleteApproveForAllSingle, mkTransferGaslessArgs, mkAuction, FA_2_FT, mkPart, mkFA12Auction, mkFungibleFA2Auction, mkXTZAuction, FA_2_NFT, mkBid } = require('./utils');
 const assert = require('assert');
@@ -18,7 +19,7 @@ require('mocha/package.json');
 
 setQuiet('true');
 
-const mockup_mode = false;
+const mockup_mode = true;
 
 // contracts
 let auction_storage;
@@ -114,7 +115,7 @@ describe('Contract deployments', async () => {
             {
                 parameters: {
                     owner: alice.pkh,
-                    fee_receiver: carl.pkh,
+                    default_fee_receiver: carl.pkh,
                     protocol_fee: 0,
                     royalties_provider: nft.address
                 },
@@ -261,7 +262,7 @@ describe('Auction contract setter tests', async () => {
     describe('Fee receiver setter tests', async () => {
         it('Set fee receiver as non admin should fail', async () => {
             await expectToThrow(async () => {
-                await auction.set_fee_receiver({
+                await auction.set_default_fee_receiver({
                     arg: {
                         sfr: daniel.pkh
                     },
@@ -273,15 +274,15 @@ describe('Auction contract setter tests', async () => {
         it('Set fee receiver as admin should succeed', async () => {
             const receiver = daniel.pkh;
             const storage = await auction.getStorage();
-            assert(storage.fee_receiver == carl.pkh);
-            await auction.set_fee_receiver({
+            assert(storage.default_fee_receiver == carl.pkh);
+            await auction.set_default_fee_receiver({
                 arg: {
                     sfr: receiver
                 },
                 as: alice.pkh
             });
             const post_test_storage = await auction.getStorage();
-            assert(post_test_storage.fee_receiver == receiver);
+            assert(post_test_storage.default_fee_receiver == receiver);
         });
     });
 
@@ -618,8 +619,11 @@ describe('Start Auction tests', async () => {
     // });
 
     it('Starting auction buying with Fungible FA2 should succeed', async () => {
+        if (isMockup()){
+            await setMockupNow((Date.now() / 1000));
+        }
         const start_time = Date.now();
-        const duration = 1000000;
+        const duration = 10000;
         const storage = await auction_storage.getStorage();
         const minimal_price = 10;
         const buyout_price = 100;
@@ -769,6 +773,9 @@ describe('Start Auction tests', async () => {
 
 describe('Put bid tests', async () => {
     it('Put bid should succeed', async () => {
+        if (isMockup()){
+            await setMockupNow((Date.now() / 1000) + 9000);
+        }
         await auction.put_bid({
             argJsonMichelson: mkBid(
                 nft.address,
@@ -778,6 +785,18 @@ describe('Put bid tests', async () => {
                 [mkPart(alice.pkh, "100")],
                 [mkPart(alice.pkh, "100")]
             ),
+            as: bob.pkh,
+        });
+    });
+});
+
+describe('Finish auction tests', async () => {
+    it('Finish auction succeed', async () => {
+        if (isMockup()){
+            await setMockupNow((Date.now() / 1000) + 1000);
+        }
+        await auction.finish_auction({
+            argMichelson: `(Pair "${nft.address}" ${nft_token_id})`,
             as: bob.pkh,
         });
     });

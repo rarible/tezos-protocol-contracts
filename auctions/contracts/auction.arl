@@ -293,13 +293,11 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
       var pb_auction_storage = opt_get(auction_storage);
       var is_xtz = (auction.auction_buy_asset.asset_type.asset_class = XTZ);
       var previous_bid = auction.auction_last_bid;
-
-      dorequire(auction.auction_start_time > now, AUCTION_NOT_IN_PROGRESS);
+      var is_buyout = auction.auction_buy_out_price > 0 and auction.auction_buy_out_price <= pb_bid.bid_amount;
+      var destination = pb_auction_storage;
+      
+      dorequire(auction.auction_start_time < now, (AUCTION_NOT_IN_PROGRESS, auction.auction_start_time));
       dorequire(auction.auction_end_time > now, AUCTION_FINISHED);
-
-      if (auction.auction_buy_out_price > 0 and auction.auction_buy_out_price < pb_bid.bid_amount) then (
-        transfer 0tz to pb_auction_storage call update_bid_for_auction<address * nat * bid>((pb_asset_contract, pb_asset_id, pb_bid))
-      );
 
       if(isnone(previous_bid)) then (
         dorequire(auction.auction_minimal_price <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
@@ -323,30 +321,85 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
             pb_auction_storage,
             last_bid.bid_bidder
           ));
-
         );
       );
 
-      if(is_xtz) then (
-        //Send new funds to custody
-        transfer transferred to pb_auction_storage;
+      if(is_buyout) then (
+        destination := auction.auction_seller;
+        //do transfers and manage fees
+        transfer 0tz to selfaddress call buyout_auction<address * nat * bid>((pb_asset_contract, pb_asset_id, pb_bid))
       ) else (
-        //Send new funds to custody
-        transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
-          auction.auction_buy_asset.asset_type.asset_class,
-          auction.auction_buy_asset.asset_contract,
-          auction.auction_buy_asset.asset_id,
-          pb_bid.bid_amount,
-          pb_bid.bid_bidder,
-          pb_auction_storage
-        ));
+        if(is_xtz) then (
+          //Send new funds to custody
+          transfer transferred to pb_auction_storage;
+        ) else (
+          //Send new funds to custody
+          transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
+            auction.auction_buy_asset.asset_type.asset_class,
+            auction.auction_buy_asset.asset_contract,
+            auction.auction_buy_asset.asset_id,
+            pb_bid.bid_amount,
+            pb_bid.bid_bidder,
+            destination
+          ));
+        );
+
+        if(auction.auction_end_time - now < extension_duration) then (
+          auction.auction_end_time := now + extension_duration;
+        );
+        auction.auction_last_bid := some(pb_bid);
+        transfer 0tz to pb_auction_storage call update_auction<auction_record>(auction)
       );
 
-      if(auction.auction_end_time - now < extension_duration) then (
-        transfer 0tz to pb_auction_storage call extend_auction_duration<address * nat * duration>((pb_asset_contract, pb_asset_id, extension_duration));
-      );
+
     }
 }
+
+
+entry buyout_auction(ba_asset_contract: address, ba_asset_id: nat, ba_bid: bid) {
+    called by selfaddress
+    require {
+        r_ba0: issome(auction_storage);
+    }
+    effect {
+      var auction = require_some(get_auction_record(ba_asset_contract, ba_asset_id), MISSING_AUCTION);
+      var ba_auction_storage = opt_get(auction_storage);
+
+      dorequire(auction.auction_start_time > now, AUCTION_NOT_IN_PROGRESS);
+      dorequire(auction.auction_end_time < now, AUCTION_NOT_FINISHED);
+      dorequire(issome(auction.auction_last_bid), NO_BID_FOR_AUCTION);
+
+      if(length(ba_bid.bid_payouts) = 0) then (
+         ba_bid.bid_payouts := [{
+            part_account = ba_bid.bid_bidder;
+            part_value = 10000
+         }];
+      );
+
+      if(length(auction.auction_payouts) = 0) then (
+         auction.auction_payouts := [{
+            part_account = auction.auction_seller;
+            part_value = 10000
+         }];
+      );
+
+      transfer 0tz to selfaddress call manage_transfers<nat * address * address * address * nat * fees * fees * %asset * %asset>(
+         (
+            ba_bid.bid_amount,
+            ba_auction_storage,
+            auction.auction_seller,
+            ba_bid.bid_bidder,
+            protocol_fee,
+            { origin_fees = ba_bid.bid_origin_fees; payouts = ba_bid.bid_payouts},
+            { origin_fees = auction.auction_origin_fees; payouts = auction.auction_payouts},
+            auction.auction_buy_asset,
+            auction.auction_sell_asset
+         )
+      );
+      transfer 0tz to ba_auction_storage call remove_auction<address * nat>((ba_asset_contract, ba_asset_id))
+    }
+}
+
 
 entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
     require {
@@ -358,7 +411,7 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
 
       dorequire(auction.auction_start_time > now, AUCTION_NOT_IN_PROGRESS);
       dorequire(auction.auction_end_time < now, AUCTION_NOT_FINISHED);
-      dorequire(auction.auction_last_bid <> none<bid>, NO_BID_FOR_AUCTION);
+      dorequire(issome(auction.auction_last_bid), NO_BID_FOR_AUCTION);
 
       var last_bid = opt_get(auction.auction_last_bid);
 
@@ -376,10 +429,12 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
          }];
       );
 
-      transfer 0tz to selfaddress call manage_transfers<nat * address * nat * fees * fees * %asset * %asset>(
+      transfer 0tz to selfaddress call manage_transfers<nat * address * address * address * nat * fees * fees * %asset * %asset>(
          (
             last_bid.bid_amount,
-            selfaddress,
+            fa_auction_storage,
+            auction.auction_seller,
+            last_bid.bid_bidder,
             protocol_fee,
             { origin_fees = last_bid.bid_origin_fees; payouts = last_bid.bid_payouts},
             { origin_fees = auction.auction_origin_fees; payouts = auction.auction_payouts},
@@ -387,6 +442,8 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
             auction.auction_sell_asset
          )
       );
+      transfer 0tz to fa_auction_storage call remove_auction<address * nat>((fa_asset_contract, fa_asset_id))
+
     }
 }
 function auction_exists(ae_asset_contract: address, ae_asset_id: nat) : bool {
@@ -438,6 +495,8 @@ entry manage_transfers(
   dtwf_amount: nat,
   dtwf_sell_amount: nat,
   dtwf_from: address,
+  dtwf_seller: address,
+  dtwf_buyer: address,
   dtwf_protocol_fees: nat,
   dtwf_bid_fees: fees,
   dtwf_auction_fees: fees,
@@ -476,13 +535,17 @@ entry manage_transfers(
       dtwf_from);
     var total_after_auction_origin_fees = rest_auction_origin_fees[0];
     var auction_origin_fees_operations = rest_auction_origin_fees[2];
-    //Finally process the auction payouts, and the matching operations
-    var payouts_operations = process_payouts(
+    //Finally process the auction and bid payouts, and the matching operations
+    var auction_payouts_operations = process_payouts(
       dtwf_buy_asset,
       dtwf_amount,
       dtwf_from,
       dtwf_auction_fees.payouts);
-
+    var bid_payouts_operations = process_payouts(
+      dtwf_buy_asset,
+      dtwf_amount,
+      dtwf_from,
+      dtwf_bid_fees.payouts);
     //Now that we have processed all the fees, we need to process the operations
     //1st: transfer protocol fees
     transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
@@ -505,10 +568,24 @@ entry manage_transfers(
     for auction_origin_fees_operation in auction_origin_fees_operations do
           transfer 0tz to selfaddress call process_transfer<process_transfer_param>(auction_origin_fees_operation)
     done;
-    //5th: payouts
-    for payouts_operation in payouts_operations do
+    //5th: auction payouts
+    for payouts_operation in auction_payouts_operations do
           transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
     done;
+    //6th: bid payouts
+    for payouts_operation in bid_payouts_operations do
+          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
+    done;
+
+    //Finally, transfer sell asset to buyer
+    transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+        ptp_asset_class = dtwf_sell_asset.asset_type.asset_class;
+        ptp_asset_contract = dtwf_sell_asset.asset_contract;
+        ptp_asset_id = dtwf_sell_asset.asset_id;
+        ptp_amount = dtwf_sell_amount;
+        ptp_origin = dtwf_seller;
+        ptp_destination = dtwf_buyer
+      })
 }
 
 function bp(bp_value : nat, bp_op_value : nat) : nat {
