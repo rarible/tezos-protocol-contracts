@@ -295,7 +295,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
       var is_xtz = (auction.auction_buy_asset.asset_type.asset_class = XTZ);
       var previous_bid = auction.auction_last_bid;
       var is_buyout = auction.auction_buy_out_price > 0 and auction.auction_buy_out_price <= pb_bid.bid_amount;
-      var destination = pb_auction_storage;
+      var total_amount = process_total_amount(pb_bid.bid_amount, protocol_fee, pb_bid.bid_origin_fees);
 
       dorequire(auction.auction_start_time < now, (AUCTION_NOT_IN_PROGRESS, (auction.auction_start_time, now)));
       dorequire(auction.auction_end_time > now, AUCTION_FINISHED);
@@ -308,17 +308,18 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
         dorequire(last_bid.bid_amount < pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(auction.auction_minimal_step <= pb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(last_bid.bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
+        var last_bid_total_amount = process_total_amount(last_bid.bid_amount, protocol_fee, last_bid.bid_origin_fees);
         if(is_xtz) then (
-          dorequire(transferred = (pb_bid.bid_amount * 1mtz), AUCTION_BID_AMOUNT_MISMATCH);
+          dorequire(transferred = (total_amount * 1mtz), AUCTION_BID_AMOUNT_MISMATCH);
           //Send back last user funds
-          transfer 0tz to pb_auction_storage call transfer_custody_tez<address * tez>((last_bid.bid_bidder, (last_bid.bid_amount*1mtz)));
+          transfer 0tz to pb_auction_storage call transfer_custody_tez<address * tez>((last_bid.bid_bidder, (last_bid_total_amount*1mtz)));
         ) else (
           //Send back last user funds
           transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
             auction.auction_buy_asset.asset_type.asset_class,
             auction.auction_buy_asset.asset_contract,
             auction.auction_buy_asset.asset_id,
-            last_bid.bid_amount,
+            last_bid_total_amount,
             pb_auction_storage,
             last_bid.bid_bidder
           ));
@@ -326,22 +327,21 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
       );
 
       if(is_buyout) then (
-        destination := auction.auction_seller;
         //do transfers and manage fees
-        transfer 0tz to selfaddress call buyout_auction<address * nat * bid>((pb_asset_contract, pb_asset_id, pb_bid))
+        transfer 0tz to selfaddress call buyout_auction<auction_record* bid>((auction, pb_bid))
       ) else (
         if(is_xtz) then (
           //Send new funds to custody
-          transfer transferred to pb_auction_storage;
+          transfer (total_amount * 1mtz) to pb_auction_storage;
         ) else (
           //Send new funds to custody
           transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
             auction.auction_buy_asset.asset_type.asset_class,
             auction.auction_buy_asset.asset_contract,
             auction.auction_buy_asset.asset_id,
-            pb_bid.bid_amount,
+            total_amount,
             pb_bid.bid_bidder,
-            destination
+            pb_auction_storage
           ));
         );
 
@@ -357,18 +357,18 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
 }
 
 
-entry buyout_auction(ba_asset_contract: address, ba_asset_id: nat, ba_bid: bid) {
+entry buyout_auction(ba_auction: auction_record, ba_bid: bid) {
     called by selfaddress
     require {
         r_ba0: issome(auction_storage);
+        r_ba1: issome(ba_auction.auction_sell_asset.asset_contract);
+        r_ba2: issome(ba_auction.auction_sell_asset.asset_id);
     }
     effect {
-      var auction = require_some(get_auction_record(ba_asset_contract, ba_asset_id), MISSING_AUCTION);
       var ba_auction_storage = opt_get(auction_storage);
 
-      dorequire(auction.auction_start_time > now, AUCTION_NOT_IN_PROGRESS);
-      dorequire(auction.auction_end_time < now, AUCTION_NOT_FINISHED);
-      dorequire(issome(auction.auction_last_bid), NO_BID_FOR_AUCTION);
+      dorequire(ba_auction.auction_start_time < now, (AUCTION_NOT_IN_PROGRESS, (ba_auction.auction_start_time, now)));
+      dorequire(ba_auction.auction_end_time > now, AUCTION_FINISHED);
 
       if(length(ba_bid.bid_payouts) = 0) then (
          ba_bid.bid_payouts := [{
@@ -377,27 +377,28 @@ entry buyout_auction(ba_asset_contract: address, ba_asset_id: nat, ba_bid: bid) 
          }];
       );
 
-      if(length(auction.auction_payouts) = 0) then (
-         auction.auction_payouts := [{
-            part_account = auction.auction_seller;
+      if(length(ba_auction.auction_payouts) = 0) then (
+         ba_auction.auction_payouts := [{
+            part_account = ba_auction.auction_seller;
             part_value = 10000
          }];
       );
 
-      transfer 0tz to selfaddress call manage_transfers<nat * address * address * address * nat * fees * fees * %asset * %asset>(
+      transfer 0tz to selfaddress call manage_transfers<nat * nat * address * address * address * nat * fees * fees * %asset * %asset>(
          (
             ba_bid.bid_amount,
+            ba_auction.auction_sell_asset_amount,
             ba_auction_storage,
-            auction.auction_seller,
+            ba_auction.auction_seller,
             ba_bid.bid_bidder,
             protocol_fee,
             { origin_fees = ba_bid.bid_origin_fees; payouts = ba_bid.bid_payouts},
-            { origin_fees = auction.auction_origin_fees; payouts = auction.auction_payouts},
-            auction.auction_buy_asset,
-            auction.auction_sell_asset
+            { origin_fees = ba_auction.auction_origin_fees; payouts = ba_auction.auction_payouts},
+            ba_auction.auction_buy_asset,
+            ba_auction.auction_sell_asset
          )
       );
-      transfer 0tz to ba_auction_storage call remove_auction<address * nat>((ba_asset_contract, ba_asset_id))
+      transfer 0tz to ba_auction_storage call remove_auction<address * nat>((opt_get(ba_auction.auction_sell_asset.asset_contract), opt_get(ba_auction.auction_sell_asset.asset_id)))
     }
 }
 
@@ -410,7 +411,7 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
       var auction = require_some(get_auction_record(fa_asset_contract, fa_asset_id), MISSING_AUCTION);
       var fa_auction_storage = opt_get(auction_storage);
 
-      dorequire(auction.auction_start_time < now < auction.auction_end_time, (
+      dorequire(auction.auction_start_time < auction.auction_end_time < now, (
         AUCTION_NOT_FINISHABLE,
         (auction.auction_start_time, now, auction.auction_end_time)
       ));
@@ -419,23 +420,10 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
 
       var last_bid = opt_get(auction.auction_last_bid);
 
-      if(length(last_bid.bid_payouts) = 0) then (
-         last_bid.bid_payouts := [{
-            part_account = last_bid.bid_bidder;
-            part_value = 10000
-         }];
-      );
-
-      if(length(auction.auction_payouts) = 0) then (
-         auction.auction_payouts := [{
-            part_account = auction.auction_seller;
-            part_value = 10000
-         }];
-      );
-
-      transfer 0tz to selfaddress call manage_transfers<nat * address * address * address * nat * fees * fees * %asset * %asset>(
+      transfer 0tz to selfaddress call manage_transfers<nat * nat * address * address * address * nat * fees * fees * %asset * %asset>(
          (
             last_bid.bid_amount,
+            auction.auction_sell_asset_amount,
             fa_auction_storage,
             auction.auction_seller,
             last_bid.bid_bidder,
@@ -483,7 +471,7 @@ function get_auction_record(gar_asset_contract: address, gar_asset_id: nat) : op
 function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part> {
     return match callview<list<part>>(
         royalties_provider,
-        "get_auction",
+        "get_royalties",
         (
             gr_asset_contract,
             gr_asset_id
@@ -509,6 +497,7 @@ entry manage_transfers(
     //First process the total amount of the order, and the protocol fees
     var total = process_total_amount(dtwf_amount, dtwf_protocol_fees, dtwf_bid_fees.origin_fees);
     var rest_fee = process_protocol_fees(total, dtwf_amount, dtwf_protocol_fees * 2);
+
     var protocol_fees = rest_fee[1];
     var total_after_protocol_fees = rest_fee[0];
     //Then process the amount of royalties, and the matching operations
@@ -530,6 +519,7 @@ entry manage_transfers(
       dtwf_from);
     var total_after_bid_origin_fees = rest_bid_origin_fees[0];
     var bid_origin_fees_operations = rest_bid_origin_fees[2];
+
     //Then process the auction origin fees, and the matching operations
     var rest_auction_origin_fees = process_fees(
       dtwf_buy_asset,
@@ -617,7 +607,7 @@ function process_protocol_fees(
     tpf_amount : nat,
     tpf_protocol_fees : nat,
 ): nat * nat {
-    return sub_fee_in_bp(tpf_total_amount, tpf_amount, tpf_protocol_fees * 2)
+    return sub_fee_in_bp(tpf_total_amount, tpf_amount, tpf_protocol_fees)
 }
 
 function process_fees(
@@ -651,16 +641,16 @@ function process_fees(
 }
 
 function process_royalties(
-    pr_asset: %asset,
+    pr_buy_asset: %asset,
     pr_sell_asset: %asset,
     pr_rest: nat,
     pr_amount: nat,
     pr_from: address
 ): nat * list<process_transfer_param> {
-    dorequire(issome(pr_sell_asset.asset_contract), MISSING_ASSET_CONTRACT);
-    dorequire(issome(pr_sell_asset.asset_id), MISSING_ASSET_ID);
-    var royalties_fees: list<part> = get_royalties(opt_get(pr_sell_asset.asset_contract), opt_get(pr_sell_asset.asset_id));
-    var rest_royalties = process_fees(pr_asset, pr_rest, pr_amount, royalties_fees, pr_from);
+    var sell_asset_contract = require_some(pr_sell_asset.asset_contract, MISSING_ASSET_CONTRACT);
+    var sell_asset_id = require_some(pr_sell_asset.asset_id, MISSING_ASSET_ID);
+    var royalties_fees: list<part> = get_royalties(sell_asset_contract, sell_asset_id);
+    var rest_royalties = process_fees(pr_buy_asset, pr_rest, pr_amount, royalties_fees, pr_from);
     var rest = rest_royalties[0];
     var royalties = rest_royalties[1];
     var transactions = rest_royalties[2];
@@ -692,20 +682,6 @@ function process_payouts(
         });
       );
     done;
-
-    var last_payout = pp_payouts.nth(abs(length(pp_payouts) - 1));
-    sum_bps += last_payout.part_value;
-    dorequire(sum_bps = 10_000, SUM_PAYOUTS_NOT_100_PERCENT);
-    if(total_rest > 0) then (
-       transfers.prepend({
-          ptp_asset_class = pp_asset.asset_type.asset_class;
-          ptp_asset_contract = pp_asset.asset_contract;
-          ptp_asset_id = pp_asset.asset_id;
-          ptp_amount = total_rest;
-          ptp_origin = pp_from;
-          ptp_destination = last_payout.part_account
-        });
-    );
     return transfers
 }
 

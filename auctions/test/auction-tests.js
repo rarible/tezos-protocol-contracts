@@ -11,7 +11,7 @@ const {
     setEndpoint,
     setNow
 } = require('@completium/completium-cli');
-const { errors, mkTransferPermit, mkApproveForAllSingle, mkDeleteApproveForAllSingle, mkTransferGaslessArgs, mkAuction, FA_2_FT, mkPart, mkFA12Auction, mkFungibleFA2Auction, mkXTZAuction, FA_2_NFT, mkBid } = require('./utils');
+const { errors, mkTransferPermit, mkApproveForAllSingle, mkDeleteApproveForAllSingle, mkTransferGaslessArgs, mkAuction, FA_2_FT, mkPart, mkFA12Auction, mkFungibleFA2Auction, mkXTZAuction, FA_2_NFT, mkBid, getFA2Balance } = require('./utils');
 const assert = require('assert');
 const BigNumber = require('bignumber.js');
 
@@ -19,7 +19,7 @@ require('mocha/package.json');
 
 setQuiet('true');
 
-const mockup_mode = true;
+const mockup_mode = false;
 
 // contracts
 let auction_storage;
@@ -29,12 +29,12 @@ let nft;
 let fa12_ft;
 let fa2_ft;
 
-const initial_fa2_ft_amount = 10000000;
-const initial_fa12_ft_amount = 10000000;
+const initial_fa2_ft_amount = 10000000000000;
+const initial_fa12_ft_amount = 10000000000000;
 const initial_nft_amount = 100;
 const nft_token_id = 0;
 const fa2_ft_token_id = 0;
-const fee = 100;
+const fee = 250;
 
 // accounts
 const alice = getAccount(mockup_mode ? 'alice' : 'alice');
@@ -349,7 +349,7 @@ describe('Tokens setup', async () => {
             });
             await fa2_ft.transfer({
                 arg: {
-                    txs: [[alice.pkh, [[bob.pkh, 0, initial_fa2_ft_amount / 2]]]],
+                    txs: [[alice.pkh, [[bob.pkh, fa2_ft_token_id, initial_fa2_ft_amount / 2]]]],
                 },
                 as: alice.pkh,
             });
@@ -366,7 +366,6 @@ describe('Tokens setup', async () => {
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [alice.pkh, 100],
-                        [bob.pkh, 100],
                     ],
                 },
                 as: alice.pkh,
@@ -620,15 +619,15 @@ describe('Start Auction tests', async () => {
 
     it('Starting auction buying with Fungible FA2 should succeed', async () => {
         if (isMockup()){
-            await setMockupNow((Date.now() / 1000));
+            await setMockupNow((Date.now() / 1000) + 4);
         }
-        const start_time = Math.floor(Date.now() / 1000 + 1);
+        const start_time = Math.floor(Date.now() / 1000 + 5);
         const duration = 10000;
         const storage = await auction_storage.getStorage();
         const minimal_price = 10;
-        const buyout_price = 100;
+        const buyout_price = 1000000000;
         const min_step = 2;
-        const payout_value = 100;
+        const payout_value = 0;
         var auctions = await getValueFromBigMap(
             parseInt(storage.auctions),
             exprMichelineToJson(`(Pair "${nft.address}" ${nft_token_id})`),
@@ -649,8 +648,8 @@ describe('Start Auction tests', async () => {
                 minimal_price.toString(),
                 buyout_price.toString(),
                 min_step.toString(),
-                [mkPart(alice.pkh, "100")],
-                [mkPart(alice.pkh, "100")]),
+                [mkPart(alice.pkh, "0")],
+                [mkPart(alice.pkh, "0")]),
             as: alice.pkh,
         });
 
@@ -761,7 +760,7 @@ describe('Start Auction tests', async () => {
                     Date.now(),
                     "1000000",
                     "10",
-                    "100",
+                    "10000000000",
                     "2",
                     [mkPart(alice.pkh, "100")],
                     [mkPart(alice.pkh, "100")]),
@@ -774,30 +773,46 @@ describe('Start Auction tests', async () => {
 describe('Put bid tests', async () => {
     it('Put bid should succeed', async () => {
         if (isMockup()){
-            await setMockupNow((Date.now() / 1000) + 9000);
+            await setMockupNow((Date.now() / 1000) + 10);
         }
-        await auction.put_bid({
-            argJsonMichelson: mkBid(
-                nft.address,
-                nft_token_id.toString(),
-                "10",
-                bob.pkh,
-                [mkPart(alice.pkh, "100")],
-                [mkPart(alice.pkh, "100")]
-            ),
-            as: bob.pkh,
-        });
+
+        try {
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    nft_token_id.toString(),
+                    "1000000",
+                    bob.pkh,
+                    [],
+                    []
+                ),
+                as: bob.pkh,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
     });
 });
 
 describe('Finish auction tests', async () => {
     it('Finish auction succeed', async () => {
         if (isMockup()){
-            await setMockupNow((Date.now() / 1000) + 1000);
+            await setMockupNow((Date.now() / 1000) + 10000000);
         }
-        await auction.finish_auction({
-            argMichelson: `(Pair "${nft.address}" ${nft_token_id})`,
-            as: bob.pkh,
-        });
+        const ft_storage = await fa2_ft.getStorage();
+        const nft_storage = await nft.getStorage();
+        const custody_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction_storage.address);
+        const auction_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction.address);
+        const bob_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, bob.pkh);
+        try {
+            await auction.finish_auction({
+                argMichelson: `(Pair "${nft.address}" ${nft_token_id})`,
+                as: bob.pkh,
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
     });
 });

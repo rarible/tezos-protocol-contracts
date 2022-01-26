@@ -613,7 +613,7 @@ const getFA12Balance = async (c, address) => {
 
 exports.getFA12Balance = getFA12Balance;
 
-const getFA2Balance = async (c, token, address) => {
+exports.getFA2Balance = async (c, token, address) => {
     let storage = await c.getStorage();
     let id = storage.ledger;
     let key = {
@@ -664,16 +664,6 @@ exports.checkFA2Balance = async (c, token, address, d, f) => {
             getAccount(address).name
         );
     }
-};
-
-exports.getFA2Balance = (gbfa2) => {
-    return async (fa2, o, t) => {
-        await gbfa2.execBalanceof({
-            arg: { fa2: fa2.address, owner: o, tokenid: t },
-        });
-        const storage = await gbfa2.getStorage();
-        return storage.toNumber();
-    };
 };
 
 exports.checkFA2Balance = (gbfa2) => {

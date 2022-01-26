@@ -151,9 +151,8 @@ entry set_auction(sa_auction : auction_record) {
     //from custody
     //It is more tricky for FA12 as it needs to be approved for a decreasing amount transfer
     if(issome(sa_buy_asset.asset_contract) and issome(sa_buy_asset.asset_id)) then (
-      if(not authorizations.contains((sa_asset_contract, sa_auction.auction_sell_asset.asset_id))) then (
-        var buy_asset_contract = opt_get(sa_buy_asset.asset_contract);
-        var buy_asset_id = opt_get(sa_buy_asset.asset_id);
+      var buy_asset_contract = opt_get(sa_buy_asset.asset_contract);
+      if(not authorizations.contains((buy_asset_contract, sa_buy_asset.asset_id))) then (
         authorizations.add({authorization_contract = buy_asset_contract; authorization_contract_token_id = sa_buy_asset.asset_id});
         transfer 0tz to buy_asset_contract call update_operators<list<or<operator_param, operator_param>>>(
           [
