@@ -484,71 +484,71 @@ function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part
 }
 
 entry manage_transfers(
-  dtwf_amount: nat,
-  dtwf_sell_amount: nat,
-  dtwf_from: address,
-  dtwf_seller: address,
-  dtwf_buyer: address,
-  dtwf_protocol_fees: nat,
-  dtwf_bid_fees: fees,
-  dtwf_auction_fees: fees,
-  dtwf_buy_asset: %asset,
-  dtwf_sell_asset: %asset){
+  mt_amount: nat,
+  mt_sell_amount: nat,
+  mt_from: address,
+  mt_seller: address,
+  mt_buyer: address,
+  mt_protocol_fees: nat,
+  mt_bid_fees: fees,
+  mt_auction_fees: fees,
+  mt_buy_asset: %asset,
+  mt_sell_asset: %asset){
     //First process the total amount of the order, and the protocol fees
-    var total = process_total_amount(dtwf_amount, dtwf_protocol_fees, dtwf_bid_fees.origin_fees);
-    var rest_fee = process_protocol_fees(total, dtwf_amount, dtwf_protocol_fees * 2);
+    var total = process_total_amount(mt_amount, mt_protocol_fees, mt_bid_fees.origin_fees);
+    var rest_fee = process_protocol_fees(total, mt_amount, mt_protocol_fees * 2);
 
     var protocol_fees = rest_fee[1];
     var total_after_protocol_fees = rest_fee[0];
     //Then process the amount of royalties, and the matching operations
     var rest_royalties = process_royalties(
-      dtwf_buy_asset,
-      dtwf_sell_asset,
+      mt_buy_asset,
+      mt_sell_asset,
       total_after_protocol_fees,
-      dtwf_amount,
-      dtwf_from
+      mt_amount,
+      mt_from
     );
     var total_after_royalties = rest_royalties[0];
     var royalty_operations = rest_royalties[1];
     //Then process the bid origin fees, and the matching operations
     var rest_bid_origin_fees = process_fees(
-      dtwf_buy_asset,
+      mt_buy_asset,
       total_after_royalties,
-      dtwf_amount,
-      dtwf_bid_fees.origin_fees,
-      dtwf_from);
+      mt_amount,
+      mt_bid_fees.origin_fees,
+      mt_from);
     var total_after_bid_origin_fees = rest_bid_origin_fees[0];
     var bid_origin_fees_operations = rest_bid_origin_fees[2];
 
     //Then process the auction origin fees, and the matching operations
     var rest_auction_origin_fees = process_fees(
-      dtwf_buy_asset,
+      mt_buy_asset,
       total_after_royalties,
-      dtwf_amount,
-      dtwf_auction_fees.origin_fees,
-      dtwf_from);
+      mt_amount,
+      mt_auction_fees.origin_fees,
+      mt_from);
     var total_after_auction_origin_fees = rest_auction_origin_fees[0];
     var auction_origin_fees_operations = rest_auction_origin_fees[2];
     //Finally process the auction and bid payouts, and the matching operations
     var auction_payouts_operations = process_payouts(
-      dtwf_buy_asset,
-      dtwf_amount,
-      dtwf_from,
-      dtwf_auction_fees.payouts);
+      mt_buy_asset,
+      mt_amount,
+      mt_from,
+      mt_auction_fees.payouts);
     var bid_payouts_operations = process_payouts(
-      dtwf_buy_asset,
-      dtwf_amount,
-      dtwf_from,
-      dtwf_bid_fees.payouts);
+      mt_buy_asset,
+      mt_amount,
+      mt_from,
+      mt_bid_fees.payouts);
     //Now that we have processed all the fees, we need to process the operations
     //1st: transfer protocol fees
     transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
-        ptp_asset_class = dtwf_buy_asset.asset_type.asset_class;
-        ptp_asset_contract = dtwf_buy_asset.asset_contract;
-        ptp_asset_id = dtwf_buy_asset.asset_id;
+        ptp_asset_class = mt_buy_asset.asset_type.asset_class;
+        ptp_asset_contract = mt_buy_asset.asset_contract;
+        ptp_asset_id = mt_buy_asset.asset_id;
         ptp_amount = protocol_fees;
-        ptp_origin = dtwf_from;
-        ptp_destination = get_fee_receiver(dtwf_buy_asset.asset_contract)
+        ptp_origin = mt_from;
+        ptp_destination = get_fee_receiver(mt_buy_asset.asset_contract)
       });
     //2nd: transfer royalties
     for royalty_operation in royalty_operations do
@@ -573,22 +573,22 @@ entry manage_transfers(
 
     //Then, transfer sell asset to buyer
     transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
-        ptp_asset_class = dtwf_sell_asset.asset_type.asset_class;
-        ptp_asset_contract = dtwf_sell_asset.asset_contract;
-        ptp_asset_id = dtwf_sell_asset.asset_id;
-        ptp_amount = dtwf_sell_amount;
-        ptp_origin = dtwf_seller;
-        ptp_destination = dtwf_buyer
+        ptp_asset_class = mt_sell_asset.asset_type.asset_class;
+        ptp_asset_contract = mt_sell_asset.asset_contract;
+        ptp_asset_id = mt_sell_asset.asset_id;
+        ptp_amount = mt_sell_amount;
+        ptp_origin = mt_seller;
+        ptp_destination = mt_buyer
       });
 
     //Finally, transfer buy asset to seller
     transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
-        ptp_asset_class = dtwf_buy_asset.asset_type.asset_class;
-        ptp_asset_contract = dtwf_buy_asset.asset_contract;
-        ptp_asset_id = dtwf_buy_asset.asset_id;
+        ptp_asset_class = mt_buy_asset.asset_type.asset_class;
+        ptp_asset_contract = mt_buy_asset.asset_contract;
+        ptp_asset_id = mt_buy_asset.asset_id;
         ptp_amount = total_after_auction_origin_fees;
-        ptp_origin = dtwf_from;
-        ptp_destination = dtwf_seller
+        ptp_origin = mt_from;
+        ptp_destination = mt_seller
       })
 }
 
