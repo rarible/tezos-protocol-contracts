@@ -577,7 +577,7 @@ entry manage_transfers(
         ptp_asset_contract = mt_sell_asset.asset_contract;
         ptp_asset_id = mt_sell_asset.asset_id;
         ptp_amount = mt_sell_amount;
-        ptp_origin = mt_seller;
+        ptp_origin = mt_from;
         ptp_destination = mt_buyer
       });
 

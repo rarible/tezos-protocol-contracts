@@ -35,6 +35,12 @@ const initial_nft_amount = 100;
 const nft_token_id = 0;
 const fa2_ft_token_id = 0;
 const fee = 250;
+const minimal_price = 10;
+const buyout_price = 1000000000;
+const min_step = 2;
+const payout_value = 0;
+const bid_amount = "1000000";
+const royalties_amount = 100;
 
 // accounts
 const alice = getAccount(mockup_mode ? 'alice' : 'alice');
@@ -365,7 +371,7 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [alice.pkh, 100],
+                        [alice.pkh, royalties_amount],
                     ],
                 },
                 as: alice.pkh,
@@ -625,10 +631,6 @@ describe('Start Auction tests', async () => {
             const start_time = Math.floor(Date.now() / 1000 + 35);
             const duration = 100;
             const storage = await auction_storage.getStorage();
-            const minimal_price = 10;
-            const buyout_price = 1000000000;
-            const min_step = 2;
-            const payout_value = 0;
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
                 exprMichelineToJson(`(Pair "${nft.address}" ${nft_token_id})`),
@@ -779,16 +781,17 @@ describe('Put bid tests', async () => {
     it('Put bid should succeed', async () => {
         if (isMockup()){
             await setMockupNow((Date.now() / 1000) + 40);
+        } else {
+            const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+            await delay(40000);
         }
 
         try {
-            const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-            await delay(40000);
             await auction.put_bid({
                 argJsonMichelson: mkBid(
                     nft.address,
                     nft_token_id.toString(),
-                    "1000000",
+                    bid_amount,
                     bob.pkh,
                     [],
                     []
@@ -806,14 +809,31 @@ describe('Finish auction tests', async () => {
     it('Finish auction succeed', async () => {
         if (isMockup()){
             await setMockupNow((Date.now() / 1000) + 10000000);
+        } else {
+            const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+            await delay(100000);
         }
-        const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-        await delay(100000);
-        const ft_storage = await fa2_ft.getStorage();
-        const nft_storage = await nft.getStorage();
+
         const custody_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction_storage.address);
         const auction_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction.address);
+        const alice_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, alice.pkh);
         const bob_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, bob.pkh);
+        const daniel_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, daniel.pkh);
+        const custody_nft_balance = await getFA2Balance(nft, nft_token_id, auction_storage.address);
+        const alice_nft_balance = await getFA2Balance(nft, nft_token_id, alice.pkh);
+        const bob_nft_balance = await getFA2Balance(nft, nft_token_id, bob.pkh);
+
+        const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee /10000));
+
+        assert(custody_ft_balance == total_bid_amount);
+        assert(auction_ft_balance == 0);
+        assert(alice_ft_balance == initial_fa2_ft_amount/2);
+        assert(bob_ft_balance == initial_fa2_ft_amount/2 - total_bid_amount);
+        assert(daniel_ft_balance == 0);
+        assert(custody_nft_balance == 1);
+        assert(alice_nft_balance == initial_nft_amount -1);
+        assert(bob_nft_balance == 0);
+
         try {
             await auction.finish_auction({
                 argMichelson: `(Pair "${nft.address}" ${nft_token_id})`,
@@ -823,5 +843,26 @@ describe('Finish auction tests', async () => {
             console.log(error);
         }
 
+        const post_custody_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction_storage.address);
+        const post_auction_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction.address);
+        const post_alice_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, alice.pkh);
+        const post_bob_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, bob.pkh);
+        const post_daniel_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, daniel.pkh);
+        const post_custody_nft_balance = await getFA2Balance(nft, nft_token_id, auction_storage.address);
+        const post_alice_nft_balance = await getFA2Balance(nft, nft_token_id, alice.pkh);
+        const post_bob_nft_balance = await getFA2Balance(nft, nft_token_id, bob.pkh);
+
+        const protocol_fees = bid_amount * (fee / 10000);
+        const royalties = bid_amount * (royalties_amount / 10000);
+        const rest = bid_amount - protocol_fees - royalties;
+
+        assert(post_custody_ft_balance == 0);
+        assert(post_auction_ft_balance == 0);
+        assert(post_alice_ft_balance == initial_fa2_ft_amount/2 + royalties + rest);
+        assert(post_bob_ft_balance == initial_fa2_ft_amount/2 - total_bid_amount);
+        assert(post_daniel_ft_balance == protocol_fees * 2);
+        assert(post_custody_nft_balance == 0);
+        assert(post_alice_nft_balance == initial_nft_amount - 1);
+        assert(post_bob_nft_balance == 1);
     });
 });
