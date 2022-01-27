@@ -14,12 +14,14 @@ const {
 const {
     errors,
     mkAuction,
+    FA_1_2,
     FA_2_FT,
+    FA_2_NFT,
+    XTZ,
     mkPart,
     mkFA12Auction,
     mkFungibleFA2Auction,
     mkXTZAuction,
-    FA_2_NFT,
     mkBid,
     getFA2Balance,
     mkAuctionWithMissingFA2AssetContract,
@@ -60,7 +62,7 @@ const fee = 250;
 const minimal_price = 10;
 const buyout_price = 1000000000;
 const min_step = 2;
-const payout_value = 0;
+const payout_value = 100;
 const bid_amount = "1000000";
 const royalties_amount = 100;
 
@@ -533,7 +535,7 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [alice.pkh, royalties_amount],
+                        [bob.pkh, royalties_amount],
                     ],
                 },
                 as: alice.pkh,
@@ -545,7 +547,8 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [alice.pkh, royalties_amount],
+                        [bob.pkh, royalties_amount],
+                        [carl.pkh, royalties_amount]
                     ],
                 },
                 as: alice.pkh,
@@ -556,9 +559,7 @@ describe('Tokens setup', async () => {
                     iowner: alice.pkh,
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
-                    iroyalties: [
-                        [alice.pkh, royalties_amount],
-                    ],
+                    iroyalties: [],
                 },
                 as: alice.pkh,
             });
@@ -569,7 +570,7 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [alice.pkh, royalties_amount],
+                        [carl.pkh, royalties_amount]
                     ],
                 },
                 as: alice.pkh,
@@ -581,7 +582,8 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [alice.pkh, royalties_amount],
+                        [carl.pkh, royalties_amount],
+                        [daniel.pkh, royalties_amount],
                     ],
                 },
                 as: alice.pkh,
@@ -738,292 +740,11 @@ describe('Tokens setup', async () => {
 });
 
 describe('Start Auction tests', async () => {
-    it('Starting auction for FA12 to purchase should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkFA12Auction(
-                    fa12_ft.address,
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa0")');
-    });
-
-    it('Starting auction for Fungible FA2 to purchase should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkFungibleFA2Auction(
-                    nft.address,
-                    token_id_0.toString(),
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa0")');
-    });
-
-    it('Starting auction for XTZ to purchase should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkXTZAuction(
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa0")');
-    });
-
-    it('Starting auction for buying with Non Fungible FA2 should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkAuction(
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    nft.address,
-                    token_id_0.toString(),
-                    FA_2_NFT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa1")');
-    });
-
-    it('Starting auction with duration < extension duration should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkAuction(
-                    nft.address,
-                    token_id_0.toString(),
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa2")');
-    });
-
-    it('Starting auction with duration > max_duration should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkAuction(
-                    nft.address,
-                    token_id_0.toString(),
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "999999999999999999999",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa3")');
-    });
-
-    it('Starting auction with buyout price < min price should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkAuction(
-                    nft.address,
-                    token_id_0.toString(),
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "100",
-                    "1",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa4")');
-    });
-
-    it('Starting auction as non owner of the NFT should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkAuction(
-                    nft.address,
-                    token_id_0.toString(),
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: carl.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa7")');
-    });
-
-    it('Starting auction with missing asset contract should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkAuctionWithMissingFA2AssetContract(
-                    token_id_0.toString(),
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '"MISSING_ASSET_CONTRACT"');
-    });
-
-    it('Starting auction with missing asset id should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkAuctionWithMissingFA2AssetId(
-                    nft.address,
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '"MISSING_ASSET_ID"');
-    });
-
-    it('Starting auction with missing asset contract and id should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.start_auction({
-                argJsonMichelson: mkAuctionWithMissingFA2AssetContractAndId(
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "100",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '"MISSING_ASSET_ID"');
-    });
-
-    it('Starting auction buying when auction storage is not set should fail', async () => {
-        await expectToThrow(async () => {
-            await auction.set_auction_storage_contract({
-                arg: {
-                    sacs_contract: null
-                },
-                as: alice.pkh
-            });
-            await auction.start_auction({
-                argJsonMichelson: mkAuction(
-                    nft.address,
-                    token_id_0.toString(),
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
-                    alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "10000000000",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
-                as: alice.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_sa8")');
-        await auction.set_auction_storage_contract({
-            arg: {
-                sacs_contract: auction_storage.address
-            },
-            as: alice.pkh
-        });
-    });
-
-    it('Starting auction buying with Fungible FA2 should succeed', async () => {
-        if (isMockup()) {
-            await setMockupNow((Date.now() / 1000) + 34);
-        }
-        try {
+    describe('Auction with bids in Fungible FA2', async () => {
+        it('Starting auction buying with Fungible FA2 should succeed (no royalties, no auction payouts, no auction origin fees, no bid payouts, no bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
             const start_time = Math.floor(Date.now() / 1000 + 35);
             const duration = 100;
             const storage = await auction_storage.getStorage();
@@ -1130,7 +851,7 @@ describe('Start Auction tests', async () => {
                     "args": [{
                         "string": "${alice.pkh}"
                     }, {
-                        "int": "${payout_value}"
+                        "int": "0"
                     }]
                 }],
                 [{
@@ -1138,38 +859,1295 @@ describe('Start Auction tests', async () => {
                     "args": [{
                         "string": "${alice.pkh}"
                     }, {
+                        "int": "0"
+                    }]
+                }]
+            ]`);
+            assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
+        });
+
+        it('Starting auction buying with Fungible FA2 should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 35);
+            const duration = 100;
+            const storage = await auction_storage.getStorage();
+            var auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auctions == null);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_1.toString(),
+                    fa2_ft.address,
+                    token_id_1.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [mkPart(carl.pkh, payout_value.toString())],
+                    [mkPart(daniel.pkh, payout_value.toString())]),
+                as: alice.pkh,
+            });
+
+            var post_tx_auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            const expected_result = JSON.parse(`
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "1"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${nft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_1}"
+                        }]
+                    }]
+                }, {
+                    "int": "1"
+                }, {
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "0"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${fa2_ft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_1}"
+                        }]
+                    }]
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${alice.pkh}"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${fee}"
+                },
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }],
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
                         "int": "${payout_value}"
                     }]
                 }]
             ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
-        } catch (error) {
-            console.log(error);
-        }
+        });
 
-    });
-
-    it('Starting auction buying with Fungible FA2 that already exists should fail', async () => {
-        await expectToThrow(async () => {
+        it('Starting auction buying with Fungible FA2 should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 35);
+            const duration = 100;
+            const storage = await auction_storage.getStorage();
+            var auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auctions == null);
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     nft.address,
-                    token_id_0.toString(),
+                    token_id_2.toString(),
                     fa2_ft.address,
-                    token_id_0.toString(),
+                    token_id_2.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
-                    Date.now(),
-                    "1000000",
-                    "10",
-                    "10000000000",
-                    "2",
-                    [mkPart(alice.pkh, "100")],
-                    [mkPart(alice.pkh, "100")]),
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [mkPart(carl.pkh, payout_value.toString()),
+                    mkPart(daniel.pkh, payout_value.toString())],
+                    [mkPart(carl.pkh, payout_value.toString()),
+                    mkPart(daniel.pkh, payout_value.toString())]),
                 as: alice.pkh,
             });
-        }, '"AUCTION_ALREADY_EXISTS"');
+
+            var post_tx_auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            const expected_result = JSON.parse(`
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "1"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${nft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_2}"
+                        }]
+                    }]
+                }, {
+                    "int": "1"
+                }, {
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "0"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${fa2_ft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_2}"
+                        }]
+                    }]
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${alice.pkh}"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${fee}"
+                },
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                },
+                {
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }],
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                },
+                {
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }]
+            ]`);
+            assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
+
+        });
+    });
+
+    describe('Auction with bids in XTZ', async () => {
+        it('Starting auction buying with XTZ should succeed (no royalties, no auction payouts, no auction origin fees, no bid payouts, no bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 35);
+            const duration = 100;
+            const storage = await auction_storage.getStorage();
+            var auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auctions == null);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_3.toString(),
+                    null,
+                    null,
+                    XTZ,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [],
+                    []),
+                as: alice.pkh,
+            });
+
+            var post_tx_auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            const expected_result = JSON.parse(`
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "1"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${nft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_3}"
+                        }]
+                    }]
+                }, {
+                    "int": "1"
+                }, {
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Left",
+                        "args": [{
+                            "prim": "Unit"
+                        }]
+                    }, {
+                        "prim": "None"
+                    }, {
+                        "prim": "None"
+                    }]
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${alice.pkh}"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${fee}"
+                },
+                [],
+                []
+            ]`);
+            assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
+        });
+
+        it('Starting auction buying with XTZ should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 35);
+            const duration = 100;
+            const storage = await auction_storage.getStorage();
+            var auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auctions == null);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_4.toString(),
+                    null,
+                    null,
+                    XTZ,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [mkPart(carl.pkh, payout_value)],
+                    [mkPart(daniel.pkh, payout_value)]),
+                as: alice.pkh,
+            });
+
+            var post_tx_auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            const expected_result = JSON.parse(`
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "1"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${nft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_4}"
+                        }]
+                    }]
+                }, {
+                    "int": "1"
+                }, {
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Left",
+                        "args": [{
+                            "prim": "Unit"
+                        }]
+                    }, {
+                        "prim": "None"
+                    }, {
+                        "prim": "None"
+                    }]
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${alice.pkh}"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${fee}"
+                },
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }],
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }]
+            ]`);
+            assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
+        });
+
+        it('Starting auction buying with XTZ should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 35);
+            const duration = 100;
+            const storage = await auction_storage.getStorage();
+            var auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_5})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auctions == null);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_5.toString(),
+                    null,
+                    null,
+                    XTZ,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]),
+                as: alice.pkh,
+            });
+
+            var post_tx_auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_5})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            const expected_result = JSON.parse(`
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "1"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${nft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_5}"
+                        }]
+                    }]
+                }, {
+                    "int": "1"
+                }, {
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Left",
+                        "args": [{
+                            "prim": "Unit"
+                        }]
+                    }, {
+                        "prim": "None"
+                    }, {
+                        "prim": "None"
+                    }]
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${alice.pkh}"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${fee}"
+                },
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                },
+                {
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }],
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                },
+                {
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }]
+            ]`);
+            assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
+        });
+    });
+
+    describe('Auction with bids in FA12', async () => {
+        it('Starting auction buying with FA12 should succeed (no royalties, no auction payouts, no auction origin fees, no bid payouts, no bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 35);
+            const duration = 100;
+            const storage = await auction_storage.getStorage();
+            var auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auctions == null);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_6.toString(),
+                    fa12_ft.address,
+                    null,
+                    FA_1_2,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [],
+                    []),
+                as: alice.pkh,
+            });
+
+            var post_tx_auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            const expected_result = JSON.parse(`
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "1"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${nft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_6}"
+                        }]
+                    }]
+                }, {
+                    "int": "1"
+                }, {
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Left",
+                            "args": [{
+                                "prim": "Unit"
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${fa12_ft.address}"
+                        }]
+                    }, {
+                        "prim": "None"
+                    }]
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${alice.pkh}"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${fee}"
+                },
+                [],
+                []
+            ]`);
+            assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
+        });
+
+        it('Starting auction buying with FA12 should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 35);
+            const duration = 100;
+            const storage = await auction_storage.getStorage();
+            var auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auctions == null);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_7.toString(),
+                    fa12_ft.address,
+                    null,
+                    FA_1_2,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [mkPart(carl.pkh, payout_value.toString())],
+                    [mkPart(daniel.pkh, payout_value.toString())]),
+                as: alice.pkh,
+            });
+
+            var post_tx_auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            const expected_result = JSON.parse(`
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "1"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${nft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_7}"
+                        }]
+                    }]
+                }, {
+                    "int": "1"
+                }, {
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Left",
+                            "args": [{
+                                "prim": "Unit"
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${fa12_ft.address}"
+                        }]
+                    }, {
+                        "prim": "None"
+                    }]
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${alice.pkh}"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${fee}"
+                },
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }],
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }]
+            ]`);
+            assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
+        });
+
+        it('Starting auction buying with Fungible FA2 should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 34);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 35);
+            const duration = 100;
+            const storage = await auction_storage.getStorage();
+            var auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auctions == null);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_8.toString(),
+                    fa12_ft.address,
+                    null,
+                    FA_1_2,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [mkPart(carl.pkh, payout_value.toString()),
+                    mkPart(daniel.pkh, payout_value.toString())],
+                    [mkPart(carl.pkh, payout_value.toString()),
+                    mkPart(daniel.pkh, payout_value.toString())]),
+                as: alice.pkh,
+            });
+
+            var post_tx_auctions = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            const expected_result = JSON.parse(`
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Right",
+                            "args": [{
+                                "prim": "Left",
+                                "args": [{
+                                    "int": "1"
+                                }]
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${nft.address}"
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "int": "${token_id_8}"
+                        }]
+                    }]
+                }, {
+                    "int": "1"
+                }, {
+                    "prim": "Pair",
+                    "args": [{
+                        "prim": "Right",
+                        "args": [{
+                            "prim": "Left",
+                            "args": [{
+                                "prim": "Unit"
+                            }]
+                        }]
+                    }, {
+                        "prim": "Some",
+                        "args": [{
+                            "string": "${fa12_ft.address}"
+                        }]
+                    }, {
+                        "prim": "None"
+                    }]
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${alice.pkh}"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${fee}"
+                },
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                },
+                {
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }],
+                [{
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${carl.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                },
+                {
+                    "prim": "Pair",
+                    "args": [{
+                        "string": "${daniel.pkh}"
+                    }, {
+                        "int": "${payout_value}"
+                    }]
+                }]
+            ]`);
+            assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
+
+        });
+    });
+
+    describe('Common args test', async () => {
+
+        it('Starting auction for FA12 to purchase should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkFA12Auction(
+                        fa12_ft.address,
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa0")');
+        });
+
+        it('Starting auction for Fungible FA2 to purchase should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkFungibleFA2Auction(
+                        nft.address,
+                        token_id_0.toString(),
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa0")');
+        });
+
+        it('Starting auction for XTZ to purchase should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkXTZAuction(
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa0")');
+        });
+
+        it('Starting auction for buying with Non Fungible FA2 should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        nft.address,
+                        token_id_0.toString(),
+                        FA_2_NFT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa1")');
+        });
+
+        it('Starting auction with duration < extension duration should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_0.toString(),
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa2")');
+        });
+
+        it('Starting auction with duration > max_duration should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_0.toString(),
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "999999999999999999999",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa3")');
+        });
+
+        it('Starting auction with buyout price < min price should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_0.toString(),
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "100",
+                        "1",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa4")');
+        });
+
+        it('Starting auction as non owner of the NFT should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_0.toString(),
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: carl.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa7")');
+        });
+
+        it('Starting auction with missing asset contract should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuctionWithMissingFA2AssetContract(
+                        token_id_0.toString(),
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '"MISSING_ASSET_CONTRACT"');
+        });
+
+        it('Starting auction with missing asset id should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuctionWithMissingFA2AssetId(
+                        nft.address,
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '"MISSING_ASSET_ID"');
+        });
+
+        it('Starting auction with missing asset contract and id should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuctionWithMissingFA2AssetContractAndId(
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "100",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '"MISSING_ASSET_ID"');
+        });
+
+        it('Starting auction buying when auction storage is not set should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.set_auction_storage_contract({
+                    arg: {
+                        sacs_contract: null
+                    },
+                    as: alice.pkh
+                });
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_0.toString(),
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "10000000000",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa8")');
+            await auction.set_auction_storage_contract({
+                arg: {
+                    sacs_contract: auction_storage.address
+                },
+                as: alice.pkh
+            });
+        });
+
+        it('Starting auction buying with Fungible FA2 that already exists should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_0.toString(),
+                        fa2_ft.address,
+                        token_id_0.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        Date.now(),
+                        "1000000",
+                        "10",
+                        "10000000000",
+                        "2",
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")]),
+                    as: alice.pkh,
+                });
+            }, '"AUCTION_ALREADY_EXISTS"');
+        });
     });
 });
 
@@ -1182,22 +2160,17 @@ describe('Put bid tests', async () => {
             await delay(40000);
         }
 
-        try {
-            await auction.put_bid({
-                argJsonMichelson: mkBid(
-                    nft.address,
-                    token_id_0.toString(),
-                    bid_amount,
-                    bob.pkh,
-                    [],
-                    []
-                ),
-                as: bob.pkh,
-            });
-        } catch (error) {
-            console.log(error);
-        }
-
+        await auction.put_bid({
+            argJsonMichelson: mkBid(
+                nft.address,
+                token_id_0.toString(),
+                bid_amount,
+                bob.pkh,
+                [],
+                []
+            ),
+            as: bob.pkh,
+        });
     });
 });
 

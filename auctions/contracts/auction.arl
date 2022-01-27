@@ -8,6 +8,8 @@ with metadata ""
 
 constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
 constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
+constant MISSING_BUY_ASSET_ID: string = "MISSING_BUY_ASSET_ID"
+constant MISSING_BUY_ASSET_CONTRACT: string = "MISSING_BUY_ASSET_CONTRACT"
 constant MISSING_AUCTION_STORAGE_CONTRACT: string = "MISSING_AUCTION_STORAGE_CONTRACT"
 constant MISSING_AUCTION_CUSTODY_CONTRACT: string = "MISSING_AUCTION_CUSTODY_CONTRACT"
 constant AUCTION_ALREADY_EXISTS: string = "AUCTION_ALREADY_EXISTS"
@@ -237,6 +239,13 @@ entry start_auction(
         var auction_asset_contract = require_some(sa_auction.auction_args_sell_asset.asset_contract, MISSING_ASSET_CONTRACT);
 
         dorequire(auction_exists(auction_asset_contract, auction_asset_id) = false, AUCTION_ALREADY_EXISTS);
+
+        if(sa_auction.auction_args_buy_asset.asset_type.asset_class = FA_2(Fungible)) then (
+            dorequire(issome(sa_auction.auction_args_buy_asset.asset_id), MISSING_BUY_ASSET_ID);
+            dorequire(issome(sa_auction.auction_args_buy_asset.asset_contract), MISSING_BUY_ASSET_CONTRACT);
+        ) else if (sa_auction.auction_args_buy_asset.asset_type.asset_class = FA_1_2) then (
+            dorequire(issome(sa_auction.auction_args_buy_asset.asset_contract), MISSING_BUY_ASSET_CONTRACT);
+        );
 
         var start_time: date = now;
         var end_time: date = now;
