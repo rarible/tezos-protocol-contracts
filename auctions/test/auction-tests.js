@@ -32,8 +32,16 @@ let fa2_ft;
 const initial_fa2_ft_amount = 10000000000000;
 const initial_fa12_ft_amount = 10000000000000;
 const initial_nft_amount = 100;
-const nft_token_id = 0;
-const fa2_ft_token_id = 0;
+const token_id_0 = 0;
+const token_id_1 = 1;
+const token_id_2 = 2;
+const token_id_3 = 3;
+const token_id_4 = 4;
+const token_id_5 = 5;
+const token_id_6 = 6;
+const token_id_7 = 7;
+const token_id_8 = 8;
+
 const fee = 250;
 const minimal_price = 10;
 const buyout_price = 1000000000;
@@ -345,7 +353,7 @@ describe('Tokens setup', async () => {
         it('Mint and transfer Fungible FA2 tokens should succeed', async () => {
             await fa2_ft.mint({
                 arg: {
-                    itokenid: fa2_ft_token_id,
+                    itokenid: token_id_0,
                     iowner: alice.pkh,
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
@@ -355,7 +363,135 @@ describe('Tokens setup', async () => {
             });
             await fa2_ft.transfer({
                 arg: {
-                    txs: [[alice.pkh, [[bob.pkh, fa2_ft_token_id, initial_fa2_ft_amount / 2]]]],
+                    txs: [[alice.pkh, [[bob.pkh, token_id_0, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_1,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_1, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_2,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_2, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_3,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_3, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_4,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_4, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_5,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_5, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_6,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_6, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_7,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_7, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_8,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_8, initial_fa2_ft_amount / 2]]]],
                 },
                 as: alice.pkh,
             });
@@ -366,7 +502,103 @@ describe('Tokens setup', async () => {
         it('Mint NFT FA2 tokens should succeed', async () => {
             await nft.mint({
                 arg: {
-                    itokenid: nft_token_id,
+                    itokenid: token_id_0,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [alice.pkh, royalties_amount],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_1,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [alice.pkh, royalties_amount],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_2,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [alice.pkh, royalties_amount],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_3,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [alice.pkh, royalties_amount],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_4,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [alice.pkh, royalties_amount],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_5,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [alice.pkh, royalties_amount],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_6,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [alice.pkh, royalties_amount],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_7,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [alice.pkh, royalties_amount],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_8,
                     iowner: alice.pkh,
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
@@ -381,15 +613,111 @@ describe('Tokens setup', async () => {
 
     it('Add auction contract as operator for NFT and FT', async () => {
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${nft_token_id})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_0})}`,
+            as: alice.pkh,
+        });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_1})}`,
+            as: alice.pkh,
+        });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_2})}`,
+            as: alice.pkh,
+        });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_3})}`,
+            as: alice.pkh,
+        });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_4})}`,
+            as: alice.pkh,
+        });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_5})}`,
+            as: alice.pkh,
+        });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_6})}`,
+            as: alice.pkh,
+        });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_7})}`,
+            as: alice.pkh,
+        });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_8})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${fa2_ft_token_id})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_0})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${fa2_ft_token_id})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_1})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_2})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_3})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_4})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_5})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_6})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_7})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_8})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_0})}`,
+            as: bob.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_1})}`,
+            as: bob.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_2})}`,
+            as: bob.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_3})}`,
+            as: bob.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_4})}`,
+            as: bob.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_5})}`,
+            as: bob.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_6})}`,
+            as: bob.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_7})}`,
+            as: bob.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_8})}`,
             as: bob.pkh,
         });
     });
@@ -402,7 +730,7 @@ describe('Start Auction tests', async () => {
                 argJsonMichelson: mkFA12Auction(
                     fa12_ft.address,
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -423,9 +751,9 @@ describe('Start Auction tests', async () => {
             await auction.start_auction({
                 argJsonMichelson: mkFungibleFA2Auction(
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -446,7 +774,7 @@ describe('Start Auction tests', async () => {
             await auction.start_auction({
                 argJsonMichelson: mkXTZAuction(
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -467,9 +795,9 @@ describe('Start Auction tests', async () => {
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_NFT,
                     "1",
                     alice.pkh,
@@ -490,9 +818,9 @@ describe('Start Auction tests', async () => {
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -513,9 +841,9 @@ describe('Start Auction tests', async () => {
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -536,9 +864,9 @@ describe('Start Auction tests', async () => {
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -559,9 +887,9 @@ describe('Start Auction tests', async () => {
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -582,9 +910,9 @@ describe('Start Auction tests', async () => {
     //         await auction.start_auction({
     //             argJsonMichelson: mkAuction(
     //                 "",
-    //                 nft_token_id.toString(),
+    //                 token_id_0.toString(),
     //                 fa2_ft.address,
-    //                 fa2_ft_token_id.toString(),
+    //                 token_id_0.toString(),
     //                 FA_2_FT,
     //                 "1",
     //                 alice.pkh,
@@ -607,7 +935,7 @@ describe('Start Auction tests', async () => {
     //                 nft.address,
     //                 "",
     //                 fa2_ft.address,
-    //                 fa2_ft_token_id.toString(),
+    //                 token_id_0.toString(),
     //                 FA_2_FT,
     //                 "1",
     //                 alice.pkh,
@@ -633,16 +961,16 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${nft_token_id})`),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
                 exprMichelineToJson(`(pair address nat)'`)
             );
             assert(auctions == null);
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -658,7 +986,7 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${nft_token_id})`),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
                 exprMichelineToJson(`(pair address nat)'`)
             );
             const expected_result = JSON.parse(`
@@ -683,7 +1011,7 @@ describe('Start Auction tests', async () => {
                     }, {
                         "prim": "Some",
                         "args": [{
-                            "int": "${nft_token_id}"
+                            "int": "${token_id_0}"
                         }]
                     }]
                 }, {
@@ -758,9 +1086,9 @@ describe('Start Auction tests', async () => {
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     fa2_ft.address,
-                    fa2_ft_token_id.toString(),
+                    token_id_0.toString(),
                     FA_2_FT,
                     "1",
                     alice.pkh,
@@ -790,7 +1118,7 @@ describe('Put bid tests', async () => {
             await auction.put_bid({
                 argJsonMichelson: mkBid(
                     nft.address,
-                    nft_token_id.toString(),
+                    token_id_0.toString(),
                     bid_amount,
                     bob.pkh,
                     [],
@@ -814,14 +1142,16 @@ describe('Finish auction tests', async () => {
             await delay(100000);
         }
 
-        const custody_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction_storage.address);
-        const auction_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction.address);
-        const alice_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, alice.pkh);
-        const bob_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, bob.pkh);
-        const daniel_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, daniel.pkh);
-        const custody_nft_balance = await getFA2Balance(nft, nft_token_id, auction_storage.address);
-        const alice_nft_balance = await getFA2Balance(nft, nft_token_id, alice.pkh);
-        const bob_nft_balance = await getFA2Balance(nft, nft_token_id, bob.pkh);
+        const storage = await auction_storage.getStorage();
+
+        const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction_storage.address);
+        const auction_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction.address);
+        const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
+        const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+        const daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_0, daniel.pkh);
+        const custody_nft_balance = await getFA2Balance(nft, token_id_0, auction_storage.address);
+        const alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
+        const bob_nft_balance = await getFA2Balance(nft, token_id_0, bob.pkh);
 
         const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee /10000));
 
@@ -834,23 +1164,30 @@ describe('Finish auction tests', async () => {
         assert(alice_nft_balance == initial_nft_amount -1);
         assert(bob_nft_balance == 0);
 
+        var auction_record = await getValueFromBigMap(
+            parseInt(storage.auctions),
+            exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
+            exprMichelineToJson(`(pair address nat)'`)
+        );
+        assert(auction_record != null);
+
         try {
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${nft_token_id})`,
+                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
                 as: bob.pkh,
             });
         } catch (error) {
             console.log(error);
         }
 
-        const post_custody_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction_storage.address);
-        const post_auction_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, auction.address);
-        const post_alice_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, alice.pkh);
-        const post_bob_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, bob.pkh);
-        const post_daniel_ft_balance = await getFA2Balance(fa2_ft, fa2_ft_token_id, daniel.pkh);
-        const post_custody_nft_balance = await getFA2Balance(nft, nft_token_id, auction_storage.address);
-        const post_alice_nft_balance = await getFA2Balance(nft, nft_token_id, alice.pkh);
-        const post_bob_nft_balance = await getFA2Balance(nft, nft_token_id, bob.pkh);
+        const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction_storage.address);
+        const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction.address);
+        const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
+        const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+        const post_daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_0, daniel.pkh);
+        const post_custody_nft_balance = await getFA2Balance(nft, token_id_0, auction_storage.address);
+        const post_alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
+        const post_bob_nft_balance = await getFA2Balance(nft, token_id_0, bob.pkh);
 
         const protocol_fees = bid_amount * (fee / 10000);
         const royalties = bid_amount * (royalties_amount / 10000);
@@ -864,5 +1201,12 @@ describe('Finish auction tests', async () => {
         assert(post_custody_nft_balance == 0);
         assert(post_alice_nft_balance == initial_nft_amount - 1);
         assert(post_bob_nft_balance == 1);
+
+        var post_tx_auction = await getValueFromBigMap(
+            parseInt(storage.auctions),
+            exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
+            exprMichelineToJson(`(pair address nat)'`)
+        );
+        assert(post_tx_auction == null);
     });
 });

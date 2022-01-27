@@ -370,20 +370,6 @@ entry buyout_auction(ba_auction: auction_record, ba_bid: bid) {
       dorequire(ba_auction.auction_start_time < now, (AUCTION_NOT_IN_PROGRESS, (ba_auction.auction_start_time, now)));
       dorequire(ba_auction.auction_end_time > now, AUCTION_FINISHED);
 
-      if(length(ba_bid.bid_payouts) = 0) then (
-         ba_bid.bid_payouts := [{
-            part_account = ba_bid.bid_bidder;
-            part_value = 10000
-         }];
-      );
-
-      if(length(ba_auction.auction_payouts) = 0) then (
-         ba_auction.auction_payouts := [{
-            part_account = ba_auction.auction_seller;
-            part_value = 10000
-         }];
-      );
-
       transfer 0tz to selfaddress call manage_transfers<nat * nat * address * address * address * nat * fees * fees * %asset * %asset>(
          (
             ba_bid.bid_amount,
@@ -413,12 +399,10 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
 
       dorequire(auction.auction_start_time < auction.auction_end_time < now, (
         AUCTION_NOT_FINISHABLE,
-        (auction.auction_start_time, now, auction.auction_end_time)
+        (auction.auction_start_time, auction.auction_end_time, now)
       ));
 
-      dorequire(issome(auction.auction_last_bid), NO_BID_FOR_AUCTION);
-
-      var last_bid = opt_get(auction.auction_last_bid);
+      var last_bid = require_some(auction.auction_last_bid, NO_BID_FOR_AUCTION);
 
       transfer 0tz to selfaddress call manage_transfers<nat * nat * address * address * address * nat * fees * fees * %asset * %asset>(
          (
