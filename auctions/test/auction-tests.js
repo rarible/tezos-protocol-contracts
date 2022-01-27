@@ -11,7 +11,21 @@ const {
     setEndpoint,
     setNow
 } = require('@completium/completium-cli');
-const { errors, mkTransferPermit, mkApproveForAllSingle, mkDeleteApproveForAllSingle, mkTransferGaslessArgs, mkAuction, FA_2_FT, mkPart, mkFA12Auction, mkFungibleFA2Auction, mkXTZAuction, FA_2_NFT, mkBid, getFA2Balance } = require('./utils');
+const {
+    errors,
+    mkAuction,
+    FA_2_FT,
+    mkPart,
+    mkFA12Auction,
+    mkFungibleFA2Auction,
+    mkXTZAuction,
+    FA_2_NFT,
+    mkBid,
+    getFA2Balance,
+    mkAuctionWithMissingFA2AssetContract,
+    mkAuctionWithMissingFA2AssetId,
+    mkAuctionWithMissingFA2AssetContractAndId
+} = require('./utils');
 const assert = require('assert');
 const BigNumber = require('bignumber.js');
 
@@ -507,7 +521,7 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [alice.pkh, royalties_amount],
+                        [alice.pkh, 0],
                     ],
                 },
                 as: alice.pkh,
@@ -905,54 +919,108 @@ describe('Start Auction tests', async () => {
         }, '(Pair "InvalidCondition" "r_sa7")');
     });
 
-    // it('Starting auction with missing asset contract should fail', async () => {
-    //     await expectToThrow(async () => {
-    //         await auction.start_auction({
-    //             argJsonMichelson: mkAuction(
-    //                 "",
-    //                 token_id_0.toString(),
-    //                 fa2_ft.address,
-    //                 token_id_0.toString(),
-    //                 FA_2_FT,
-    //                 "1",
-    //                 alice.pkh,
-    //                 Date.now(),
-    //                 "1000000",
-    //                 "10",
-    //                 "100",
-    //                 "2",
-    //                 [mkPart(alice.pkh, "100")],
-    //                 [mkPart(alice.pkh, "100")]),
-    //             as: alice.pkh,
-    //         });
-    //     }, '"MISSING_ASSET_CONTRACT"');
-    // });
+    it('Starting auction with missing asset contract should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuctionWithMissingFA2AssetContract(
+                    token_id_0.toString(),
+                    fa2_ft.address,
+                    token_id_0.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '"MISSING_ASSET_CONTRACT"');
+    });
 
-    // it('Starting auction with missing asset id should fail', async () => {
-    //     await expectToThrow(async () => {
-    //         await auction.start_auction({
-    //             argJsonMichelson: mkAuction(
-    //                 nft.address,
-    //                 "",
-    //                 fa2_ft.address,
-    //                 token_id_0.toString(),
-    //                 FA_2_FT,
-    //                 "1",
-    //                 alice.pkh,
-    //                 Date.now(),
-    //                 "1000000",
-    //                 "10",
-    //                 "100",
-    //                 "2",
-    //                 [mkPart(alice.pkh, "100")],
-    //                 [mkPart(alice.pkh, "100")]),
-    //             as: alice.pkh,
-    //         });
-    //     }, '"MISSING_ASSET_ID"');
-    // });
+    it('Starting auction with missing asset id should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuctionWithMissingFA2AssetId(
+                    nft.address,
+                    fa2_ft.address,
+                    token_id_0.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '"MISSING_ASSET_ID"');
+    });
+
+    it('Starting auction with missing asset contract and id should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.start_auction({
+                argJsonMichelson: mkAuctionWithMissingFA2AssetContractAndId(
+                    fa2_ft.address,
+                    token_id_0.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "100",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '"MISSING_ASSET_ID"');
+    });
+
+    it('Starting auction buying when auction storage is not set should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.set_auction_storage_contract({
+                arg: {
+                    sacs_contract: null
+                },
+                as: alice.pkh
+            });
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_0.toString(),
+                    fa2_ft.address,
+                    token_id_0.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    Date.now(),
+                    "1000000",
+                    "10",
+                    "10000000000",
+                    "2",
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")]),
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r_sa8")');
+        await auction.set_auction_storage_contract({
+            arg: {
+                sacs_contract: auction_storage.address
+            },
+            as: alice.pkh
+        });
+    });
 
     it('Starting auction buying with Fungible FA2 should succeed', async () => {
-        if (isMockup()){
+        if (isMockup()) {
             await setMockupNow((Date.now() / 1000) + 34);
         }
         try {
@@ -1045,9 +1113,9 @@ describe('Start Auction tests', async () => {
                 }, {
                     "string": "${alice.pkh}"
                 }, {
-                    "string": "${new Date(start_time* 1000).toISOString().split('.')[0]+"Z"}"
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
                 }, {
-                    "string": "${new Date((start_time + duration)*1000).toISOString().split('.')[0]+"Z"}"
+                    "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
                 }, {
                     "int": "${minimal_price}"
                 }, {
@@ -1107,7 +1175,7 @@ describe('Start Auction tests', async () => {
 
 describe('Put bid tests', async () => {
     it('Put bid should succeed', async () => {
-        if (isMockup()){
+        if (isMockup()) {
             await setMockupNow((Date.now() / 1000) + 40);
         } else {
             const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -1135,7 +1203,7 @@ describe('Put bid tests', async () => {
 
 describe('Finish auction tests', async () => {
     it('Finish auction succeed', async () => {
-        if (isMockup()){
+        if (isMockup()) {
             await setMockupNow((Date.now() / 1000) + 10000000);
         } else {
             const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -1153,15 +1221,15 @@ describe('Finish auction tests', async () => {
         const alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
         const bob_nft_balance = await getFA2Balance(nft, token_id_0, bob.pkh);
 
-        const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee /10000));
+        const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
         assert(custody_ft_balance == total_bid_amount);
         assert(auction_ft_balance == 0);
-        assert(alice_ft_balance == initial_fa2_ft_amount/2);
-        assert(bob_ft_balance == initial_fa2_ft_amount/2 - total_bid_amount);
+        assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+        assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
         assert(daniel_ft_balance == 0);
         assert(custody_nft_balance == 1);
-        assert(alice_nft_balance == initial_nft_amount -1);
+        assert(alice_nft_balance == initial_nft_amount - 1);
         assert(bob_nft_balance == 0);
 
         var auction_record = await getValueFromBigMap(
@@ -1190,13 +1258,13 @@ describe('Finish auction tests', async () => {
         const post_bob_nft_balance = await getFA2Balance(nft, token_id_0, bob.pkh);
 
         const protocol_fees = bid_amount * (fee / 10000);
-        const royalties = bid_amount * (royalties_amount / 10000);
+        const royalties = 0;
         const rest = bid_amount - protocol_fees - royalties;
 
         assert(post_custody_ft_balance == 0);
         assert(post_auction_ft_balance == 0);
-        assert(post_alice_ft_balance == initial_fa2_ft_amount/2 + royalties + rest);
-        assert(post_bob_ft_balance == initial_fa2_ft_amount/2 - total_bid_amount);
+        assert(post_alice_ft_balance == initial_fa2_ft_amount / 2 + royalties + rest);
+        assert(post_bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
         assert(post_daniel_ft_balance == protocol_fees * 2);
         assert(post_custody_nft_balance == 0);
         assert(post_alice_nft_balance == initial_nft_amount - 1);
