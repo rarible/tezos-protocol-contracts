@@ -309,6 +309,10 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
       dorequire(auction.auction_start_time < now, AUCTION_NOT_IN_PROGRESS);
       dorequire(auction.auction_end_time > now, AUCTION_FINISHED);
 
+      if(is_xtz) then (
+        dorequire(transferred = (total_amount * 1utz), AUCTION_BID_AMOUNT_MISMATCH);
+      );
+
       if(isnone(previous_bid)) then (
         dorequire(auction.auction_minimal_price <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(auction.auction_minimal_step <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
@@ -319,9 +323,8 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
         dorequire(last_bid.bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
         var last_bid_total_amount = process_total_amount(last_bid.bid_amount, protocol_fee, last_bid.bid_origin_fees);
         if(is_xtz) then (
-          dorequire(transferred = (total_amount * 1mtz), AUCTION_BID_AMOUNT_MISMATCH);
           //Send back last user funds
-          transfer 0tz to pb_auction_storage call transfer_custody_tez<address * tez>((last_bid.bid_bidder, (last_bid_total_amount*1mtz)));
+          transfer 0tz to pb_auction_storage call transfer_custody_tez<address * tez>((last_bid.bid_bidder, (last_bid_total_amount*1utz)));
         ) else (
           //Send back last user funds
           transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
@@ -341,7 +344,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
       ) else (
         if(is_xtz) then (
           //Send new funds to custody
-          transfer (total_amount * 1mtz) to pb_auction_storage;
+          transfer (total_amount * 1utz) to pb_auction_storage;
         ) else (
           //Send new funds to custody
           transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
@@ -715,7 +718,7 @@ entry process_transfer(pt_transfer: process_transfer_param){
       dorequire(issome(pt_transfer.ptp_asset_contract), MISSING_ASSET_CONTRACT);
       transfer 0tz to opt_get(pt_transfer.ptp_asset_contract) call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
       )
-    | XTZ -> (transfer (1mtz * pt_transfer.ptp_amount) to pt_transfer.ptp_destination)
+    | XTZ -> (transfer (1utz * pt_transfer.ptp_amount) to pt_transfer.ptp_destination)
     | _ -> ()
     end;
   }

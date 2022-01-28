@@ -45,8 +45,8 @@ let nft;
 let fa12_ft;
 let fa2_ft;
 
-const initial_fa2_ft_amount = 10000000000000;
-const initial_fa12_ft_amount = 10000000000000;
+const initial_fa2_ft_amount = 100000000000000000000000000;
+const initial_fa12_ft_amount = 100000000000000000000000000;
 const initial_nft_amount = 100;
 const token_id_0 = 0;
 const token_id_1 = 1;
@@ -2297,74 +2297,208 @@ describe('Put bid tests', async () => {
 
         });
     });
+    describe('Put bid Fungible FA2 tests', async () => {
+        it('Put bid with good amount of Fungible FA2 should succeed (no bid origin fees, no payouts)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 40);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(40000);
+            }
 
-    it('Put bid should succeed', async () => {
-        if (isMockup()) {
-            await setMockupNow((Date.now() / 1000) + 40);
-        } else {
-            const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-            await delay(40000);
-        }
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_0.toString(),
+                    bid_amount,
+                    bob.pkh,
+                    [],
+                    []
+                ),
+                as: bob.pkh,
+            });
+        });
 
-        await auction.put_bid({
-            argJsonMichelson: mkBid(
-                nft.address,
-                token_id_0.toString(),
-                bid_amount,
-                bob.pkh,
-                [],
-                []
-            ),
-            as: bob.pkh,
+        it('Put bid with good amount of Fungible FA2 should succeed (single bid origin fees, single payouts)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 40);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(40000);
+            }
+
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_1.toString(),
+                    bid_amount,
+                    bob.pkh,
+                    [mkPart(bob.pkh, payout_value)],
+                    [mkPart(bob.pkh, payout_value)]
+                ),
+                as: bob.pkh,
+            });
+        });
+
+        it('Put bid with good amount of Fungible FA2 should succeed (multiple bid origin fees, multiple payouts)', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 40);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(40000);
+            }
+
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_2.toString(),
+                    bid_amount,
+                    bob.pkh,
+                    [mkPart(bob.pkh, payout_value), mkPart(carl.pkh, payout_value)],
+                    [mkPart(bob.pkh, payout_value), mkPart(carl.pkh, payout_value)]
+                ),
+                as: bob.pkh,
+            });
+        });
+
+        it('Put identical bid should fail', async () => {
+            await expectToThrow(async () => {
+
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        bid_amount + 1,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_BID_ALREADY_EXISTS"');
+        });
+
+        it('Put bid with amount < last bid should fail', async () => {
+            await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        bid_amount - 1,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_BID_TOO_LOW"');
         });
     });
+    describe('Put bid XTZ tests', async () => {
+        it('Put bid with mismatch between bid amount and XTZ transferred', async () => {
+            await expectToThrow(async () => {
 
-    it('Put identical bid should fail', async () => {
-        await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
 
-            if (isMockup()) {
-                await setMockupNow((Date.now() / 1000) + 40);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
-            }
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_3.toString(),
+                        bid_amount,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    amount: `${bid_amount + 1}utz`,
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_BID_AMOUNT_MISMATCH"');
+        });
 
-            await auction.put_bid({
-                argJsonMichelson: mkBid(
-                    nft.address,
-                    token_id_0.toString(),
-                    bid_amount + 1,
-                    bob.pkh,
-                    [],
-                    []
-                ),
-                as: bob.pkh,
-            });
-        }, '"AUCTION_BID_ALREADY_EXISTS"');
-    });
+        it('Put bid with good amount of XTZ (no bid origin fees, no payouts) should succeed', async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+                const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_3.toString(),
+                        bid_amount,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    amount: `${total_bid_amount}utz`,
+                    as: bob.pkh,
+                });
+        });
 
-    it('Put bid with amount < last bid should fail', async () => {
-        await expectToThrow(async () => {
+        it('Put bid with good amount of XTZ (single bid origin fees, single payouts) should succeed', async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+                const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (bid_amount *(payout_value / 10000)));
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_4.toString(),
+                        bid_amount,
+                        bob.pkh,
+                        [mkPart(bob.pkh, payout_value)],
+                        [mkPart(bob.pkh, payout_value)]
+                    ),
+                    amount: `${total_bid_amount}utz`,
+                    as: bob.pkh,
+                });
+        });
 
-            if (isMockup()) {
-                await setMockupNow((Date.now() / 1000) + 40);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
-            }
-
-            await auction.put_bid({
-                argJsonMichelson: mkBid(
-                    nft.address,
-                    token_id_0.toString(),
-                    bid_amount - 1,
-                    bob.pkh,
-                    [],
-                    []
-                ),
-                as: bob.pkh,
-            });
-        }, '"AUCTION_BID_TOO_LOW"');
+        it('Put bid with good amount of XTZ (multiple bid origin fees, multiple payouts) should succeed', async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+                const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (bid_amount *(payout_value / 10000)));
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_5.toString(),
+                        bid_amount,
+                        bob.pkh,
+                        [mkPart(bob.pkh, payout_value)],
+                        [mkPart(bob.pkh, payout_value)]
+                    ),
+                    amount: `${total_bid_amount}utz`,
+                    as: bob.pkh,
+                });
+        });
     });
 });
 

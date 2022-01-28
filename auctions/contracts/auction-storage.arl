@@ -233,3 +233,5 @@ entry transfer_custody_tez(tct_destination: address, amount: tez) {
     transfer amount to tct_destination;
   }
 }
+
+entry default() {}
