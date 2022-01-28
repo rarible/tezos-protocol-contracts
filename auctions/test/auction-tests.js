@@ -2152,6 +2152,152 @@ describe('Start Auction tests', async () => {
 });
 
 describe('Put bid tests', async () => {
+    describe('Put bid common tests', async () => {
+        it('Put bid with amount = 0 should fail', async () => {
+            await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        0,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: bob.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_pb0")');
+        });
+
+        it('Put bid for another user should fail should fail', async () => {
+            await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        100,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: carl.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_pb1")');
+        });
+
+        it('Put bid on a non existing auction should fail', async () => {
+            await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        fa2_ft.address,
+                        token_id_3.toString(),
+                        111,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: bob.pkh,
+                });
+            }, '(Pair "AssetNotFound" "auctions")');
+        });
+
+        it('Put bid on an auction not started should fail', async () => {
+            await expectToThrow(async () => {
+
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) - 400);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+                    await delay(40000);
+                }
+
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        bid_amount,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_NOT_IN_PROGRESS"');
+
+        });
+
+        it('Put bid on an auction already finished should fail', async () => {
+            await expectToThrow(async () => {
+
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 400000000);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+                    await delay(40000);
+                }
+
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        bid_amount,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_FINISHED"');
+
+        });
+
+        it('Put bid with an amount < minimal step should fail', async () => {
+            await expectToThrow(async () => {
+
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 40);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                    await delay(40000);
+                }
+
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        1,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_BID_TOO_LOW"');
+
+        });
+    });
+
     it('Put bid should succeed', async () => {
         if (isMockup()) {
             await setMockupNow((Date.now() / 1000) + 40);
@@ -2171,6 +2317,54 @@ describe('Put bid tests', async () => {
             ),
             as: bob.pkh,
         });
+    });
+
+    it('Put identical bid should fail', async () => {
+        await expectToThrow(async () => {
+
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 40);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(40000);
+            }
+
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_0.toString(),
+                    bid_amount + 1,
+                    bob.pkh,
+                    [],
+                    []
+                ),
+                as: bob.pkh,
+            });
+        }, '"AUCTION_BID_ALREADY_EXISTS"');
+    });
+
+    it('Put bid with amount < last bid should fail', async () => {
+        await expectToThrow(async () => {
+
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 40);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(40000);
+            }
+
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_0.toString(),
+                    bid_amount - 1,
+                    bob.pkh,
+                    [],
+                    []
+                ),
+                as: bob.pkh,
+            });
+        }, '"AUCTION_BID_TOO_LOW"');
     });
 });
 
