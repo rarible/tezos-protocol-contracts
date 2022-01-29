@@ -494,48 +494,55 @@ entry manage_transfers(
     var total = process_total_amount(mt_amount, mt_protocol_fees, mt_bid_fees.origin_fees);
     var rest_fee = process_protocol_fees(total, mt_amount, mt_protocol_fees * 2);
 
+    var total_after_all_fees = rest_fee[0];
     var protocol_fees = rest_fee[1];
-    var total_after_protocol_fees = rest_fee[0];
     //Then process the amount of royalties, and the matching operations
     var rest_royalties = process_royalties(
       mt_buy_asset,
       mt_sell_asset,
-      total_after_protocol_fees,
       mt_amount,
       mt_from
     );
-    var total_after_royalties = rest_royalties[0];
+    total_after_all_fees -= rest_royalties[0];
+
     var royalty_operations = rest_royalties[1];
     //Then process the bid origin fees, and the matching operations
     var rest_bid_origin_fees = process_fees(
       mt_buy_asset,
-      total_after_royalties,
       mt_amount,
       mt_bid_fees.origin_fees,
       mt_from);
-    var total_after_bid_origin_fees = rest_bid_origin_fees[0];
-    var bid_origin_fees_operations = rest_bid_origin_fees[2];
+    total_after_all_fees -= rest_bid_origin_fees[0];
+    var bid_origin_fees_operations = rest_bid_origin_fees[1];
 
     //Then process the auction origin fees, and the matching operations
     var rest_auction_origin_fees = process_fees(
       mt_buy_asset,
-      total_after_royalties,
       mt_amount,
       mt_auction_fees.origin_fees,
       mt_from);
-    var total_after_auction_origin_fees = rest_auction_origin_fees[0];
-    var auction_origin_fees_operations = rest_auction_origin_fees[2];
+    total_after_all_fees -= rest_auction_origin_fees[0];
+    var auction_origin_fees_operations = rest_auction_origin_fees[1];
     //Finally process the auction and bid payouts, and the matching operations
-    var auction_payouts_operations = process_payouts(
+    var auction_payouts_rest = process_payouts(
       mt_buy_asset,
       mt_amount,
       mt_from,
       mt_auction_fees.payouts);
-    var bid_payouts_operations = process_payouts(
+
+    total_after_all_fees -= auction_payouts_rest[0];
+    var auction_payouts_operations = auction_payouts_rest[1];
+
+    var bid_payouts_rest = process_payouts(
       mt_buy_asset,
       mt_amount,
       mt_from,
       mt_bid_fees.payouts);
+
+    total_after_all_fees -= bid_payouts_rest[0];
+    var bid_payouts_operations = bid_payouts_rest[1];
+    //fail((total, protocol_fees, royalty_operations, bid_origin_fees_operations, auction_origin_fees_operations, auction_payouts_operations, bid_payouts_operations));
+
     //Now that we have processed all the fees, we need to process the operations
     //1st: transfer protocol fees
     transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
@@ -582,7 +589,7 @@ entry manage_transfers(
         ptp_asset_class = mt_buy_asset.asset_type.asset_class;
         ptp_asset_contract = mt_buy_asset.asset_contract;
         ptp_asset_id = mt_buy_asset.asset_id;
-        ptp_amount = total_after_auction_origin_fees;
+        ptp_amount = total_after_all_fees;
         ptp_origin = mt_from;
         ptp_destination = mt_seller
       })
@@ -618,21 +625,15 @@ function process_protocol_fees(
 
 function process_fees(
     pf_asset: %asset,
-    pf_rest: nat,
     pf_amount: nat,
     pf_fees: list<part>,
     pf_from: address
-) : nat * nat * list<process_transfer_param> {
+) : nat * list<process_transfer_param> {
   var total_fees: nat = 0;
-  var post_process_rest: nat = pf_rest;
   var transfers: list<process_transfer_param> = [];
   for fee in pf_fees do
-    total_fees += fee.part_value;
-    var rest_fee = sub_fee_in_bp(post_process_rest, pf_amount, fee.part_value);
-    var processed_rest = rest_fee[0];
-    var processed_fee = rest_fee[1];
-    post_process_rest := processed_rest;
-
+    var processed_fee = bp(pf_amount, fee.part_value);
+    total_fees += processed_fee;
     if (processed_fee > 0) then (
       transfers.prepend({
         ptp_asset_class = pf_asset.asset_type.asset_class;
@@ -643,25 +644,23 @@ function process_fees(
         ptp_destination = fee.part_account
       }))
   done;
-  return ((post_process_rest, total_fees, transfers))
+  return ((total_fees, transfers))
 }
 
 function process_royalties(
     pr_buy_asset: %asset,
     pr_sell_asset: %asset,
-    pr_rest: nat,
     pr_amount: nat,
     pr_from: address
 ): nat * list<process_transfer_param> {
     var sell_asset_contract = require_some(pr_sell_asset.asset_contract, MISSING_ASSET_CONTRACT);
     var sell_asset_id = require_some(pr_sell_asset.asset_id, MISSING_ASSET_ID);
     var royalties_fees: list<part> = get_royalties(sell_asset_contract, sell_asset_id);
-    var rest_royalties = process_fees(pr_buy_asset, pr_rest, pr_amount, royalties_fees, pr_from);
-    var rest = rest_royalties[0];
-    var royalties = rest_royalties[1];
-    var transactions = rest_royalties[2];
-    dorequire(royalties <= 5000, ROYALTIES_TOO_HIGH);
-    return ((rest, transactions))
+    var rest_royalties = process_fees(pr_buy_asset, pr_amount, royalties_fees, pr_from);
+    var royalties = rest_royalties[0];
+    var transactions = rest_royalties[1];
+    dorequire((royalties / pr_amount) < 0.5 , ROYALTIES_TOO_HIGH);
+    return ((royalties, transactions))
 }
 
 function process_payouts(
@@ -669,15 +668,13 @@ function process_payouts(
     pp_amount: nat,
     pp_from: address,
     pp_payouts: list<part>
-): list<process_transfer_param> {
+): nat * list<process_transfer_param> {
     var sum_bps: nat = 0;
-    var total_rest: nat = pp_amount;
     var transfers: list<process_transfer_param> = [];
     for payout in pp_payouts do
       var current_amount = bp(pp_amount, payout.part_value);
-      sum_bps += payout.part_value;
+      sum_bps += current_amount;
       if(current_amount > 0) then (
-        total_rest -= current_amount;
         transfers.prepend({
           ptp_asset_class = pp_asset.asset_type.asset_class;
           ptp_asset_contract = pp_asset.asset_contract;
@@ -688,7 +685,7 @@ function process_payouts(
         });
       );
     done;
-    return transfers
+    return ((sum_bps, transfers))
 }
 
 entry process_transfer(pt_transfer: process_transfer_param){
