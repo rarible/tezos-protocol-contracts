@@ -10,7 +10,6 @@ constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
 constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
 constant MISSING_BUY_ASSET_ID: string = "MISSING_BUY_ASSET_ID"
 constant MISSING_BUY_ASSET_CONTRACT: string = "MISSING_BUY_ASSET_CONTRACT"
-constant MISSING_AUCTION_STORAGE_CONTRACT: string = "MISSING_AUCTION_STORAGE_CONTRACT"
 constant MISSING_AUCTION_CUSTODY_CONTRACT: string = "MISSING_AUCTION_CUSTODY_CONTRACT"
 constant AUCTION_ALREADY_EXISTS: string = "AUCTION_ALREADY_EXISTS"
 constant AUCTION_NOT_IN_PROGRESS: string = "AUCTION_NOT_IN_PROGRESS"
@@ -25,6 +24,7 @@ constant AUCTION_BID_AMOUNT_MISMATCH: string = "AUCTION_BID_AMOUNT_MISMATCH"
 constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
 constant ROYALTIES_TOO_HIGH: string = "ROYALTIES_TOO_HIGH"
 constant SUM_PAYOUTS_NOT_100_PERCENT: string = "SUM_PAYOUTS_NOT_100_PERCENT"
+constant TOTAL_AMOUNT_NEGATIVE: string = "TOTAL_AMOUNT_NEGATIVE"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -322,40 +322,28 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
         dorequire(auction.auction_minimal_step <= pb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(last_bid.bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
         var last_bid_total_amount = process_total_amount(last_bid.bid_amount, protocol_fee, last_bid.bid_origin_fees);
-        if(is_xtz) then (
-          //Send back last user funds
-          transfer 0tz to pb_auction_storage call transfer_custody_tez<address * tez>((last_bid.bid_bidder, (last_bid_total_amount*1utz)));
-        ) else (
-          //Send back last user funds
-          transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
-            auction.auction_buy_asset.asset_type.asset_class,
-            auction.auction_buy_asset.asset_contract,
-            auction.auction_buy_asset.asset_id,
-            last_bid_total_amount,
-            pb_auction_storage,
-            last_bid.bid_bidder
-          ));
-        );
+        transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
+          auction.auction_buy_asset.asset_type.asset_class,
+          auction.auction_buy_asset.asset_contract,
+          auction.auction_buy_asset.asset_id,
+          last_bid_total_amount,
+          pb_auction_storage,
+          last_bid.bid_bidder
+        ));
       );
 
       if(is_buyout) then (
         //do transfers and manage fees
         transfer 0tz to selfaddress call buyout_auction<auction_record* bid>((auction, pb_bid))
       ) else (
-        if(is_xtz) then (
-          //Send new funds to custody
-          transfer (total_amount * 1utz) to pb_auction_storage;
-        ) else (
-          //Send new funds to custody
-          transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
-            auction.auction_buy_asset.asset_type.asset_class,
-            auction.auction_buy_asset.asset_contract,
-            auction.auction_buy_asset.asset_id,
-            total_amount,
-            pb_bid.bid_bidder,
-            pb_auction_storage
-          ));
-        );
+        transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
+          auction.auction_buy_asset.asset_type.asset_class,
+          auction.auction_buy_asset.asset_contract,
+          auction.auction_buy_asset.asset_id,
+          total_amount,
+          pb_bid.bid_bidder,
+          pb_auction_storage
+        ));
 
         if(auction.auction_end_time - now < extension_duration) then (
           auction.auction_end_time := now + extension_duration;
@@ -436,7 +424,7 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
 }
 function auction_exists(ae_asset_contract: address, ae_asset_id: nat) : bool {
     return match callview<bool>(
-        require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT),
+        require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT),
         "auction_exists",
         (
             ae_asset_contract,
@@ -451,7 +439,7 @@ function auction_exists(ae_asset_contract: address, ae_asset_id: nat) : bool {
 
 function get_auction_record(gar_asset_contract: address, gar_asset_id: nat) : option<auction_record> {
     return match callview<auction_record>(
-        require_some(auction_storage, MISSING_AUCTION_STORAGE_CONTRACT),
+        require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT),
         "get_auction",
         (
             gar_asset_contract,
@@ -541,7 +529,8 @@ entry manage_transfers(
 
     total_after_all_fees -= bid_payouts_rest[0];
     var bid_payouts_operations = bid_payouts_rest[1];
-    //fail((total, protocol_fees, royalty_operations, bid_origin_fees_operations, auction_origin_fees_operations, auction_payouts_operations, bid_payouts_operations));
+
+    dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
 
     //Now that we have processed all the fees, we need to process the operations
     //1st: transfer protocol fees
@@ -691,6 +680,7 @@ function process_payouts(
 entry process_transfer(pt_transfer: process_transfer_param){
   called by selfaddress
   effect {
+    var custody = require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT);
     match pt_transfer.ptp_asset_class with
     | FA_2(fa2t)  -> (
       dorequire(issome(pt_transfer.ptp_asset_contract), MISSING_ASSET_CONTRACT);
@@ -715,7 +705,13 @@ entry process_transfer(pt_transfer: process_transfer_param){
       dorequire(issome(pt_transfer.ptp_asset_contract), MISSING_ASSET_CONTRACT);
       transfer 0tz to opt_get(pt_transfer.ptp_asset_contract) call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
       )
-    | XTZ -> (transfer (1utz * pt_transfer.ptp_amount) to pt_transfer.ptp_destination)
+    | XTZ -> (
+        if(pt_transfer.ptp_origin = custody) then (
+          transfer 0tz to custody call transfer_custody_tez<address * tez>((pt_transfer.ptp_destination, (pt_transfer.ptp_amount*1utz)))
+        ) else (
+          transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+        )
+      )
     | _ -> ()
     end;
   }
