@@ -532,6 +532,7 @@ entry manage_transfers(
 
     dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
 
+    //fail((total_after_all_fees, protocol_fees, royalty_operations, bid_origin_fees_operations, auction_origin_fees_operations, auction_payouts_operations, bid_payouts_operations));
     //Now that we have processed all the fees, we need to process the operations
     //1st: transfer protocol fees
     transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
