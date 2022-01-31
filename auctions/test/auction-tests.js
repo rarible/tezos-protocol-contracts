@@ -65,7 +65,6 @@ const buyout_price = 1000000000;
 const min_step = 2;
 const payout_value = 100;
 const bid_amount = "1000000";
-const royalties_amount = 100;
 
 // accounts
 const alice = getAccount(mockup_mode ? 'alice' : 'alice');
@@ -548,7 +547,7 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [carl.pkh, royalties_amount],
+                        [carl.pkh, payout_value],
                     ],
                 },
                 as: alice.pkh,
@@ -560,8 +559,8 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [carl.pkh, royalties_amount],
-                        [daniel.pkh, royalties_amount]
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value]
                     ],
                 },
                 as: alice.pkh,
@@ -583,7 +582,7 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [carl.pkh, royalties_amount]
+                        [carl.pkh, payout_value]
                     ],
                 },
                 as: alice.pkh,
@@ -595,8 +594,8 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [carl.pkh, royalties_amount],
-                        [daniel.pkh, royalties_amount],
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value],
                     ],
                 },
                 as: alice.pkh,
@@ -607,9 +606,7 @@ describe('Tokens setup', async () => {
                     iowner: alice.pkh,
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
-                    iroyalties: [
-                        [alice.pkh, royalties_amount],
-                    ],
+                    iroyalties: [],
                 },
                 as: alice.pkh,
             });
@@ -620,7 +617,7 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [alice.pkh, royalties_amount],
+                        [carl.pkh, payout_value],
                     ],
                 },
                 as: alice.pkh,
@@ -632,7 +629,8 @@ describe('Tokens setup', async () => {
                     itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
-                        [alice.pkh, royalties_amount],
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value]
                     ],
                 },
                 as: alice.pkh,
@@ -1609,8 +1607,8 @@ describe('Start Auction tests', async () => {
                     minimal_price.toString(),
                     buyout_price.toString(),
                     min_step.toString(),
-                    [mkPart(carl.pkh, payout_value.toString())],
-                    [mkPart(daniel.pkh, payout_value.toString())]),
+                    [mkPart(carl.pkh, payout_value)],
+                    [mkPart(daniel.pkh, payout_value)]),
                 as: alice.pkh,
             });
 
@@ -1728,10 +1726,8 @@ describe('Start Auction tests', async () => {
                     minimal_price.toString(),
                     buyout_price.toString(),
                     min_step.toString(),
-                    [mkPart(carl.pkh, payout_value.toString()),
-                    mkPart(daniel.pkh, payout_value.toString())],
-                    [mkPart(carl.pkh, payout_value.toString()),
-                    mkPart(daniel.pkh, payout_value.toString())]),
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]),
                 as: alice.pkh,
             });
 
@@ -2688,8 +2684,8 @@ describe('Put bid tests', async () => {
                     token_id_7.toString(),
                     bid_amount,
                     bob.pkh,
-                    [mkPart(bob.pkh, payout_value)],
-                    [mkPart(bob.pkh, payout_value)]
+                    [mkPart(carl.pkh, payout_value)],
+                    [mkPart(daniel.pkh, payout_value)]
                 ),
                 as: bob.pkh,
             });
@@ -2729,8 +2725,8 @@ describe('Put bid tests', async () => {
                     token_id_8.toString(),
                     bid_amount,
                     bob.pkh,
-                    [mkPart(bob.pkh, payout_value), mkPart(carl.pkh, payout_value)],
-                    [mkPart(bob.pkh, payout_value), mkPart(carl.pkh, payout_value)]
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]
                 ),
                 as: bob.pkh,
             });
