@@ -2827,7 +2827,7 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
                 exprMichelineToJson(`(pair address nat)'`)
             );
             assert(post_tx_auction == null);
@@ -2909,7 +2909,7 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
                 exprMichelineToJson(`(pair address nat)'`)
             );
             assert(post_tx_auction == null);
