@@ -322,7 +322,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
         dorequire(auction.auction_minimal_step <= pb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(last_bid.bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
         var last_bid_total_amount = process_total_amount(last_bid.bid_amount, protocol_fee, last_bid.bid_origin_fees);
-        transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
+        transfer 0tz to pb_auction_storage call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
           auction.auction_buy_asset.asset_type.asset_class,
           auction.auction_buy_asset.asset_contract,
           auction.auction_buy_asset.asset_id,
@@ -478,6 +478,7 @@ entry manage_transfers(
   mt_auction_fees: fees,
   mt_buy_asset: %asset,
   mt_sell_asset: %asset){
+    var auction_storage_contract = require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT);
     //First process the total amount of the order, and the protocol fees
     var total = process_total_amount(mt_amount, mt_protocol_fees, mt_bid_fees.origin_fees);
     var rest_fee = process_protocol_fees(total, mt_amount, mt_protocol_fees * 2);
@@ -535,7 +536,7 @@ entry manage_transfers(
     //fail((total_after_all_fees, protocol_fees, royalty_operations, bid_origin_fees_operations, auction_origin_fees_operations, auction_payouts_operations, bid_payouts_operations));
     //Now that we have processed all the fees, we need to process the operations
     //1st: transfer protocol fees
-    transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+    transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
         ptp_asset_class = mt_buy_asset.asset_type.asset_class;
         ptp_asset_contract = mt_buy_asset.asset_contract;
         ptp_asset_id = mt_buy_asset.asset_id;
@@ -545,27 +546,27 @@ entry manage_transfers(
       });
     //2nd: transfer royalties
     for royalty_operation in royalty_operations do
-          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(royalty_operation)
+          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(royalty_operation)
     done;
     //3rd: bid origin fees
     for bid_origin_fees_operation in bid_origin_fees_operations do
-          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(bid_origin_fees_operation)
+          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(bid_origin_fees_operation)
     done;
     //4th: auction origin fees
     for auction_origin_fees_operation in auction_origin_fees_operations do
-          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(auction_origin_fees_operation)
+          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(auction_origin_fees_operation)
     done;
     //5th: auction payouts
     for payouts_operation in auction_payouts_operations do
-          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
+          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(payouts_operation)
     done;
     //6th: bid payouts
     for payouts_operation in bid_payouts_operations do
-          transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
+          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(payouts_operation)
     done;
 
     //Then, transfer sell asset to buyer
-    transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+    transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
         ptp_asset_class = mt_sell_asset.asset_type.asset_class;
         ptp_asset_contract = mt_sell_asset.asset_contract;
         ptp_asset_id = mt_sell_asset.asset_id;
@@ -575,7 +576,7 @@ entry manage_transfers(
       });
 
     //Finally, transfer buy asset to seller
-    transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+    transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
         ptp_asset_class = mt_buy_asset.asset_type.asset_class;
         ptp_asset_contract = mt_buy_asset.asset_contract;
         ptp_asset_id = mt_buy_asset.asset_id;
@@ -707,11 +708,7 @@ entry process_transfer(pt_transfer: process_transfer_param){
       transfer 0tz to opt_get(pt_transfer.ptp_asset_contract) call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
       )
     | XTZ -> (
-        if(pt_transfer.ptp_origin = custody) then (
-          transfer 0tz to custody call transfer_custody_tez<address * tez>((pt_transfer.ptp_destination, (pt_transfer.ptp_amount*1utz)))
-        ) else (
           transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
-        )
       )
     | _ -> ()
     end;
