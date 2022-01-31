@@ -1,23 +1,9 @@
-# FA2 templates
+# Auction contract
 
-## Features
-
-The FA2 contracts provide the following features:
-* Public or private mint:
-  * Public: anyone can mint any token for anyone
-  * Private: only owner or a minter can mint
-* Single or multiple token:
-  * Single: pure non-fungible (it is owned by one address or not) (ERC721)
-  * Multiple: semi-fungible (each token has a balance) (ERC1155)
-* Feeless transfer:
-  * one-step mode with the `transfer_gasless` entrypoint
-  * two-steps mode with the `permit` entrypoint following the [TZIP-17](https://medium.com/tqtezos/tzip-17-permit-497afd9b0e9e) norm
-* Royalties: 
-  * defined at token level when minted
-  * read with the view get_royalties
+## Features (TODO)
 
 ## Set up
-The FA2 contract templates are coded in [Archetype](https://docs.archetype-lang.org/).
+The Auction contracts are coded in [Archetype](https://docs.archetype-lang.org/).
 To be able to run the tests, you need to install the [Completium CLI](https://completium.com/docs/cli):
 ```bash
 > npm i @completium/completium-cli -g
@@ -75,12 +61,6 @@ To select the account you want to deploy with:
 
 [More info](https://completium.com/docs/cli/account).
 
-#### Deploy command
-
-Example of command to deploy `single-nft-fa2-public-collection.arl` :
-
-```
-> completium-cli deploy single-nft-fa2-public-collection.arl --parameters '{ "owner" : "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" }' --metadata-uri 'ipfs://QmP8XaNKhSqC3HaGBRisoDSXB7EBryVr9fRBsxMcv8Jh78'
-```
+#### Deploy command (TODO)
 
 [More info](https://completium.com/docs/cli/contract).
