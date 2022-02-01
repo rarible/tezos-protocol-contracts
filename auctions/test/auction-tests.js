@@ -25,6 +25,7 @@ const {
     mkXTZAuction,
     mkBid,
     getFA2Balance,
+    getFA12Balance,
     mkAuctionWithMissingFA2AssetContract,
     mkAuctionWithMissingFA2AssetId,
     mkAuctionWithMissingFA2AssetContractAndId
@@ -43,11 +44,13 @@ let auction_storage;
 let auction;
 let royalties;
 let nft;
-let fa12_ft;
+let fa12_ft_0;
+let fa12_ft_1;
+let fa12_ft_2;
 let fa2_ft;
 
-const initial_fa2_ft_amount = 100000000000000000000000000;
-const initial_fa12_ft_amount = 100000000000000000000000000;
+const initial_fa2_ft_amount = 10000000000000000;
+const initial_fa12_ft_amount = 10000000000000000;
 const initial_nft_amount = 100;
 const token_id_0 = 0;
 const token_id_1 = 1;
@@ -75,11 +78,10 @@ const daniel = getAccount(mockup_mode ? 'bootstrap1' : 'bootstrap1');
 //set endpointhead
 //setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
 
-const a = exprMichelineToJson('(Pair (Pair (Right (Right (Left 1))) (Pair (Some "KT1WJ4kHmQW5v6pBs3wLFMcpFS81eWCCLaUJ") (Some 0))) (Pair 1 (Pair (Pair (Right (Right (Left 0))) (Pair (Some "KT1B69UKZVwPP1tnjCDXJH7tDUZTjmJ21QF7") (Some 0))) (Pair "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" (Pair (Some 1642148097) (Pair 6 (Pair 5 (Pair 4 (Pair 3 (Pair { Pair "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" 2 } { Pair "tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb" 1 }))))))))))');
 describe('Contract deployments', async () => {
 
-    it('Fungible token (FA1.2) contract deployment should succeed', async () => {
-        [fa12_ft, _] = await deploy(
+    it('Fungible token 0 (FA1.2) contract deployment should succeed', async () => {
+        [fa12_ft_0, _] = await deploy(
             './test/test-contracts/test-fa12-ft.arl',
             {
                 parameters: {
@@ -87,6 +89,35 @@ describe('Contract deployments', async () => {
                     totalsupply: initial_fa12_ft_amount
                 },
                 as: alice.pkh,
+                named: "fa12_ft_0"
+            }
+        );
+    });
+
+    it('Fungible token 1 (FA1.2) contract deployment should succeed', async () => {
+        [fa12_ft_1, _] = await deploy(
+            './test/test-contracts/test-fa12-ft.arl',
+            {
+                parameters: {
+                    initialholder: alice.pkh,
+                    totalsupply: initial_fa12_ft_amount
+                },
+                as: alice.pkh,
+                named: "fa12_ft_1"
+            }
+        );
+    });
+
+    it('Fungible token 2 (FA1.2) contract deployment should succeed', async () => {
+        [fa12_ft_2, _] = await deploy(
+            './test/test-contracts/test-fa12-ft.arl',
+            {
+                parameters: {
+                    initialholder: alice.pkh,
+                    totalsupply: initial_fa12_ft_amount
+                },
+                as: alice.pkh,
+                named: "fa12_ft_2"
             }
         );
     });
@@ -347,28 +378,87 @@ describe('Auction contract setter tests', async () => {
 describe('Tokens setup', async () => {
     describe('FA1.2 tokens setup', async () => {
         it('Distribute FA1.2 tokens should succeed', async () => {
-            await fa12_ft.approve({
+            await fa12_ft_0.approve({
                 arg: {
                     spender: alice.pkh,
                     value: initial_fa12_ft_amount,
                 },
                 as: alice.pkh,
             });
-            await fa12_ft.approve({
+            await fa12_ft_0.approve({
                 arg: {
                     spender: auction.address,
                     value: initial_fa12_ft_amount,
                 },
                 as: alice.pkh,
             });
-            await fa12_ft.approve({
+            await fa12_ft_0.approve({
                 arg: {
                     spender: auction.address,
                     value: initial_fa12_ft_amount,
                 },
                 as: bob.pkh,
             });
-            await fa12_ft.transfer({
+            await fa12_ft_1.approve({
+                arg: {
+                    spender: alice.pkh,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_1.approve({
+                arg: {
+                    spender: auction.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_1.approve({
+                arg: {
+                    spender: auction.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: bob.pkh,
+            });
+            await fa12_ft_2.approve({
+                arg: {
+                    spender: alice.pkh,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_2.approve({
+                arg: {
+                    spender: auction.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_2.approve({
+                arg: {
+                    spender: auction.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: bob.pkh,
+            });
+            await fa12_ft_0.transfer({
+                arg: {
+                    from: alice.pkh,
+                    to: bob.pkh,
+                    value: initial_fa12_ft_amount / 2,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_1.transfer({
+                arg: {
+                    from: alice.pkh,
+                    to: bob.pkh,
+                    value: initial_fa12_ft_amount / 2,
+                },
+                as: alice.pkh,
+            });
+
+            await fa12_ft_2.transfer({
                 arg: {
                     from: alice.pkh,
                     to: bob.pkh,
@@ -1492,7 +1582,7 @@ describe('Start Auction tests', async () => {
                 argJsonMichelson: mkAuction(
                     nft.address,
                     token_id_6.toString(),
-                    fa12_ft.address,
+                    fa12_ft_0.address,
                     null,
                     FA_1_2,
                     "1",
@@ -1552,7 +1642,7 @@ describe('Start Auction tests', async () => {
                 }, {
                     "prim": "Some",
                     "args": [{
-                        "string": "${fa12_ft.address}"
+                        "string": "${fa12_ft_0.address}"
                     }]
                 }, {
                     "prim": "None"
@@ -1597,7 +1687,7 @@ describe('Start Auction tests', async () => {
                 argJsonMichelson: mkAuction(
                     nft.address,
                     token_id_7.toString(),
-                    fa12_ft.address,
+                    fa12_ft_1.address,
                     null,
                     FA_1_2,
                     "1",
@@ -1657,7 +1747,7 @@ describe('Start Auction tests', async () => {
                 }, {
                     "prim": "Some",
                     "args": [{
-                        "string": "${fa12_ft.address}"
+                        "string": "${fa12_ft_1.address}"
                     }]
                 }, {
                     "prim": "None"
@@ -1716,7 +1806,7 @@ describe('Start Auction tests', async () => {
                 argJsonMichelson: mkAuction(
                     nft.address,
                     token_id_8.toString(),
-                    fa12_ft.address,
+                    fa12_ft_2.address,
                     null,
                     FA_1_2,
                     "1",
@@ -1776,7 +1866,7 @@ describe('Start Auction tests', async () => {
                 }, {
                     "prim": "Some",
                     "args": [{
-                        "string": "${fa12_ft.address}"
+                        "string": "${fa12_ft_2.address}"
                     }]
                 }, {
                     "prim": "None"
@@ -2636,6 +2726,10 @@ describe('Put bid tests', async () => {
                 await delay(40000);
             }
             const storage = await auction_storage.getStorage();
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            assert(bob_ft_balance == initial_fa12_ft_amount / 2);
+
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
                 exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
@@ -2653,6 +2747,10 @@ describe('Put bid tests', async () => {
                 ),
                 as: bob.pkh,
             });
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            assert(post_bob_ft_balance == initial_fa12_ft_amount / 2 - total_bid_amount);
+
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
                 exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
@@ -2673,11 +2771,16 @@ describe('Put bid tests', async () => {
                 await delay(40000);
             }
             const storage = await auction_storage.getStorage();
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            assert(bob_ft_balance == initial_fa12_ft_amount / 2);
+
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
                 exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
                 exprMichelineToJson(`(pair address nat)'`)
             );
+            assert(bid.args[3].prim == 'None');
             await auction.put_bid({
                 argJsonMichelson: mkBid(
                     nft.address,
@@ -2689,6 +2792,11 @@ describe('Put bid tests', async () => {
                 ),
                 as: bob.pkh,
             });
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
+
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            assert(post_bob_ft_balance == initial_fa12_ft_amount / 2 - total_bid_amount);
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -2714,11 +2822,16 @@ describe('Put bid tests', async () => {
                 await delay(40000);
             }
             const storage = await auction_storage.getStorage();
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            assert(bob_ft_balance == initial_fa12_ft_amount / 2);
+
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
                 exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
                 exprMichelineToJson(`(pair address nat)'`)
             );
+            assert(bid.args[3].prim == 'None');
             await auction.put_bid({
                 argJsonMichelson: mkBid(
                     nft.address,
@@ -2730,6 +2843,10 @@ describe('Put bid tests', async () => {
                 ),
                 as: bob.pkh,
             });
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            assert(post_bob_ft_balance == initial_fa12_ft_amount / 2 - total_bid_amount);
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -2772,6 +2889,7 @@ describe('Finish auction tests', async () => {
             const auction_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction.address);
             const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+            const carl_ft_balance = await getFA2Balance(fa2_ft, token_id_0, carl.pkh);
             const daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_0, daniel.pkh);
             const custody_nft_balance = await getFA2Balance(nft, token_id_0, auction_storage.address);
             const alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
@@ -2783,6 +2901,7 @@ describe('Finish auction tests', async () => {
             assert(auction_ft_balance == 0);
             assert(alice_ft_balance == initial_fa2_ft_amount / 2);
             assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(carl_ft_balance == 0);
             assert(daniel_ft_balance == 0);
             assert(custody_nft_balance == 1);
             assert(alice_nft_balance == initial_nft_amount - 1);
@@ -2808,6 +2927,7 @@ describe('Finish auction tests', async () => {
             const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction.address);
             const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
             const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+            const post_carl_ft_balance = await getFA2Balance(fa2_ft, token_id_0, carl.pkh);
             const post_daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_0, daniel.pkh);
             const post_custody_nft_balance = await getFA2Balance(nft, token_id_0, auction_storage.address);
             const post_alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
@@ -2820,6 +2940,7 @@ describe('Finish auction tests', async () => {
             assert(post_auction_ft_balance == auction_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
             assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance);
@@ -2831,8 +2952,6 @@ describe('Finish auction tests', async () => {
                 exprMichelineToJson(`(pair address nat)'`)
             );
             assert(post_tx_auction == null);
-
-
         });
 
         it('Finish Fungible FA2 auction (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
@@ -3001,6 +3120,7 @@ describe('Finish auction tests', async () => {
             const auction_ft_balance = await getBalance(auction.address);
             const alice_ft_balance = await getBalance(alice.pkh);
             //const bob_ft_balance = await getBalance(bob.pkh);
+            const carl_ft_balance = await getBalance(carl.pkh);
             const daniel_ft_balance = await getBalance(daniel.pkh);
             const custody_nft_balance = await getFA2Balance(nft, token_id_3, auction_storage.address);
             const alice_nft_balance = await getFA2Balance(nft, token_id_3, alice.pkh);
@@ -3015,20 +3135,16 @@ describe('Finish auction tests', async () => {
             );
             assert(auction_record != null);
 
-            try {
-                await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_3})`,
-                    as: bob.pkh,
-                });
-            } catch (error) {
-                console.log(error)
-            }
-
+            await auction.finish_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_3})`,
+                as: bob.pkh,
+            });
 
             const post_custody_ft_balance = await getBalance(auction_storage.address);
             const post_auction_ft_balance = await getBalance(auction.address);
             const post_alice_ft_balance = await getBalance(alice.pkh);
             //const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_carl_ft_balance = await getBalance(carl.pkh);
             const post_daniel_ft_balance = await getBalance(daniel.pkh);
             const post_custody_nft_balance = await getFA2Balance(nft, token_id_3, auction_storage.address);
             const post_alice_nft_balance = await getFA2Balance(nft, token_id_3, alice.pkh);
@@ -3042,6 +3158,7 @@ describe('Finish auction tests', async () => {
             assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
             //Can't do this assert because bob balance will change because of gas fees
             //assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
             assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
             assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance);
@@ -3200,24 +3317,197 @@ describe('Finish auction tests', async () => {
     describe('Finish FA12 auction tests', async () => {
 
         it('Finish FA12 auction (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 10000000);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(100000);
+            }
+
+            const storage = await auction_storage.getStorage();
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_0, auction_storage.address);
+            const auction_ft_balance = await getFA12Balance(fa12_ft_0, auction.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_0, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_0, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_6, auction_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft, token_id_6, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft, token_id_6, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(auction_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 1);
+            assert(alice_nft_balance == initial_nft_amount - 1);
+            assert(bob_nft_balance == 0);
+
             await auction.finish_auction({
                 argMichelson: `(Pair "${nft.address}" ${token_id_6})`,
                 as: bob.pkh,
             });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_0, auction_storage.address);
+            const post_auction_ft_balance = await getFA12Balance(fa12_ft_0, auction.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_0, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_0, daniel.pkh);
+            const post_alice_nft_balance = await getFA2Balance(nft, token_id_6, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft, token_id_6, bob.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_6, auction_storage.address);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const rest = bid_amount - protocol_fees;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_auction = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(post_tx_auction == null);
+
         });
 
         it('Finish FA12 auction (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
+            const storage = await auction_storage.getStorage();
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_1, auction_storage.address);
+            const auction_ft_balance = await getFA12Balance(fa12_ft_1, auction.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_1, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_1, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_7, auction_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft, token_id_7, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft, token_id_7, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(auction_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(carl_ft_balance == 0);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 1);
+            assert(alice_nft_balance == initial_nft_amount - 1);
+            assert(bob_nft_balance == 0);
+
             await auction.finish_auction({
                 argMichelson: `(Pair "${nft.address}" ${token_id_7})`,
                 as: bob.pkh,
             });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_1, auction_storage.address);
+            const post_auction_ft_balance = await getFA12Balance(fa12_ft_1, auction.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_1, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_1, daniel.pkh);
+            const post_alice_nft_balance = await getFA2Balance(nft, token_id_7, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft, token_id_7, bob.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_7, auction_storage.address);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const royalties = bid_amount * (payout_value / 10000);
+            const fee_value = bid_amount * (payout_value / 10000);
+            const rest = bid_amount - protocol_fees - royalties - 3 * fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2);
+            assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_auction = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(post_tx_auction == null);
         });
 
         it('Finish FA12 auction (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
+            const storage = await auction_storage.getStorage();
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_2, auction_storage.address);
+            const auction_ft_balance = await getFA12Balance(fa12_ft_2, auction.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_2, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_2, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_8, auction_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft, token_id_8, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft, token_id_8, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(auction_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(carl_ft_balance == 0);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 1);
+            assert(alice_nft_balance == initial_nft_amount - 1);
+            assert(bob_nft_balance == 0);
+
             await auction.finish_auction({
                 argMichelson: `(Pair "${nft.address}" ${token_id_8})`,
                 as: bob.pkh,
             });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_2, auction_storage.address);
+            const post_auction_ft_balance = await getFA12Balance(fa12_ft_2, auction.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_2, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_2, daniel.pkh);
+            const post_alice_nft_balance = await getFA2Balance(nft, token_id_8, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft, token_id_8, bob.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_8, auction_storage.address);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const royalties = bid_amount * (payout_value / 10000);
+            const fee_value = bid_amount * (payout_value / 10000);
+            const rest = bid_amount - protocol_fees - 2 * royalties - 6 * fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 4 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 4 + royalties);
+            assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_auction = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(post_tx_auction == null);
         });
 
     });
