@@ -25,6 +25,9 @@ constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
 constant ROYALTIES_TOO_HIGH: string = "ROYALTIES_TOO_HIGH"
 constant SUM_PAYOUTS_NOT_100_PERCENT: string = "SUM_PAYOUTS_NOT_100_PERCENT"
 constant TOTAL_AMOUNT_NEGATIVE: string = "TOTAL_AMOUNT_NEGATIVE"
+constant AUCTION_WITH_BID_NON_CANCELLABLE: string = "AUCTION_WITH_BID_NON_CANCELLABLE"
+constant FINISHED_AUCTION_NON_CANCELLABLE: string = "FINISHED_AUCTION_NON_CANCELLABLE"
+constant ONLY_SELLER_CAN_CANCEL_AUCTION: string = "ONLY_SELLER_CAN_CANCEL_AUCTION"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -303,7 +306,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
       var pb_auction_storage = opt_get(auction_storage);
       var is_xtz = (auction.auction_buy_asset.asset_type.asset_class = XTZ);
       var previous_bid = auction.auction_last_bid;
-      var is_buyout = auction.auction_buy_out_price > 0 and auction.auction_buy_out_price <= pb_bid.bid_amount;
+      var is_buyout = auction.auction_buy_out_price > 0 and pb_bid.bid_amount >= auction.auction_buy_out_price;
       var total_amount = process_total_amount(pb_bid.bid_amount, protocol_fee, pb_bid.bid_origin_fees);
 
       dorequire(auction.auction_start_time < now, AUCTION_NOT_IN_PROGRESS);
@@ -332,9 +335,9 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
         ));
       );
 
-      if(is_buyout) then (
+      if(is_buyout = true) then (
         //do transfers and manage fees
-        transfer 0tz to selfaddress call buyout_auction<auction_record* bid>((auction, pb_bid))
+        transfer 0tz to selfaddress call buyout_auction<auction_record * bid>((auction, pb_bid))
       ) else (
         transfer 0tz to selfaddress call process_transfer<enum_asset_class* option<address> * option<nat> * nat * address * address>((
           auction.auction_buy_asset.asset_type.asset_class,
@@ -370,7 +373,7 @@ entry buyout_auction(ba_auction: auction_record, ba_bid: bid) {
       dorequire(ba_auction.auction_start_time < now, AUCTION_NOT_IN_PROGRESS);
       dorequire(ba_auction.auction_end_time > now, AUCTION_FINISHED);
 
-      transfer 0tz to selfaddress call manage_transfers<nat * nat * address * address * address * nat * fees * fees * %asset * %asset>(
+      transfer 0tz to selfaddress call manage_buyout_transfers<nat * nat * address * address * address * nat * fees * fees * %asset * %asset>(
          (
             ba_bid.bid_amount,
             ba_auction.auction_sell_asset_amount,
@@ -384,12 +387,14 @@ entry buyout_auction(ba_auction: auction_record, ba_bid: bid) {
             ba_auction.auction_sell_asset
          )
       );
-      transfer 0tz to ba_auction_storage call remove_auction<address * nat>((opt_get(ba_auction.auction_sell_asset.asset_contract), opt_get(ba_auction.auction_sell_asset.asset_id)))
+
+      transfer 0tz to ba_auction_storage call remove_auction<address * nat>((opt_get(ba_auction.auction_sell_asset.asset_contract), opt_get(ba_auction.auction_sell_asset.asset_id)));
     }
 }
 
 
 entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
+    called by selfaddress
     require {
         r_fa0: issome(auction_storage);
     }
@@ -397,10 +402,7 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
       var auction = require_some(get_auction_record(fa_asset_contract, fa_asset_id), MISSING_AUCTION);
       var fa_auction_storage = opt_get(auction_storage);
 
-      dorequire(auction.auction_start_time < auction.auction_end_time < now, (
-        AUCTION_NOT_FINISHABLE,
-        (auction.auction_start_time, auction.auction_end_time, now)
-      ));
+      dorequire(auction.auction_start_time < auction.auction_end_time < now, AUCTION_NOT_FINISHABLE);
 
       var last_bid = require_some(auction.auction_last_bid, NO_BID_FOR_AUCTION);
 
@@ -422,6 +424,31 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
 
     }
 }
+
+entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat){
+    require {
+        r_ca0: issome(auction_storage);
+    }
+    effect {
+      var auction = require_some(get_auction_record(ca_asset_contract, ca_asset_id), MISSING_AUCTION);
+      var ca_auction_storage = opt_get(auction_storage);
+
+      dorequire(isnone(auction.auction_last_bid), AUCTION_WITH_BID_NON_CANCELLABLE);
+      dorequire(auction.auction_seller = caller, ONLY_SELLER_CAN_CANCEL_AUCTION);
+      dorequire(auction.auction_end_time > now, FINISHED_AUCTION_NON_CANCELLABLE);
+
+      transfer 0tz to ca_auction_storage call process_transfer<process_transfer_param>({
+        ptp_asset_class = auction.auction_sell_asset.asset_type.asset_class;
+        ptp_asset_contract = auction.auction_sell_asset.asset_contract;
+        ptp_asset_id = auction.auction_sell_asset.asset_id;
+        ptp_amount = auction.auction_sell_asset_amount;
+        ptp_origin = ca_auction_storage;
+        ptp_destination = auction.auction_seller
+      });
+      transfer 0tz to ca_auction_storage call remove_auction<address * nat>((ca_asset_contract, ca_asset_id))
+    }
+}
+
 function auction_exists(ae_asset_contract: address, ae_asset_id: nat) : bool {
     return match callview<bool>(
         require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT),
@@ -438,18 +465,14 @@ function auction_exists(ae_asset_contract: address, ae_asset_id: nat) : bool {
 }
 
 function get_auction_record(gar_asset_contract: address, gar_asset_id: nat) : option<auction_record> {
-    return match callview<auction_record>(
+    return opt_get(callview<option<auction_record>>(
         require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT),
         "get_auction",
         (
             gar_asset_contract,
             gar_asset_id
         )
-    )
-    with
-        | some(v) -> some(v)
-        | none -> none<auction_record>
-    end
+    ))
 }
 
 function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part> {
@@ -478,112 +501,239 @@ entry manage_transfers(
   mt_auction_fees: fees,
   mt_buy_asset: %asset,
   mt_sell_asset: %asset){
-    var auction_storage_contract = require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT);
-    //First process the total amount of the order, and the protocol fees
-    var total = process_total_amount(mt_amount, mt_protocol_fees, mt_bid_fees.origin_fees);
-    var rest_fee = process_protocol_fees(total, mt_amount, mt_protocol_fees * 2);
+    called by selfaddress
+    effect {
+      var auction_storage_contract = require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT);
+      //First process the total amount of the order, and the protocol fees
+      var total = process_total_amount(mt_amount, mt_protocol_fees, mt_bid_fees.origin_fees);
+      var rest_fee = process_protocol_fees(total, mt_amount, mt_protocol_fees * 2);
 
-    var total_after_all_fees = rest_fee[0];
-    var protocol_fees = rest_fee[1];
-    //Then process the amount of royalties, and the matching operations
-    var rest_royalties = process_royalties(
-      mt_buy_asset,
-      mt_sell_asset,
-      mt_amount,
-      mt_from
-    );
-    total_after_all_fees -= rest_royalties[0];
+      var total_after_all_fees = rest_fee[0];
+      var protocol_fees = rest_fee[1];
+      //Then process the amount of royalties, and the matching operations
+      var rest_royalties = process_royalties(
+        mt_buy_asset,
+        mt_sell_asset,
+        mt_amount,
+        mt_from
+      );
+      total_after_all_fees -= rest_royalties[0];
 
-    var royalty_operations = rest_royalties[1];
-    //Then process the bid origin fees, and the matching operations
-    var rest_bid_origin_fees = process_fees(
-      mt_buy_asset,
-      mt_amount,
-      mt_bid_fees.origin_fees,
-      mt_from);
-    total_after_all_fees -= rest_bid_origin_fees[0];
-    var bid_origin_fees_operations = rest_bid_origin_fees[1];
+      var royalty_operations = rest_royalties[1];
+      //Then process the bid origin fees, and the matching operations
+      var rest_bid_origin_fees = process_fees(
+        mt_buy_asset,
+        mt_amount,
+        mt_bid_fees.origin_fees,
+        mt_from);
+      total_after_all_fees -= rest_bid_origin_fees[0];
+      var bid_origin_fees_operations = rest_bid_origin_fees[1];
 
-    //Then process the auction origin fees, and the matching operations
-    var rest_auction_origin_fees = process_fees(
-      mt_buy_asset,
-      mt_amount,
-      mt_auction_fees.origin_fees,
-      mt_from);
-    total_after_all_fees -= rest_auction_origin_fees[0];
-    var auction_origin_fees_operations = rest_auction_origin_fees[1];
-    //Finally process the auction and bid payouts, and the matching operations
-    var auction_payouts_rest = process_payouts(
-      mt_buy_asset,
-      mt_amount,
-      mt_from,
-      mt_auction_fees.payouts);
+      //Then process the auction origin fees, and the matching operations
+      var rest_auction_origin_fees = process_fees(
+        mt_buy_asset,
+        mt_amount,
+        mt_auction_fees.origin_fees,
+        mt_from);
+      total_after_all_fees -= rest_auction_origin_fees[0];
+      var auction_origin_fees_operations = rest_auction_origin_fees[1];
+      //Finally process the auction and bid payouts, and the matching operations
+      var auction_payouts_rest = process_payouts(
+        mt_buy_asset,
+        mt_amount,
+        mt_from,
+        mt_auction_fees.payouts);
 
-    total_after_all_fees -= auction_payouts_rest[0];
-    var auction_payouts_operations = auction_payouts_rest[1];
+      total_after_all_fees -= auction_payouts_rest[0];
+      var auction_payouts_operations = auction_payouts_rest[1];
 
-    var bid_payouts_rest = process_payouts(
-      mt_buy_asset,
-      mt_amount,
-      mt_from,
-      mt_bid_fees.payouts);
+      var bid_payouts_rest = process_payouts(
+        mt_buy_asset,
+        mt_amount,
+        mt_from,
+        mt_bid_fees.payouts);
 
-    total_after_all_fees -= bid_payouts_rest[0];
-    var bid_payouts_operations = bid_payouts_rest[1];
+      total_after_all_fees -= bid_payouts_rest[0];
+      var bid_payouts_operations = bid_payouts_rest[1];
 
-    dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
+      dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
 
-    //fail((total_after_all_fees, protocol_fees, royalty_operations, bid_origin_fees_operations, auction_origin_fees_operations, auction_payouts_operations, bid_payouts_operations));
-    //Now that we have processed all the fees, we need to process the operations
-    //1st: transfer protocol fees
-    transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
-        ptp_asset_class = mt_buy_asset.asset_type.asset_class;
-        ptp_asset_contract = mt_buy_asset.asset_contract;
-        ptp_asset_id = mt_buy_asset.asset_id;
-        ptp_amount = protocol_fees;
-        ptp_origin = mt_from;
-        ptp_destination = get_fee_receiver(mt_buy_asset.asset_contract)
-      });
-    //2nd: transfer royalties
-    for royalty_operation in royalty_operations do
-          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(royalty_operation)
-    done;
-    //3rd: bid origin fees
-    for bid_origin_fees_operation in bid_origin_fees_operations do
-          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(bid_origin_fees_operation)
-    done;
-    //4th: auction origin fees
-    for auction_origin_fees_operation in auction_origin_fees_operations do
-          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(auction_origin_fees_operation)
-    done;
-    //5th: auction payouts
-    for payouts_operation in auction_payouts_operations do
-          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(payouts_operation)
-    done;
-    //6th: bid payouts
-    for payouts_operation in bid_payouts_operations do
-          transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(payouts_operation)
-    done;
+      //fail((total_after_all_fees, protocol_fees, royalty_operations, bid_origin_fees_operations, auction_origin_fees_operations, auction_payouts_operations, bid_payouts_operations));
+      //Now that we have processed all the fees, we need to process the operations
+      //1st: transfer protocol fees
+      transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
+          ptp_asset_class = mt_buy_asset.asset_type.asset_class;
+          ptp_asset_contract = mt_buy_asset.asset_contract;
+          ptp_asset_id = mt_buy_asset.asset_id;
+          ptp_amount = protocol_fees;
+          ptp_origin = mt_from;
+          ptp_destination = get_fee_receiver(mt_buy_asset.asset_contract)
+        });
+      //2nd: transfer royalties
+      for royalty_operation in royalty_operations do
+            transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(royalty_operation)
+      done;
+      //3rd: bid origin fees
+      for bid_origin_fees_operation in bid_origin_fees_operations do
+            transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(bid_origin_fees_operation)
+      done;
+      //4th: auction origin fees
+      for auction_origin_fees_operation in auction_origin_fees_operations do
+            transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(auction_origin_fees_operation)
+      done;
+      //5th: auction payouts
+      for payouts_operation in auction_payouts_operations do
+            transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(payouts_operation)
+      done;
+      //6th: bid payouts
+      for payouts_operation in bid_payouts_operations do
+            transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>(payouts_operation)
+      done;
 
-    //Then, transfer sell asset to buyer
-    transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
-        ptp_asset_class = mt_sell_asset.asset_type.asset_class;
-        ptp_asset_contract = mt_sell_asset.asset_contract;
-        ptp_asset_id = mt_sell_asset.asset_id;
-        ptp_amount = mt_sell_amount;
-        ptp_origin = mt_from;
-        ptp_destination = mt_buyer
-      });
+      //Then, transfer sell asset to buyer
+      transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
+          ptp_asset_class = mt_sell_asset.asset_type.asset_class;
+          ptp_asset_contract = mt_sell_asset.asset_contract;
+          ptp_asset_id = mt_sell_asset.asset_id;
+          ptp_amount = mt_sell_amount;
+          ptp_origin = mt_from;
+          ptp_destination = mt_buyer
+        });
 
-    //Finally, transfer buy asset to seller
-    transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
-        ptp_asset_class = mt_buy_asset.asset_type.asset_class;
-        ptp_asset_contract = mt_buy_asset.asset_contract;
-        ptp_asset_id = mt_buy_asset.asset_id;
-        ptp_amount = total_after_all_fees;
-        ptp_origin = mt_from;
-        ptp_destination = mt_seller
-      })
+      //Finally, transfer buy asset to seller
+      transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
+          ptp_asset_class = mt_buy_asset.asset_type.asset_class;
+          ptp_asset_contract = mt_buy_asset.asset_contract;
+          ptp_asset_id = mt_buy_asset.asset_id;
+          ptp_amount = total_after_all_fees;
+          ptp_origin = mt_from;
+          ptp_destination = mt_seller
+        })
+    }
+
+}
+
+entry manage_buyout_transfers(
+  mt_amount: nat,
+  mt_sell_amount: nat,
+  mt_from: address,
+  mt_seller: address,
+  mt_buyer: address,
+  mt_protocol_fees: nat,
+  mt_bid_fees: fees,
+  mt_auction_fees: fees,
+  mt_buy_asset: %asset,
+  mt_sell_asset: %asset) {
+    called by selfaddress
+    effect {
+      var auction_storage_contract = require_some(auction_storage, MISSING_AUCTION_CUSTODY_CONTRACT);
+      //First process the total amount of the order, and the protocol fees
+      var total = process_total_amount(mt_amount, mt_protocol_fees, mt_bid_fees.origin_fees);
+      var rest_fee = process_protocol_fees(total, mt_amount, mt_protocol_fees * 2);
+
+      var total_after_all_fees = rest_fee[0];
+      var protocol_fees = rest_fee[1];
+      //Then process the amount of royalties, and the matching operations
+      var rest_royalties = process_royalties(
+        mt_buy_asset,
+        mt_sell_asset,
+        mt_amount,
+        mt_buyer
+      );
+      total_after_all_fees -= rest_royalties[0];
+
+      var royalty_operations = rest_royalties[1];
+      //Then process the bid origin fees, and the matching operations
+      var rest_bid_origin_fees = process_fees(
+        mt_buy_asset,
+        mt_amount,
+        mt_bid_fees.origin_fees,
+        mt_buyer);
+      total_after_all_fees -= rest_bid_origin_fees[0];
+      var bid_origin_fees_operations = rest_bid_origin_fees[1];
+
+      //Then process the auction origin fees, and the matching operations
+      var rest_auction_origin_fees = process_fees(
+        mt_buy_asset,
+        mt_amount,
+        mt_auction_fees.origin_fees,
+        mt_buyer);
+      total_after_all_fees -= rest_auction_origin_fees[0];
+      var auction_origin_fees_operations = rest_auction_origin_fees[1];
+      //Finally process the auction and bid payouts, and the matching operations
+      var auction_payouts_rest = process_payouts(
+        mt_buy_asset,
+        mt_amount,
+        mt_buyer,
+        mt_auction_fees.payouts);
+
+      total_after_all_fees -= auction_payouts_rest[0];
+      var auction_payouts_operations = auction_payouts_rest[1];
+
+      var bid_payouts_rest = process_payouts(
+        mt_buy_asset,
+        mt_amount,
+        mt_buyer,
+        mt_bid_fees.payouts);
+
+      total_after_all_fees -= bid_payouts_rest[0];
+      var bid_payouts_operations = bid_payouts_rest[1];
+
+      dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
+
+      //Now that we have processed all the fees, we need to process the operations
+      //1st: transfer protocol fees
+      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+          ptp_asset_class = mt_buy_asset.asset_type.asset_class;
+          ptp_asset_contract = mt_buy_asset.asset_contract;
+          ptp_asset_id = mt_buy_asset.asset_id;
+          ptp_amount = protocol_fees;
+          ptp_origin = mt_buyer;
+          ptp_destination = get_fee_receiver(mt_buy_asset.asset_contract)
+        });
+      //2nd: transfer royalties
+      for royalty_operation in royalty_operations do
+            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(royalty_operation)
+      done;
+
+      //3rd: bid origin fees
+      for bid_origin_fees_operation in bid_origin_fees_operations do
+            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(bid_origin_fees_operation)
+      done;
+      //4th: auction origin fees
+      for auction_origin_fees_operation in auction_origin_fees_operations do
+            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(auction_origin_fees_operation)
+      done;
+      //5th: auction payouts
+      for payouts_operation in auction_payouts_operations do
+            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
+      done;
+      //6th: bid payouts
+      for payouts_operation in bid_payouts_operations do
+            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
+      done;
+
+      //Then, transfer sell asset to buyer
+      transfer 0tz to auction_storage_contract call process_transfer<process_transfer_param>({
+          ptp_asset_class = mt_sell_asset.asset_type.asset_class;
+          ptp_asset_contract = mt_sell_asset.asset_contract;
+          ptp_asset_id = mt_sell_asset.asset_id;
+          ptp_amount = mt_sell_amount;
+          ptp_origin = mt_from;
+          ptp_destination = mt_buyer
+        });
+
+      //fail(total_after_all_fees);
+      //Finally, transfer buy asset to seller
+      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+          ptp_asset_class = mt_buy_asset.asset_type.asset_class;
+          ptp_asset_contract = mt_buy_asset.asset_contract;
+          ptp_asset_id = mt_buy_asset.asset_id;
+          ptp_amount = total_after_all_fees;
+          ptp_origin = mt_buyer;
+          ptp_destination = mt_seller
+        });
+    }
 }
 
 function bp(bp_value : nat, bp_op_value : nat) : nat {
@@ -714,3 +864,5 @@ entry process_transfer(pt_transfer: process_transfer_param){
     end;
   }
 }
+
+entry default() {}
