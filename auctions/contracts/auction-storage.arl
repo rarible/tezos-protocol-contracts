@@ -188,9 +188,13 @@ entry remove_auction(ra_asset : address, ra_asset_id : nat) {
 view auction_exists(ae_asset : address, ae_asset_id : nat) : bool {
   return auctions.contains((ae_asset, ae_asset_id))
 }
+view get_auction(ga_asset : address, ga_asset_id : nat) : option<auction_record> {
 
-view get_auction(ga_asset : address, ga_asset_id : nat) : auction_record {
-  return auctions[(ga_asset, ga_asset_id)].auction_data
+  if(auctions.contains((ga_asset, ga_asset_id))) then (
+    return some(auctions[(ga_asset, ga_asset_id)].auction_data);
+   ) else (
+    return none;
+   )
 }
 
 entry process_transfer(pt_transfer: process_transfer_param){

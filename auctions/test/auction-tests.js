@@ -49,8 +49,8 @@ let fa12_ft_1;
 let fa12_ft_2;
 let fa2_ft;
 
-const initial_fa2_ft_amount = 10000000000000000;
-const initial_fa12_ft_amount = 10000000000000000;
+const initial_fa2_ft_amount = 100000000;
+const initial_fa12_ft_amount = 100000000;
 const initial_nft_amount = 100;
 const token_id_0 = 0;
 const token_id_1 = 1;
@@ -61,6 +61,7 @@ const token_id_5 = 5;
 const token_id_6 = 6;
 const token_id_7 = 7;
 const token_id_8 = 8;
+const token_id_9 = 9;
 
 const fee = 250;
 const minimal_price = 10;
@@ -68,6 +69,7 @@ const buyout_price = 1000000000;
 const min_step = 2;
 const payout_value = 100;
 const bid_amount = "1000000";
+const duration = 100;
 
 // accounts
 const alice = getAccount(mockup_mode ? 'alice' : 'alice');
@@ -615,6 +617,22 @@ describe('Tokens setup', async () => {
                 },
                 as: alice.pkh,
             });
+            await fa2_ft.mint({
+                arg: {
+                    itokenid: token_id_9,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_9, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
         });
     });
 
@@ -725,6 +743,16 @@ describe('Tokens setup', async () => {
                 },
                 as: alice.pkh,
             });
+            await nft.mint({
+                arg: {
+                    itokenid: token_id_9,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
         });
     });
 
@@ -765,6 +793,10 @@ describe('Tokens setup', async () => {
             argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_8})}`,
             as: alice.pkh,
         });
+        await nft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_9})}`,
+            as: alice.pkh,
+        });
         await fa2_ft.update_operators({
             argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_0})}`,
             as: alice.pkh,
@@ -799,6 +831,10 @@ describe('Tokens setup', async () => {
         });
         await fa2_ft.update_operators({
             argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_8})}`,
+            as: alice.pkh,
+        });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_9})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
@@ -837,6 +873,10 @@ describe('Tokens setup', async () => {
             argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_8})}`,
             as: bob.pkh,
         });
+        await fa2_ft.update_operators({
+            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_9})}`,
+            as: bob.pkh,
+        });
     });
 });
 
@@ -847,7 +887,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -958,7 +997,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -1083,7 +1121,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -1227,7 +1264,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -1326,7 +1362,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -1439,7 +1474,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -1570,7 +1604,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -1675,7 +1708,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -1794,7 +1826,6 @@ describe('Start Auction tests', async () => {
                 await setMockupNow((Date.now() / 1000) + 34);
             }
             const start_time = Math.floor(Date.now() / 1000 + 35);
-            const duration = 100;
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -1932,7 +1963,7 @@ describe('Start Auction tests', async () => {
             await expectToThrow(async () => {
                 await auction.start_auction({
                     argJsonMichelson: mkFA12Auction(
-                        fa12_ft.address,
+                        fa12_ft_0.address,
                         fa2_ft.address,
                         token_id_0.toString(),
                         FA_2_FT,
@@ -2302,7 +2333,7 @@ describe('Put bid tests', async () => {
                     ),
                     as: bob.pkh,
                 });
-            }, '(Pair "AssetNotFound" "auctions")');
+            }, '"MISSING_AUCTION"');
         });
 
         it('Put bid on an auction not started should fail', async () => {
@@ -2380,6 +2411,189 @@ describe('Put bid tests', async () => {
 
         });
     });
+
+    it('Put bid with existing bid should send back funds to previous bidder', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 40);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(40000);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 41);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_9.toString(),
+                    fa2_ft.address,
+                    token_id_9.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    duration.toString(),
+                    minimal_price.toString(),
+                    `${parseInt(bid_amount)+2}`,
+                    "1",
+                    [],
+                    []),
+                as: alice.pkh,
+            });
+
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 42);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+                await delay(40000);
+            }
+
+            const storage = await auction_storage.getStorage();
+            const bid = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(bid.args[3].prim == 'None');
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_9, alice.pkh);
+
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_9.toString(),
+                    `${parseInt(bid_amount)-1}`,
+                    bob.pkh,
+                    [],
+                    []
+                ),
+                as: bob.pkh,
+            });
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_9, alice.pkh);
+
+            const bob_total_bid_amount = Math.ceil(parseInt(bid_amount-1) * (1 + fee / 10000));
+
+            assert(post_bob_ft_balance == bob_ft_balance - bob_total_bid_amount + 1);
+            assert(alice_ft_balance == post_alice_ft_balance);
+
+            const post_bid = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(
+                post_bid.args[3].prim == 'Some' &&
+                post_bid.args[3].args[0].args[2].int == bid_amount-1 &&
+                post_bid.args[3].args[0].args[3].string == bob.pkh
+            );
+
+            const alice_total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_9.toString(),
+                    bid_amount,
+                    alice.pkh,
+                    [],
+                    []
+                ),
+                as: alice.pkh,
+            });
+
+            const post_alice_bid = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+
+            assert(
+                post_alice_bid.args[3].prim == 'Some' &&
+                post_alice_bid.args[3].args[0].args[2].int == bid_amount &&
+                post_alice_bid.args[3].args[0].args[3].string == alice.pkh
+            );
+
+            const post_alice_bid_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
+            const post_alice_bid_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_9, alice.pkh);
+
+            assert(post_alice_bid_bob_ft_balance == post_bob_ft_balance + bob_total_bid_amount - 1 && post_alice_bid_bob_ft_balance == bob_ft_balance);
+            assert(alice_ft_balance == post_alice_bid_alice_ft_balance + alice_total_bid_amount);
+        });
+
+        it('Put bid > buyout should close auction and succeed', async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 40);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(40000);
+            }
+
+            const new_bid_amount = parseInt(bid_amount) + 100;
+
+            const storage = await auction_storage.getStorage();
+
+            const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_9, auction_storage.address);
+            const auction_ft_balance = await getFA2Balance(fa2_ft, token_id_9, auction.address);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_9, alice.pkh);
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
+            const carl_ft_balance = await getFA2Balance(fa2_ft, token_id_9, carl.pkh);
+            const daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_9, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_9, auction_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft, token_id_9, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft, token_id_9, bob.pkh);
+
+            const alice_total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            const total_bid_amount = Math.ceil(parseInt(new_bid_amount) * (1 + fee / 10000)) - 1;
+
+            var auction_record = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(auction_record != null);
+
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_9.toString(),
+                    new_bid_amount.toString(),
+                    bob.pkh,
+                    [],
+                    []
+                ),
+                as: bob.pkh,
+            });
+
+            const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_9, auction_storage.address);
+            const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_9, auction.address);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_9, alice.pkh);
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
+            const post_carl_ft_balance = await getFA2Balance(fa2_ft, token_id_9, carl.pkh);
+            const post_daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_9, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_9, auction_storage.address);
+            const post_alice_nft_balance = await getFA2Balance(nft, token_id_9, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft, token_id_9, bob.pkh);
+
+            const protocol_fees = Math.floor(new_bid_amount * (fee / 10000));
+            const rest = new_bid_amount - protocol_fees;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + alice_total_bid_amount + rest -1 );
+            assert(post_bob_ft_balance == bob_ft_balance - total_bid_amount);
+            assert(post_carl_ft_balance == carl_ft_balance);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + 1);
+            assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_auction = await getValueFromBigMap(
+                parseInt(storage.auctions),
+                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
+                exprMichelineToJson(`(pair address nat)'`)
+            );
+            assert(post_tx_auction == null);
+        });
 
     describe('Put bid Fungible FA2 tests', async () => {
         it('Put bid with good amount of Fungible FA2 should succeed (no bid origin fees, no payouts)', async () => {
@@ -2914,14 +3128,11 @@ describe('Finish auction tests', async () => {
             );
             assert(auction_record != null);
 
-            try {
-                await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
-                    as: bob.pkh,
-                });
-            } catch (error) {
-                console.log(error);
-            }
+            await auction.finish_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
+                as: bob.pkh,
+            });
+
 
             const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction_storage.address);
             const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction.address);
@@ -2992,14 +3203,10 @@ describe('Finish auction tests', async () => {
             );
             assert(auction_record != null);
 
-            try {
-                await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_1})`,
-                    as: bob.pkh,
-                });
-            } catch (error) {
-                throw (error);
-            }
+            await auction.finish_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_1})`,
+                as: bob.pkh,
+            });
 
             const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, auction_storage.address);
             const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_1, auction.address);
@@ -3201,15 +3408,10 @@ describe('Finish auction tests', async () => {
             );
             assert(auction_record != null);
 
-            try {
-                await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_4})`,
-                    as: bob.pkh,
-                });
-            } catch (error) {
-                console.log(error);
-            }
-
+            await auction.finish_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_4})`,
+                as: bob.pkh,
+            });
 
             const post_custody_ft_balance = await getBalance(auction_storage.address);
             const post_auction_ft_balance = await getBalance(auction.address);
@@ -3510,5 +3712,220 @@ describe('Finish auction tests', async () => {
             assert(post_tx_auction == null);
         });
 
+    });
+
+    describe('Common Finish auction tests', async () => {
+        it('Finish a non existing auction should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.finish_auction({
+                    argMichelson: `(Pair "${nft.address}" 99)`,
+                    as: bob.pkh,
+                });
+            }, '"MISSING_AUCTION"');
+        });
+
+        it('Finish an auction not started should fail', async () => {
+            await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000));
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+                    await delay(40000);
+                }
+                const start_time = Math.floor(Date.now() / 1000 + 100);
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_6.toString(),
+                        fa2_ft.address,
+                        token_id_6.toString(),
+                        FA_2_FT,
+                        "1",
+                        alice.pkh,
+                        start_time,
+                        "200",
+                        minimal_price.toString(),
+                        buyout_price.toString(),
+                        min_step.toString(),
+                        [],
+                        []),
+                    as: alice.pkh,
+                });
+
+                await auction.finish_auction({
+                    argMichelson: `(Pair "${nft.address}" ${token_id_6})`,
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_NOT_FINISHABLE"');
+        });
+
+        it('Finish an auction not ended (without bid) should fail', async () => {
+            await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000));
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+                    await delay(40000);
+                }
+                await auction.finish_auction({
+                    argMichelson: `(Pair "${nft.address}" ${token_id_6})`,
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_NOT_FINISHABLE"');
+        });
+
+        it('Finish an auction not ended (with bid) should fail', async () => {
+            await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow((Date.now() / 1000) + 100);
+                } else {
+                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+                    await delay(40000);
+                }
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_6.toString(),
+                        10000,
+                        bob.pkh,
+                        [],
+                        []
+                    ),
+                    as: bob.pkh,
+                });
+                await auction.finish_auction({
+                    argMichelson: `(Pair "${nft.address}" ${token_id_6})`,
+                    as: bob.pkh,
+                });
+            }, '"AUCTION_NOT_FINISHABLE"');
+        });
+    });
+});
+
+describe('Cancel auction tests', async () => {
+    it('Cancel a non existing auction should fail', async () => {
+        await expectToThrow(async () => {
+            await auction.cancel_auction({
+                argMichelson: `(Pair "${nft.address}" 999999)`,
+                as: bob.pkh,
+            });
+        }, '"MISSING_AUCTION"');
+    });
+
+    it('Cancel someone else auction should fail', async () => {
+        await expectToThrow(async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000));
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(40000);
+            }
+            const start_time = Math.floor(Date.now() / 1000 + 1);
+            await auction.start_auction({
+                argJsonMichelson: mkAuction(
+                    nft.address,
+                    token_id_0.toString(),
+                    fa2_ft.address,
+                    token_id_0.toString(),
+                    FA_2_FT,
+                    "1",
+                    alice.pkh,
+                    start_time,
+                    "200",
+                    minimal_price.toString(),
+                    buyout_price.toString(),
+                    min_step.toString(),
+                    [],
+                    []),
+                as: alice.pkh,
+            });
+            await auction.cancel_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
+                as: bob.pkh,
+            });
+        }, '"ONLY_SELLER_CAN_CANCEL_AUCTION"');
+    });
+
+    it('Cancel an already finished auction should fail', async () => {
+        await expectToThrow(async () => {
+
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 100000000);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+                await delay(100000);
+            }
+            await auction.cancel_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
+                as: alice.pkh,
+            });
+        }, '"FINISHED_AUCTION_NON_CANCELLABLE"');
+    });
+
+    it('Cancel an auction with an existing bid should fail', async () => {
+        await expectToThrow(async () => {
+            if (isMockup()) {
+                await setMockupNow((Date.now() / 1000) + 2);
+            } else {
+                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+                await delay(42000);
+            }
+            await auction.put_bid({
+                argJsonMichelson: mkBid(
+                    nft.address,
+                    token_id_0.toString(),
+                    10000,
+                    bob.pkh,
+                    [],
+                    []
+                ),
+                as: bob.pkh,
+            });
+            await auction.cancel_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
+                as: alice.pkh,
+            });
+        }, '"AUCTION_WITH_BID_NON_CANCELLABLE"');
+    });
+
+    it('Cancel a valid auction should succeed', async () => {
+        const start_time = Math.floor(Date.now() / 1000 + 1);
+        await auction.start_auction({
+            argJsonMichelson: mkAuction(
+                nft.address,
+                token_id_1.toString(),
+                fa2_ft.address,
+                token_id_1.toString(),
+                FA_2_FT,
+                "1",
+                alice.pkh,
+                start_time,
+                "200",
+                minimal_price.toString(),
+                buyout_price.toString(),
+                min_step.toString(),
+                [],
+                []),
+            as: alice.pkh,
+        });
+        const storage = await auction_storage.getStorage();
+        var auction_record = await getValueFromBigMap(
+            parseInt(storage.auctions),
+            exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
+            exprMichelineToJson(`(pair address nat)'`)
+        );
+        assert(auction_record != null);
+
+        await auction.cancel_auction({
+            argMichelson: `(Pair "${nft.address}" ${token_id_1})`,
+            as: alice.pkh,
+        });
+
+        var post_tx_auction = await getValueFromBigMap(
+            parseInt(storage.auctions),
+            exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
+            exprMichelineToJson(`(pair address nat)'`)
+        );
+        assert(post_tx_auction == null);
     });
 });

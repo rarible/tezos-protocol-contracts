@@ -433,7 +433,7 @@ entry %transfer (txs : list<address * list<transfer_destination>>) {
       | some(%from) -> begin
           var permit_key = blake2b(pack(txs));
           if not permits.contains(%from)
-          then fail(NO_ENTRY_FOR_USER)
+          then fail((NO_ENTRY_FOR_USER, txs, "NFT"))
           else if not permits[%from].user_permits.contains(permit_key)
           then fail(FA2_NOT_OPERATOR)
           else (
