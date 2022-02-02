@@ -2333,7 +2333,7 @@ describe('Put bid tests', async () => {
                     ),
                     as: bob.pkh,
                 });
-            }, '(Pair "AssetNotFound" "auctions")');
+            }, '"MISSING_AUCTION"');
         });
 
         it('Put bid on an auction not started should fail', async () => {
@@ -3128,14 +3128,11 @@ describe('Finish auction tests', async () => {
             );
             assert(auction_record != null);
 
-            try {
-                await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
-                    as: bob.pkh,
-                });
-            } catch (error) {
-                console.log(error);
-            }
+            await auction.finish_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
+                as: bob.pkh,
+            });
+
 
             const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction_storage.address);
             const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_0, auction.address);
@@ -3206,14 +3203,10 @@ describe('Finish auction tests', async () => {
             );
             assert(auction_record != null);
 
-            try {
-                await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_1})`,
-                    as: bob.pkh,
-                });
-            } catch (error) {
-                throw (error);
-            }
+            await auction.finish_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_1})`,
+                as: bob.pkh,
+            });
 
             const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, auction_storage.address);
             const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_1, auction.address);
@@ -3415,15 +3408,10 @@ describe('Finish auction tests', async () => {
             );
             assert(auction_record != null);
 
-            try {
-                await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_4})`,
-                    as: bob.pkh,
-                });
-            } catch (error) {
-                console.log(error);
-            }
-
+            await auction.finish_auction({
+                argMichelson: `(Pair "${nft.address}" ${token_id_4})`,
+                as: bob.pkh,
+            });
 
             const post_custody_ft_balance = await getBalance(auction_storage.address);
             const post_auction_ft_balance = await getBalance(auction.address);

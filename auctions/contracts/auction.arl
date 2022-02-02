@@ -394,7 +394,6 @@ entry buyout_auction(ba_auction: auction_record, ba_bid: bid) {
 
 
 entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
-    called by selfaddress
     require {
         r_fa0: issome(auction_storage);
     }
