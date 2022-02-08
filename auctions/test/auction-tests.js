@@ -37,7 +37,7 @@ require('mocha/package.json');
 
 setQuiet('true');
 
-const mockup_mode = false;
+const mockup_mode = true;
 
 // contracts
 let auction_storage;
@@ -909,7 +909,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [],
-                    []),
+                    [],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -987,7 +989,13 @@ describe('Start Auction tests', async () => {
                     "int": "${fee}"
                 },
                 [],
-                []
+                [],
+                {
+                    "prim": "None"
+                },
+                {
+                    "prim": "None"
+                }
             ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
         });
@@ -1019,7 +1027,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [mkPart(carl.pkh, payout_value)],
-                    [mkPart(daniel.pkh, payout_value)]),
+                    [mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -1111,7 +1121,13 @@ describe('Start Auction tests', async () => {
                     }, {
                         "int": "${payout_value}"
                     }]
-                }]
+                }],
+                {
+                    "prim": "None"
+                },
+                {
+                    "prim": "None"
+                }
             ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
         });
@@ -1143,7 +1159,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
-                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]),
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -1251,7 +1269,13 @@ describe('Start Auction tests', async () => {
                     }, {
                         "int": "${payout_value}"
                     }]
-                }]
+                }],
+                {
+                    "prim": "None"
+                },
+                {
+                    "prim": "None"
+                }
             ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
 
@@ -1286,7 +1310,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [],
-                    []),
+                    [],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -1352,7 +1378,13 @@ describe('Start Auction tests', async () => {
                     "int": "${fee}"
                 },
                 [],
-                []
+                [],
+                {
+                    "prim": "None"
+                },
+                {
+                    "prim": "None"
+                }
             ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
         });
@@ -1384,7 +1416,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [mkPart(carl.pkh, payout_value)],
-                    [mkPart(daniel.pkh, payout_value)]),
+                    [mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -1464,7 +1498,13 @@ describe('Start Auction tests', async () => {
                     }, {
                         "int": "${payout_value}"
                     }]
-                }]
+                }],
+                {
+                    "prim": "None"
+                },
+                {
+                    "prim": "None"
+                }
             ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
         });
@@ -1496,7 +1536,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
-                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]),
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -1592,7 +1634,13 @@ describe('Start Auction tests', async () => {
                     }, {
                         "int": "${payout_value}"
                     }]
-                }]
+                }],
+                {
+                    "prim": "None"
+                },
+                {
+                    "prim": "None"
+                }
             ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
         });
@@ -1626,7 +1674,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [],
-                    []),
+                    [],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -1698,7 +1748,13 @@ describe('Start Auction tests', async () => {
                 "int": "${fee}"
             },
             [],
-            []
+            [],
+            {
+                "prim": "None"
+            },
+            {
+                "prim": "None"
+            }
         ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
         });
@@ -1730,7 +1786,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [mkPart(carl.pkh, payout_value)],
-                    [mkPart(daniel.pkh, payout_value)]),
+                    [mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -1816,7 +1874,13 @@ describe('Start Auction tests', async () => {
                 }, {
                     "int": "${payout_value}"
                 }]
-            }]
+            }],
+            {
+                "prim": "None"
+            },
+            {
+                "prim": "None"
+            }
         ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
         });
@@ -1848,7 +1912,9 @@ describe('Start Auction tests', async () => {
                     buyout_price.toString(),
                     min_step.toString(),
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
-                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]),
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -1950,7 +2016,13 @@ describe('Start Auction tests', async () => {
                 }, {
                     "int": "${payout_value}"
                 }]
-            }]
+            }],
+            {
+                "prim": "None"
+            },
+            {
+                "prim": "None"
+            }
         ]`);
             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
 
@@ -1975,7 +2047,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa0")');
@@ -1998,7 +2072,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa0")');
@@ -2042,7 +2118,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa1")');
@@ -2065,7 +2143,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa2")');
@@ -2088,7 +2168,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa3")');
@@ -2111,7 +2193,9 @@ describe('Start Auction tests', async () => {
                         "1",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa4")');
@@ -2134,7 +2218,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: carl.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa7")');
@@ -2156,7 +2242,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '"MISSING_ASSET_CONTRACT"');
@@ -2178,7 +2266,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '"MISSING_ASSET_ID"');
@@ -2199,7 +2289,9 @@ describe('Start Auction tests', async () => {
                         "100",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '"MISSING_ASSET_ID"');
@@ -2228,7 +2320,9 @@ describe('Start Auction tests', async () => {
                         "10000000000",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa8")');
@@ -2257,7 +2351,9 @@ describe('Start Auction tests', async () => {
                         "10000000000",
                         "2",
                         [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")]),
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
             }, '"AUCTION_ALREADY_EXISTS"');
@@ -2283,7 +2379,9 @@ describe('Put bid tests', async () => {
                         0,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: bob.pkh,
                 });
@@ -2306,7 +2404,9 @@ describe('Put bid tests', async () => {
                         100,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: carl.pkh,
                 });
@@ -2329,7 +2429,9 @@ describe('Put bid tests', async () => {
                         111,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: bob.pkh,
                 });
@@ -2353,7 +2455,9 @@ describe('Put bid tests', async () => {
                         bid_amount,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: bob.pkh,
                 });
@@ -2378,7 +2482,9 @@ describe('Put bid tests', async () => {
                         bid_amount,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: bob.pkh,
                 });
@@ -2403,7 +2509,9 @@ describe('Put bid tests', async () => {
                         1,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: bob.pkh,
                 });
@@ -2412,7 +2520,9 @@ describe('Put bid tests', async () => {
         });
     });
 
-    it('Put bid with existing bid should send back funds to previous bidder', async () => {
+    describe('Put bid with exiting bids or buyout tests', async () => {
+
+        it('Put bid with existing bid should send back funds to previous bidder', async () => {
             if (isMockup()) {
                 await setMockupNow((Date.now() / 1000) + 40);
             } else {
@@ -2432,10 +2542,12 @@ describe('Put bid tests', async () => {
                     start_time,
                     duration.toString(),
                     minimal_price.toString(),
-                    `${parseInt(bid_amount)+2}`,
+                    `${parseInt(bid_amount) + 2}`,
                     "1",
                     [],
-                    []),
+                    [],
+                    null,
+                    null),
                 as: alice.pkh,
             });
 
@@ -2460,17 +2572,19 @@ describe('Put bid tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_9.toString(),
-                    `${parseInt(bid_amount)-1}`,
+                    `${parseInt(bid_amount) - 1}`,
                     bob.pkh,
                     [],
-                    []
+                    [],
+                    null,
+                    null
                 ),
                 as: bob.pkh,
             });
             const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
             const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_9, alice.pkh);
 
-            const bob_total_bid_amount = Math.ceil(parseInt(bid_amount-1) * (1 + fee / 10000));
+            const bob_total_bid_amount = Math.ceil(parseInt(bid_amount - 1) * (1 + fee / 10000));
 
             assert(post_bob_ft_balance == bob_ft_balance - bob_total_bid_amount + 1);
             assert(alice_ft_balance == post_alice_ft_balance);
@@ -2482,7 +2596,7 @@ describe('Put bid tests', async () => {
             );
             assert(
                 post_bid.args[3].prim == 'Some' &&
-                post_bid.args[3].args[0].args[2].int == bid_amount-1 &&
+                post_bid.args[3].args[0].args[2].int == bid_amount - 1 &&
                 post_bid.args[3].args[0].args[3].string == bob.pkh
             );
 
@@ -2495,7 +2609,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     alice.pkh,
                     [],
-                    []
+                    [],
+                    null,
+                    null
                 ),
                 as: alice.pkh,
             });
@@ -2559,7 +2675,9 @@ describe('Put bid tests', async () => {
                     new_bid_amount.toString(),
                     bob.pkh,
                     [],
-                    []
+                    [],
+                    null,
+                    null
                 ),
                 as: bob.pkh,
             });
@@ -2579,7 +2697,7 @@ describe('Put bid tests', async () => {
 
             assert(post_custody_ft_balance == 0);
             assert(post_auction_ft_balance == auction_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + alice_total_bid_amount + rest -1 );
+            assert(post_alice_ft_balance == alice_ft_balance + alice_total_bid_amount + rest - 1);
             assert(post_bob_ft_balance == bob_ft_balance - total_bid_amount);
             assert(post_carl_ft_balance == carl_ft_balance);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + 1);
@@ -2594,6 +2712,7 @@ describe('Put bid tests', async () => {
             );
             assert(post_tx_auction == null);
         });
+    });
 
     describe('Put bid Fungible FA2 tests', async () => {
         it('Put bid with good amount of Fungible FA2 should succeed (no bid origin fees, no payouts)', async () => {
@@ -2618,7 +2737,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [],
-                    []
+                    [],
+                    null,
+                    null
                 ),
                 as: bob.pkh,
             });
@@ -2657,7 +2778,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value)],
-                    [mkPart(daniel.pkh, payout_value)]
+                    [mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null
                 ),
                 as: bob.pkh,
             });
@@ -2701,7 +2824,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
-                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null
                 ),
                 as: bob.pkh,
             });
@@ -2743,7 +2868,9 @@ describe('Put bid tests', async () => {
                         bid_amount + 1,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: bob.pkh,
                 });
@@ -2766,7 +2893,9 @@ describe('Put bid tests', async () => {
                         bid_amount - 1,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: bob.pkh,
                 });
@@ -2792,7 +2921,9 @@ describe('Put bid tests', async () => {
                         bid_amount,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     amount: `${bid_amount + 1}utz`,
                     as: bob.pkh,
@@ -2822,7 +2953,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [],
-                    []
+                    [],
+                    null,
+                    null
                 ),
                 amount: `${total_bid_amount}utz`,
                 as: bob.pkh,
@@ -2861,7 +2994,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value)],
-                    [mkPart(daniel.pkh, payout_value)]
+                    [mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null
                 ),
                 amount: `${total_bid_amount}utz`,
                 as: bob.pkh,
@@ -2904,7 +3039,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
-                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null
                 ),
                 amount: `${total_bid_amount}utz`,
                 as: bob.pkh,
@@ -2957,7 +3094,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [],
-                    []
+                    [],
+                    null,
+                    null
                 ),
                 as: bob.pkh,
             });
@@ -3002,7 +3141,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value)],
-                    [mkPart(daniel.pkh, payout_value)]
+                    [mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null
                 ),
                 as: bob.pkh,
             });
@@ -3053,7 +3194,9 @@ describe('Put bid tests', async () => {
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
-                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)]
+                    [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
+                    null,
+                    null
                 ),
                 as: bob.pkh,
             });
@@ -3748,7 +3891,9 @@ describe('Finish auction tests', async () => {
                         buyout_price.toString(),
                         min_step.toString(),
                         [],
-                        []),
+                        [],
+                        null,
+                        null),
                     as: alice.pkh,
                 });
 
@@ -3789,7 +3934,9 @@ describe('Finish auction tests', async () => {
                         10000,
                         bob.pkh,
                         [],
-                        []
+                        [],
+                        null,
+                        null
                     ),
                     as: bob.pkh,
                 });

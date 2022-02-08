@@ -182,6 +182,8 @@ record bid {
   bid_origin_fees : list<part>;
   bid_amount : nat;
   bid_bidder: address;
+  bid_data_type  : option<bytes>;
+  bid_data       : option<bytes>;
 }
 
 record auction_record {
@@ -198,6 +200,8 @@ record auction_record {
   auction_protocol_fee: nat;
   auction_payouts : list<part>;
   auction_origin_fees : list<part>;
+  auction_data_type  : option<bytes>;
+  auction_data       : option<bytes>;
 }
 
 record auction_args {
@@ -212,6 +216,8 @@ record auction_args {
   auction_args_minimal_step: nat;
   auction_args_payouts : list<part>;
   auction_args_origin_fees : list<part>;
+  auction_args_data_type  : option<bytes>;
+  auction_args_data       : option<bytes>;
 }
 
 //----------------------------------------------------------------------------
@@ -274,7 +280,9 @@ entry start_auction(
             auction_minimal_step = sa_auction.auction_args_minimal_step;
             auction_protocol_fee = protocol_fee;
             auction_payouts = sa_auction.auction_args_payouts;
-            auction_origin_fees = sa_auction.auction_args_origin_fees
+            auction_origin_fees = sa_auction.auction_args_origin_fees;
+            auction_data_type = sa_auction.auction_args_data_type;
+            auction_data = sa_auction.auction_args_data
         };
 
         transfer 0tz to auction_storage_contract call set_auction<auction_record>(storage_auction);
