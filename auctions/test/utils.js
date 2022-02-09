@@ -281,7 +281,9 @@ exports.mkAuction = (
     buyOutPrice,
     minStep,
     payouts,
-    originFees
+    originFees,
+    dataType,
+    data
 ) => {
     return {
         "prim": "Pair",
@@ -335,7 +337,22 @@ exports.mkAuction = (
                                                                                 "prim": "Pair",
                                                                                 "args": [
                                                                                     payouts,
-                                                                                    originFees
+                                                                                    {
+                                                                                        "prim": "Pair",
+                                                                                        "args": [
+                                                                                            originFees,
+                                                                                            {
+                                                                                                "prim": "Pair",
+                                                                                                "args": [{
+                                                                                                        "prim": "None"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "prim": "None"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
+                                                                                    }
                                                                                 ]
                                                                             }
                                                                         ]
@@ -371,7 +388,9 @@ exports.mkAuctionWithMissingFA2AssetContract = (
     buyOutPrice,
     minStep,
     payouts,
-    originFees
+    originFees,
+    dataType,
+    data
 ) => {
     return {
         "prim": "Pair",
@@ -425,7 +444,22 @@ exports.mkAuctionWithMissingFA2AssetContract = (
                                                                                 "prim": "Pair",
                                                                                 "args": [
                                                                                     payouts,
-                                                                                    originFees
+                                                                                    {
+                                                                                        "prim": "Pair",
+                                                                                        "args": [
+                                                                                            originFees,
+                                                                                            {
+                                                                                                "prim": "Pair",
+                                                                                                "args": [{
+                                                                                                        "prim": "None"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "prim": "None"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
+                                                                                    }
                                                                                 ]
                                                                             }
                                                                         ]
@@ -461,7 +495,9 @@ exports.mkAuctionWithMissingFA2AssetId = (
     buyOutPrice,
     minStep,
     payouts,
-    originFees
+    originFees,
+    dataType,
+    data
 ) => {
     return {
         "prim": "Pair",
@@ -515,7 +551,22 @@ exports.mkAuctionWithMissingFA2AssetId = (
                                                                                 "prim": "Pair",
                                                                                 "args": [
                                                                                     payouts,
-                                                                                    originFees
+                                                                                    {
+                                                                                        "prim": "Pair",
+                                                                                        "args": [
+                                                                                            originFees,
+                                                                                            {
+                                                                                                "prim": "Pair",
+                                                                                                "args": [{
+                                                                                                        "prim": "None"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "prim": "None"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
+                                                                                    }
                                                                                 ]
                                                                             }
                                                                         ]
@@ -550,7 +601,9 @@ exports.mkAuctionWithMissingFA2AssetContractAndId = (
     buyOutPrice,
     minStep,
     payouts,
-    originFees
+    originFees,
+    dataType,
+    data
 ) => {
     return {
         "prim": "Pair",
@@ -604,7 +657,22 @@ exports.mkAuctionWithMissingFA2AssetContractAndId = (
                                                                                 "prim": "Pair",
                                                                                 "args": [
                                                                                     payouts,
-                                                                                    originFees
+                                                                                    {
+                                                                                        "prim": "Pair",
+                                                                                        "args": [
+                                                                                            originFees,
+                                                                                            {
+                                                                                                "prim": "Pair",
+                                                                                                "args": [{
+                                                                                                        "prim": "None"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "prim": "None"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
+                                                                                    }
                                                                                 ]
                                                                             }
                                                                         ]
@@ -641,7 +709,9 @@ exports.mkFungibleFA2Auction = (
     buyOutPrice,
     minStep,
     payouts,
-    originFees
+    originFees,
+    dataType,
+    data
 ) => {
     return {
         "prim": "Pair",
@@ -695,7 +765,22 @@ exports.mkFungibleFA2Auction = (
                                                                                 "prim": "Pair",
                                                                                 "args": [
                                                                                     payouts,
-                                                                                    originFees
+                                                                                    {
+                                                                                        "prim": "Pair",
+                                                                                        "args": [
+                                                                                            originFees,
+                                                                                            {
+                                                                                                "prim": "Pair",
+                                                                                                "args": [{
+                                                                                                        "prim": "None"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "prim": "None"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
+                                                                                    }
                                                                                 ]
                                                                             }
                                                                         ]
@@ -731,7 +816,9 @@ exports.mkFA12Auction = (
     buyOutPrice,
     minStep,
     payouts,
-    originFees
+    originFees,
+    dataType,
+    data
 ) => {
     return {
         "prim": "Pair",
@@ -785,7 +872,22 @@ exports.mkFA12Auction = (
                                                                                 "prim": "Pair",
                                                                                 "args": [
                                                                                     payouts,
-                                                                                    originFees
+                                                                                    {
+                                                                                        "prim": "Pair",
+                                                                                        "args": [
+                                                                                            originFees,
+                                                                                            {
+                                                                                                "prim": "Pair",
+                                                                                                "args": [{
+                                                                                                        "prim": "None"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "prim": "None"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
+                                                                                    }
                                                                                 ]
                                                                             }
                                                                         ]
@@ -820,7 +922,9 @@ exports.mkXTZAuction = (
     buyOutPrice,
     minStep,
     payouts,
-    originFees
+    originFees,
+    dataType,
+    data
 ) => {
     return {
         "prim": "Pair",
@@ -874,7 +978,22 @@ exports.mkXTZAuction = (
                                                                                 "prim": "Pair",
                                                                                 "args": [
                                                                                     payouts,
-                                                                                    originFees
+                                                                                    {
+                                                                                        "prim": "Pair",
+                                                                                        "args": [
+                                                                                            originFees,
+                                                                                            {
+                                                                                                "prim": "Pair",
+                                                                                                "args": [{
+                                                                                                        "prim": "None"
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "prim": "None"
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
+                                                                                    }
                                                                                 ]
                                                                             }
                                                                         ]
@@ -903,7 +1022,9 @@ exports.mkBid = (
     amount,
     bidder,
     payouts,
-    originFees
+    originFees,
+    bidDataType,
+    bidData
 ) => {
     return {
         "prim": "Pair",
@@ -932,8 +1053,22 @@ exports.mkBid = (
                             "int": `${amount}`
                           },
                           {
-                            "string": `${bidder}`
-                          }
+                            "prim": "Pair",
+                            "args": [{
+                                    "string": `${bidder}`
+                                },
+                                {
+                                    "prim": "Pair",
+                                    "args": [{
+                                            "prim": "None"
+                                        },
+                                        {
+                                            "prim": "None"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
                         ]
                       }
                     ]
