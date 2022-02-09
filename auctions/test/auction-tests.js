@@ -41,6 +41,7 @@ const mockup_mode = true;
 
 // contracts
 let auction_storage;
+let transfer_manager;
 let auction;
 let royalties;
 let nft;
@@ -172,20 +173,34 @@ describe('Contract deployments', async () => {
         );
     });
 
+    it('Transfer manager contract deployment should succeed', async () => {
+        [transfer_manager, _] = await deploy(
+            '../transfer-manager/contracts/transfer-manager.arl',
+            {
+                parameters: {
+                    owner: alice.pkh,
+                    auction_storage: royalties.address,
+                    royalties_provider: nft.address,
+                    default_fee_receiver: carl.pkh,
+                },
+                as: alice.pkh,
+            }
+        );
+    });
+
     it('Auction contract deployment should succeed', async () => {
         [auction, _] = await deploy(
             './contracts/auction.arl',
             {
                 parameters: {
                     owner: alice.pkh,
-                    default_fee_receiver: carl.pkh,
                     protocol_fee: 0,
-                    royalties_provider: nft.address
+                    transfer_manager: transfer_manager.address,
+                    auction_storage: royalties.address,
                 },
                 as: alice.pkh,
             }
         );
-        console.log();
     });
 });
 
@@ -213,10 +228,34 @@ describe('Auction storage setter tests', async () => {
         const post_test_storage = await auction_storage.getStorage();
         assert(post_test_storage.auction_contract == auction.address);
     });
+
+    it('Set transfer manager as non admin should fail', async () => {
+        await expectToThrow(async () => {
+            await auction_storage.set_transfer_manager({
+                arg: {
+                    stm_contract: transfer_manager.address
+                },
+                as: bob.pkh
+            });
+        }, errors.INVALID_CALLER);
+    });
+
+    it('Set transfer manager as admin should succeed', async () => {
+        const storage = await auction_storage.getStorage();
+        assert(storage.transfer_manager == null);
+        await auction_storage.set_transfer_manager({
+            arg: {
+                stm_contract: transfer_manager.address
+            },
+            as: alice.pkh
+        });
+        const post_test_storage = await auction_storage.getStorage();
+        assert(post_test_storage.transfer_manager == transfer_manager.address);
+    });
 });
 
 describe('Auction contract setter tests', async () => {
-    describe('Auction storage contract setter tests', async () => {
+    describe('Auction storage (Auction contract) contract setter tests', async () => {
         it('Set auction storage contract as non admin should fail', async () => {
             await expectToThrow(async () => {
                 await auction.set_auction_storage_contract({
@@ -230,8 +269,34 @@ describe('Auction contract setter tests', async () => {
 
         it('Set auction storage contract as admin should succeed', async () => {
             const storage = await auction.getStorage();
-            assert(storage.auction_storage == null);
+            assert(storage.auction_storage == royalties.address);
             await auction.set_auction_storage_contract({
+                arg: {
+                    sacs_contract: auction_storage.address
+                },
+                as: alice.pkh
+            });
+            const post_test_storage = await auction.getStorage();
+            assert(post_test_storage.auction_storage == auction_storage.address);
+        });
+    });
+
+    describe('Auction storage (Transfer manager) contract setter tests', async () => {
+        it('Set auction storage contract as non admin should fail', async () => {
+            await expectToThrow(async () => {
+                await transfer_manager.set_auction_storage_contract({
+                    arg: {
+                        sacs_contract: auction_storage.address
+                    },
+                    as: bob.pkh
+                });
+            }, errors.INVALID_CALLER);
+        });
+
+        it('Set auction storage contract as admin should succeed', async () => {
+            const storage = await transfer_manager.getStorage();
+            assert(storage.auction_storage == royalties.address);
+            await transfer_manager.set_auction_storage_contract({
                 arg: {
                     sacs_contract: auction_storage.address
                 },
@@ -325,7 +390,7 @@ describe('Auction contract setter tests', async () => {
     describe('Fee receiver setter tests', async () => {
         it('Set fee receiver as non admin should fail', async () => {
             await expectToThrow(async () => {
-                await auction.set_default_fee_receiver({
+                await transfer_manager.set_default_fee_receiver({
                     arg: {
                         sfr: daniel.pkh
                     },
@@ -336,15 +401,15 @@ describe('Auction contract setter tests', async () => {
 
         it('Set fee receiver as admin should succeed', async () => {
             const receiver = daniel.pkh;
-            const storage = await auction.getStorage();
+            const storage = await transfer_manager.getStorage();
             assert(storage.default_fee_receiver == carl.pkh);
-            await auction.set_default_fee_receiver({
+            await transfer_manager.set_default_fee_receiver({
                 arg: {
                     sfr: receiver
                 },
                 as: alice.pkh
             });
-            const post_test_storage = await auction.getStorage();
+            const post_test_storage = await transfer_manager.getStorage();
             assert(post_test_storage.default_fee_receiver == receiver);
         });
     });
@@ -352,7 +417,7 @@ describe('Auction contract setter tests', async () => {
     describe('Royalties provider setter tests', async () => {
         it('Set royalties provider as non admin should fail', async () => {
             await expectToThrow(async () => {
-                await auction.set_royalties_provider({
+                await transfer_manager.set_royalties_provider({
                     arg: {
                         srp: royalties.address
                     },
@@ -363,15 +428,15 @@ describe('Auction contract setter tests', async () => {
 
         it('Set royalties provider as admin should succeed', async () => {
             const provider = royalties.address;
-            const storage = await auction.getStorage();
+            const storage = await transfer_manager.getStorage();
             assert(storage.royalties_provider == nft.address);
-            await auction.set_royalties_provider({
+            await transfer_manager.set_royalties_provider({
                 arg: {
                     srp: provider
                 },
                 as: alice.pkh
             });
-            const post_test_storage = await auction.getStorage();
+            const post_test_storage = await transfer_manager.getStorage();
             assert(post_test_storage.royalties_provider == provider);
         });
     });
@@ -389,14 +454,14 @@ describe('Tokens setup', async () => {
             });
             await fa12_ft_0.approve({
                 arg: {
-                    spender: auction.address,
+                    spender: transfer_manager.address,
                     value: initial_fa12_ft_amount,
                 },
                 as: alice.pkh,
             });
             await fa12_ft_0.approve({
                 arg: {
-                    spender: auction.address,
+                    spender: transfer_manager.address,
                     value: initial_fa12_ft_amount,
                 },
                 as: bob.pkh,
@@ -410,14 +475,14 @@ describe('Tokens setup', async () => {
             });
             await fa12_ft_1.approve({
                 arg: {
-                    spender: auction.address,
+                    spender: transfer_manager.address,
                     value: initial_fa12_ft_amount,
                 },
                 as: alice.pkh,
             });
             await fa12_ft_1.approve({
                 arg: {
-                    spender: auction.address,
+                    spender: transfer_manager.address,
                     value: initial_fa12_ft_amount,
                 },
                 as: bob.pkh,
@@ -431,14 +496,14 @@ describe('Tokens setup', async () => {
             });
             await fa12_ft_2.approve({
                 arg: {
-                    spender: auction.address,
+                    spender: transfer_manager.address,
                     value: initial_fa12_ft_amount,
                 },
                 as: alice.pkh,
             });
             await fa12_ft_2.approve({
                 arg: {
-                    spender: auction.address,
+                    spender: transfer_manager.address,
                     value: initial_fa12_ft_amount,
                 },
                 as: bob.pkh,
@@ -758,123 +823,123 @@ describe('Tokens setup', async () => {
 
     it('Add auction contract as operator for NFT and FT', async () => {
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_0})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_1})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_2})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_3})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_4})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_5})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_6})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_7})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_8})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
             as: alice.pkh,
         });
         await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_9})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_0})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_1})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_2})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_3})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_4})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_5})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_6})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_7})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_8})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${auction.address}" ${token_id_9})}`,
+            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
             as: alice.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_0})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_1})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_2})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_3})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_4})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_5})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_6})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_7})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_8})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
             as: bob.pkh,
         });
         await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${auction.address}" ${token_id_9})}`,
+            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
             as: bob.pkh,
         });
     });
@@ -2297,43 +2362,6 @@ describe('Start Auction tests', async () => {
             }, '"MISSING_ASSET_ID"');
         });
 
-        it('Starting auction buying when auction storage is not set should fail', async () => {
-            await expectToThrow(async () => {
-                await auction.set_auction_storage_contract({
-                    arg: {
-                        sacs_contract: null
-                    },
-                    as: alice.pkh
-                });
-                await auction.start_auction({
-                    argJsonMichelson: mkAuction(
-                        nft.address,
-                        token_id_0.toString(),
-                        fa2_ft.address,
-                        token_id_0.toString(),
-                        FA_2_FT,
-                        "1",
-                        alice.pkh,
-                        Date.now(),
-                        "1000000",
-                        "10",
-                        "10000000000",
-                        "2",
-                        [mkPart(alice.pkh, "100")],
-                        [mkPart(alice.pkh, "100")],
-                        null,
-                        null),
-                    as: alice.pkh,
-                });
-            }, '(Pair "InvalidCondition" "r_sa8")');
-            await auction.set_auction_storage_contract({
-                arg: {
-                    sacs_contract: auction_storage.address
-                },
-                as: alice.pkh
-            });
-        });
-
         it('Starting auction buying with Fungible FA2 that already exists should fail', async () => {
             await expectToThrow(async () => {
                 await auction.start_auction({
@@ -2602,19 +2630,24 @@ describe('Put bid tests', async () => {
 
             const alice_total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
-            await auction.put_bid({
-                argJsonMichelson: mkBid(
-                    nft.address,
-                    token_id_9.toString(),
-                    bid_amount,
-                    alice.pkh,
-                    [],
-                    [],
-                    null,
-                    null
-                ),
-                as: alice.pkh,
-            });
+            try {
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_9.toString(),
+                        bid_amount,
+                        alice.pkh,
+                        [],
+                        [],
+                        null,
+                        null
+                    ),
+                    as: alice.pkh,
+                });
+            } catch (error) {
+                console.log(error)
+            }
+
 
             const post_alice_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),

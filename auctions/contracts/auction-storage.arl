@@ -4,9 +4,11 @@ archetype auction_storage(
 with metadata ""
 
 constant MISSING_AUCTION_CONTRACT: string = "MISSING_AUCTION_CONTRACT"
+constant MISSING_TRANSFER_MANAGER: string = "MISSING_TRANSFER_MANAGER"
 constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
 constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
 constant MISSING_AUCTION: string = "MISSING_AUCTION"
+constant ROYALTIES_TOO_HIGH: string = "ROYALTIES_TOO_HIGH"
 
 enum fa2_class =
 | Fungible
@@ -72,10 +74,19 @@ entry set_auction_contract(sac_contract : address) {
   }
 }
 
+entry set_transfer_manager(stm_contract : address) {
+  called by owner
+  effect {
+    transfer_manager := some(stm_contract);
+  }
+}
+
 //----------------------------------------------------------------------------
 // Auction
 //----------------------------------------------------------------------------
 variable auction_contract : option<address> = none
+variable transfer_manager : option<address> = none
+
 variable max_transferrable_fa12_amount : nat = 10000000000000000000
 
 record bid {
@@ -143,14 +154,6 @@ entry set_auction(sa_auction : auction_record) {
   }
 }
 
-entry update_bid_for_auction(ubfa_asset_contract: address, ubfa_asset_id: nat, ubfa_bid: bid) {
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
-  effect {
-    dorequire(auctions.contains((ubfa_asset_contract, ubfa_asset_id)), MISSING_AUCTION);
-    auctions[(ubfa_asset_contract, ubfa_asset_id)].auction_data.auction_record_last_bid := some(ubfa_bid);
-  }
-}
-
 entry update_auction(auction: auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   require {
@@ -169,16 +172,6 @@ entry update_auction(auction: auction_record) {
         auction_data = auction
       }
     );
-  }
-}
-
-entry extend_auction_duration(ead_asset_contract: address, ead_asset_id: nat, ead_duration: duration) {
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
-  effect {
-    dorequire(auctions.contains((ead_asset_contract, ead_asset_id)), MISSING_AUCTION);
-    var ead_auction: auction_record = auctions[(ead_asset_contract, ead_asset_id)].auction_data;
-    var new_end_time = now + ead_duration;
-    auctions[(ead_asset_contract, ead_asset_id)].auction_data.auction_record_end_time := new_end_time;
   }
 }
 
@@ -202,7 +195,7 @@ view get_auction(ga_asset : address, ga_asset_id : nat) : option<auction_record>
 }
 
 entry process_transfer(pt_transfer: process_transfer_param){
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT) or require_some(transfer_manager, MISSING_TRANSFER_MANAGER)
   effect {
     match pt_transfer.ptp_asset_class with
     | FA_2(fa2t)  -> (
