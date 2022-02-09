@@ -1,8 +1,8 @@
 const {
     getValueFromBigMap,
     getAccount,
-
     getEndpoint,
+    packTyped
 } = require('@completium/completium-cli');
 
 exports.XTZ = 'XTZ';
@@ -14,53 +14,43 @@ exports.mkBuyAsset = (assetType, assetContract, assetId) => {
     let payload = {};
     switch (assetType) {
         case this.XTZ:
-            payload = this.mkAuctionXTZAsset();
+            payload = this.mkXTZAsset();
             break;
         case this.FA_1_2:
-            payload = this.mkAuctionFA12Asset(assetContract);
+            payload = this.mkFA12Asset(assetContract);
             break;
         case this.FA_2_NFT:
             payload = this.mkAuctionNonFungibleFA2Asset(assetContract, assetId);
             break;
         case this.FA_2_FT:
-            payload = this.mkAuctionFungibleFA2Asset(assetContract, assetId);
+            payload = this.mkFungibleFA2Asset(assetContract, assetId);
             break;
     }
     return payload;
 };
 
-exports.mkAuctionFungibleFA2Asset = (assetContract, assetId) => {
-    return {
-        "prim": "Pair",
-        "args": [{
-            "prim": "Right",
-            "args": [{
-                "prim": "Right",
-                "args": [{
-                    "prim": "Left",
-                    "args": [{
-                        "int": "0"
-                    }]
-                }]
-            }]
-        }, {
-            "prim": "Pair",
-            "args": [
-                {
-                    "args": [
-                        {
-                            "string": assetContract
-                        }
-                    ],
-                    "prim": "Some"
-                }, {
-                    "prim": "Some",
-                    "args": [{
-                        "int": `${assetId}`
-                    }]
-                }]
-        }]
-    };
+exports.mkFungibleFA2Asset = (assetContract, assetId) => {
+    return packTyped({
+        prim: "Pair",
+        args: [
+            {
+                string: `${assetContract}`,
+            },
+            {
+                int: `${assetId}`,
+            },
+        ],
+    }, {
+        prim: "pair",
+        args: [
+            {
+                prim: "address",
+            },
+            {
+                prim: "nat",
+            },
+        ],
+    });
 };
 
 
@@ -99,143 +89,42 @@ exports.mkAuctionNonFungibleFA2Asset = (assetContract, assetId) => {
 };
 
 exports.mkAuctionNonFungibleFA2AssetWithMissingAssetid = (assetContract) => {
-    return {
-        "prim": "Pair",
-        "args": [{
-            "prim": "Right",
-            "args": [{
-                "prim": "Right",
-                "args": [{
-                    "prim": "Left",
-                    "args": [{
-                        "int": "1"
-                    }]
-                }]
-            }]
-        }, {
-            "prim": "Pair",
-            "args": [
-                {
-                    "args": [
-                        {
-                            "string": assetContract
-                        }
-                    ],
-                    "prim": "Some"
-                }, {
-                    "prim": "None"
-                }]
-        }]
-    };
+    return packTyped(
+        {
+            string: `${assetContract}`,
+        },
+        {
+            prim: "address",
+        }
+    );
 };
 
 exports.mkAuctionNonFungibleFA2AssetWithMissingContract = (assetId) => {
-    return {
-        "prim": "Pair",
-        "args": [{
-            "prim": "Right",
-            "args": [{
-                "prim": "Right",
-                "args": [{
-                    "prim": "Left",
-                    "args": [{
-                        "int": "1"
-                    }]
-                }]
-            }]
-        }, {
-            "prim": "Pair",
-            "args": [
-                {
-                    "prim": "None"
-                }, {
-                    "prim": "Some",
-                    "args": [{
-                        "int": `${assetId}`
-                    }]
-                }]
-        }]
-    };
+    return packTyped({
+        int: `${assetId}`,
+    }, {
+        prim: "nat",
+    });
 };
 
 exports.mkAuctionNonFungibleFA2AssetWithMissingContractAndId = () => {
-    return {
-        "prim": "Pair",
-        "args": [{
-            "prim": "Right",
-            "args": [{
-                "prim": "Right",
-                "args": [{
-                    "prim": "Left",
-                    "args": [{
-                        "int": "1"
-                    }]
-                }]
-            }]
-        }, {
-            "prim": "Pair",
-            "args": [
-                {
-                    "prim": "None"
-                }, {
-                    "prim": "None",
-                }]
-        }]
-    };
+    return packTyped({
+        int: "",
+    }, {
+        prim: "nat",
+    });
 };
 
-exports.mkAuctionFA12Asset = (assetContract) => {
-    return {
-        "prim": "Pair",
-        "args": [{
-            "prim": "Right",
-            "args": [{
-                "prim": "Left",
-                "args": [{
-                    "prim": "Unit"
-                }]
-            }]
-        }, {
-            "prim": "Pair",
-            "args": [{
-                "args": [
-                    {
-                        "string": assetContract
-                    }
-                ],
-                "prim": "Some"
-            }, {
-                "prim": "None"
-            }]
-        }]
-    };
+exports.mkFA12Asset = (assetContract) => {
+    return packTyped({
+        string: `${assetContract}`,
+    }, {
+        prim: "address",
+    });
 };
 
-exports.mkAuctionXTZAsset = () => {
-    return {
-        "prim": "Pair",
-        "args": [
-            {
-                "prim": "Left",
-                "args": [
-                    {
-                        "prim": "Unit"
-                    }
-                ]
-            },
-            {
-                "prim": "Pair",
-                "args": [
-                    {
-                        "prim": "None"
-                    },
-                    {
-                        "prim": "None"
-                    }
-                ]
-            }
-        ]
-    };
+exports.mkXTZAsset = () => {
+    return 0x00;
 };
 
 exports.mkStartDate = (startDate) => {
@@ -270,8 +159,7 @@ exports.mkPart = (address, value) => {
 exports.mkAuction = (
     sellAssetContract,
     sellAssetId,
-    buyAssetContract,
-    buyAssetId,
+    buyAsset,
     buyAssetType,
     assetQty,
     seller,
@@ -288,66 +176,87 @@ exports.mkAuction = (
     return {
         "prim": "Pair",
         "args": [
-            this.mkAuctionNonFungibleFA2Asset(sellAssetContract, sellAssetId),
+            {
+                "string": `${sellAssetContract}`
+            },
             {
                 "prim": "Pair",
                 "args": [
                     {
-                        "int": `${assetQty}`,
+                        "int": `${sellAssetId}`
                     },
                     {
                         "prim": "Pair",
                         "args": [
-                            this.mkBuyAsset(buyAssetType, buyAssetContract, buyAssetId),
+                            {
+                                "int": `${assetQty}`
+                            },
                             {
                                 "prim": "Pair",
                                 "args": [
                                     {
-                                        "string": `${seller}`
+                                        "int": `${buyAssetType}`
                                     },
                                     {
                                         "prim": "Pair",
                                         "args": [
-                                            this.mkStartDate(startDate),
+                                            {
+                                                "bytes": `${buyAsset}`
+                                            },
                                             {
                                                 "prim": "Pair",
                                                 "args": [
                                                     {
-                                                        "int": `${auctionDuration}`
+                                                        "string": `${seller}`
                                                     },
                                                     {
                                                         "prim": "Pair",
                                                         "args": [
-                                                            {
-                                                                "int": `${minPrice}`
-                                                            },
+                                                            this.mkStartDate(startDate),
                                                             {
                                                                 "prim": "Pair",
                                                                 "args": [
                                                                     {
-                                                                        "int": `${buyOutPrice}`
+                                                                        "int": `${auctionDuration}`
                                                                     },
                                                                     {
                                                                         "prim": "Pair",
                                                                         "args": [
                                                                             {
-                                                                                "int": `${minStep}`
+                                                                                "int": `${minPrice}`
                                                                             },
                                                                             {
                                                                                 "prim": "Pair",
                                                                                 "args": [
-                                                                                    payouts,
+                                                                                    {
+                                                                                        "int": `${buyOutPrice}`
+                                                                                    },
                                                                                     {
                                                                                         "prim": "Pair",
                                                                                         "args": [
-                                                                                            originFees,
+                                                                                            {
+                                                                                                "int": `${minStep}`
+                                                                                            },
                                                                                             {
                                                                                                 "prim": "Pair",
-                                                                                                "args": [{
-                                                                                                        "prim": "None"
-                                                                                                    },
+                                                                                                "args": [
+                                                                                                    payouts,
                                                                                                     {
-                                                                                                        "prim": "None"
+                                                                                                        "prim": "Pair",
+                                                                                                        "args": [
+                                                                                                            originFees,
+                                                                                                            {
+                                                                                                                "prim": "Pair",
+                                                                                                                "args": [
+                                                                                                                    {
+                                                                                                                        "prim": "None"
+                                                                                                                    },
+                                                                                                                    {
+                                                                                                                        "prim": "None"
+                                                                                                                    }
+                                                                                                                ]
+                                                                                                            }
+                                                                                                        ]
                                                                                                     }
                                                                                                 ]
                                                                                             }
@@ -451,11 +360,11 @@ exports.mkAuctionWithMissingFA2AssetContract = (
                                                                                             {
                                                                                                 "prim": "Pair",
                                                                                                 "args": [{
-                                                                                                        "prim": "None"
-                                                                                                    },
-                                                                                                    {
-                                                                                                        "prim": "None"
-                                                                                                    }
+                                                                                                    "prim": "None"
+                                                                                                },
+                                                                                                {
+                                                                                                    "prim": "None"
+                                                                                                }
                                                                                                 ]
                                                                                             }
                                                                                         ]
@@ -558,11 +467,11 @@ exports.mkAuctionWithMissingFA2AssetId = (
                                                                                             {
                                                                                                 "prim": "Pair",
                                                                                                 "args": [{
-                                                                                                        "prim": "None"
-                                                                                                    },
-                                                                                                    {
-                                                                                                        "prim": "None"
-                                                                                                    }
+                                                                                                    "prim": "None"
+                                                                                                },
+                                                                                                {
+                                                                                                    "prim": "None"
+                                                                                                }
                                                                                                 ]
                                                                                             }
                                                                                         ]
@@ -664,11 +573,11 @@ exports.mkAuctionWithMissingFA2AssetContractAndId = (
                                                                                             {
                                                                                                 "prim": "Pair",
                                                                                                 "args": [{
-                                                                                                        "prim": "None"
-                                                                                                    },
-                                                                                                    {
-                                                                                                        "prim": "None"
-                                                                                                    }
+                                                                                                    "prim": "None"
+                                                                                                },
+                                                                                                {
+                                                                                                    "prim": "None"
+                                                                                                }
                                                                                                 ]
                                                                                             }
                                                                                         ]
@@ -716,7 +625,7 @@ exports.mkFungibleFA2Auction = (
     return {
         "prim": "Pair",
         "args": [
-            this.mkAuctionFungibleFA2Asset(sellAssetContract, sellAssetId),
+            this.mkFungibleFA2Asset(sellAssetContract, sellAssetId),
             {
                 "prim": "Pair",
                 "args": [
@@ -772,11 +681,11 @@ exports.mkFungibleFA2Auction = (
                                                                                             {
                                                                                                 "prim": "Pair",
                                                                                                 "args": [{
-                                                                                                        "prim": "None"
-                                                                                                    },
-                                                                                                    {
-                                                                                                        "prim": "None"
-                                                                                                    }
+                                                                                                    "prim": "None"
+                                                                                                },
+                                                                                                {
+                                                                                                    "prim": "None"
+                                                                                                }
                                                                                                 ]
                                                                                             }
                                                                                         ]
@@ -823,7 +732,7 @@ exports.mkFA12Auction = (
     return {
         "prim": "Pair",
         "args": [
-            this.mkAuctionFA12Asset(sellAssetContract),
+            this.mkFA12Asset(sellAssetContract),
             {
                 "prim": "Pair",
                 "args": [
@@ -879,11 +788,11 @@ exports.mkFA12Auction = (
                                                                                             {
                                                                                                 "prim": "Pair",
                                                                                                 "args": [{
-                                                                                                        "prim": "None"
-                                                                                                    },
-                                                                                                    {
-                                                                                                        "prim": "None"
-                                                                                                    }
+                                                                                                    "prim": "None"
+                                                                                                },
+                                                                                                {
+                                                                                                    "prim": "None"
+                                                                                                }
                                                                                                 ]
                                                                                             }
                                                                                         ]
@@ -929,7 +838,7 @@ exports.mkXTZAuction = (
     return {
         "prim": "Pair",
         "args": [
-            this.mkAuctionXTZAsset(),
+            this.mkXTZAsset(),
             {
                 "prim": "Pair",
                 "args": [
@@ -985,11 +894,11 @@ exports.mkXTZAuction = (
                                                                                             {
                                                                                                 "prim": "Pair",
                                                                                                 "args": [{
-                                                                                                        "prim": "None"
-                                                                                                    },
-                                                                                                    {
-                                                                                                        "prim": "None"
-                                                                                                    }
+                                                                                                    "prim": "None"
+                                                                                                },
+                                                                                                {
+                                                                                                    "prim": "None"
+                                                                                                }
                                                                                                 ]
                                                                                             }
                                                                                         ]
@@ -1029,56 +938,56 @@ exports.mkBid = (
     return {
         "prim": "Pair",
         "args": [
-          {
-            "string": `${assetContract}`
-          },
-          {
-            "prim": "Pair",
-            "args": [
-              {
-                "int": `${assetId}`
-              },
-              {
+            {
+                "string": `${assetContract}`
+            },
+            {
                 "prim": "Pair",
                 "args": [
-                  payouts,
-                  {
-                    "prim": "Pair",
-                    "args": [
-                      originFees,
-                      {
+                    {
+                        "int": `${assetId}`
+                    },
+                    {
                         "prim": "Pair",
                         "args": [
-                          {
-                            "int": `${amount}`
-                          },
-                          {
-                            "prim": "Pair",
-                            "args": [{
-                                    "string": `${bidder}`
-                                },
-                                {
-                                    "prim": "Pair",
-                                    "args": [{
-                                            "prim": "None"
-                                        },
-                                        {
-                                            "prim": "None"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
+                            payouts,
+                            {
+                                "prim": "Pair",
+                                "args": [
+                                    originFees,
+                                    {
+                                        "prim": "Pair",
+                                        "args": [
+                                            {
+                                                "int": `${amount}`
+                                            },
+                                            {
+                                                "prim": "Pair",
+                                                "args": [{
+                                                    "string": `${bidder}`
+                                                },
+                                                {
+                                                    "prim": "Pair",
+                                                    "args": [{
+                                                        "prim": "None"
+                                                    },
+                                                    {
+                                                        "prim": "None"
+                                                    }
+                                                    ]
+                                                }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
                         ]
-                      }
-                    ]
-                  }
+                    }
                 ]
-              }
-            ]
-          }
+            }
         ]
-      };
+    };
 };
 
 // Taquito & Mockup-compliant get big map value
