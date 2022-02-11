@@ -3521,18 +3521,19 @@ describe('Finish auction tests', async () => {
         it('Finish an auction not started should fail', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
-                    await setMockupNow((Date.now() / 1000));
+                    await setMockupNow(start_date);
                 } else {
                     const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
                     await delay(40000);
                 }
-                const start_time = Math.floor(Date.now() / 1000 + 100);
+                const start_time = Math.floor(start_date + 100);
+                const token_id = 9;
                 await auction.start_auction({
                     argJsonMichelson: mkAuction(
                         nft.address,
-                        "11",
-                        mkXTZAsset(),
-                        XTZ,
+                        token_id.toString(),
+                        mkFungibleFA2Asset(fa2_ft.address, token_id.toString()),
+                        FA2,
                         auction_amount,
                         alice.pkh,
                         start_time,
@@ -3548,7 +3549,7 @@ describe('Finish auction tests', async () => {
                 });
 
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_6})`,
+                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3557,13 +3558,15 @@ describe('Finish auction tests', async () => {
         it('Finish an auction not ended (without bid) should fail', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
-                    await setMockupNow((Date.now() / 1000));
+                    await setMockupNow(start_date + 101);
                 } else {
                     const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
                     await delay(40000);
                 }
+                const token_id = 9;
+
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_6})`,
+                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3572,15 +3575,18 @@ describe('Finish auction tests', async () => {
         it('Finish an auction not ended (with bid) should fail', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
-                    await setMockupNow((Date.now() / 1000) + 100);
+                    await setMockupNow(start_date + 103);
                 } else {
                     const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
                     await delay(40000);
                 }
+
+                const token_id = 9;
+
                 await auction.put_bid({
                     argJsonMichelson: mkBid(
                         nft.address,
-                        token_id_6.toString(),
+                        token_id.toString(),
                         10000,
                         bob.pkh,
                         [],
@@ -3591,7 +3597,7 @@ describe('Finish auction tests', async () => {
                     as: bob.pkh,
                 });
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id_6})`,
+                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3612,28 +3618,30 @@ describe('Cancel auction tests', async () => {
     it('Cancel someone else auction should fail', async () => {
         await expectToThrow(async () => {
             if (isMockup()) {
-                await setMockupNow((Date.now() / 1000));
+                await setMockupNow(start_date);
             } else {
                 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
                 await delay(40000);
             }
-            const start_time = Math.floor(Date.now() / 1000 + 1);
+            const start_time = Math.floor(start_date + 1);
+
             await auction.start_auction({
                 argJsonMichelson: mkAuction(
                     nft.address,
                     token_id_0.toString(),
-                    fa2_ft.address,
-                    token_id_0.toString(),
-                    FA_2_FT,
-                    "1",
+                    mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString()),
+                    FA2,
+                    auction_amount,
                     alice.pkh,
                     start_time,
-                    "200",
+                    duration.toString(),
                     minimal_price.toString(),
                     buyout_price.toString(),
                     min_step.toString(),
-                    [],
-                    []),
+                    [mkPart(alice.pkh, "100")],
+                    [mkPart(alice.pkh, "100")],
+                    null,
+                    null),
                 as: alice.pkh,
             });
             await auction.cancel_auction({
@@ -3662,7 +3670,7 @@ describe('Cancel auction tests', async () => {
     it('Cancel an auction with an existing bid should fail', async () => {
         await expectToThrow(async () => {
             if (isMockup()) {
-                await setMockupNow((Date.now() / 1000) + 2);
+                await setMockupNow(start_date + 2);
             } else {
                 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
                 await delay(42000);
@@ -3686,13 +3694,19 @@ describe('Cancel auction tests', async () => {
     });
 
     it('Cancel a valid auction should succeed', async () => {
-        const start_time = Math.floor(Date.now() / 1000 + 1);
+        if (isMockup()) {
+            await setMockupNow(start_date);
+        } else {
+            const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+            await delay(42000);
+        }
+        const start_time = Math.floor(start_date + 1);
         await auction.start_auction({
             argJsonMichelson: mkAuction(
                 nft.address,
-                "12",
-                mkXTZAsset(),
-                XTZ,
+                token_id_1.toString(),
+                mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString()),
+                FA2,
                 auction_amount,
                 alice.pkh,
                 start_time,
