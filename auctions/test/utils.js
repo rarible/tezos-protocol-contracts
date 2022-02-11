@@ -5,10 +5,9 @@ const {
     packTyped
 } = require('@completium/completium-cli');
 
-exports.XTZ = 'XTZ';
-exports.FA_1_2 = 'FA_1_2';
-exports.FA_2_NFT = 'FA_2_NFT';
-exports.FA_2_FT = 'FA_2_FT';
+exports.XTZ = '0';
+exports.FA12 = '1';
+exports.FA2 = '2';
 
 exports.mkBuyAsset = (assetType, assetContract, assetId) => {
     let payload = {};
@@ -19,10 +18,7 @@ exports.mkBuyAsset = (assetType, assetContract, assetId) => {
         case this.FA_1_2:
             payload = this.mkFA12Asset(assetContract);
             break;
-        case this.FA_2_NFT:
-            payload = this.mkAuctionNonFungibleFA2Asset(assetContract, assetId);
-            break;
-        case this.FA_2_FT:
+        case this.FA_2:
             payload = this.mkFungibleFA2Asset(assetContract, assetId);
             break;
     }
@@ -124,7 +120,7 @@ exports.mkFA12Asset = (assetContract) => {
 };
 
 exports.mkXTZAsset = () => {
-    return 0x00;
+    return "";
 };
 
 exports.mkStartDate = (startDate) => {

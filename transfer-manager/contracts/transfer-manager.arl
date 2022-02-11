@@ -161,7 +161,7 @@ entry manage_transfers(
         mt_sell_asset_contract,
         mt_sell_asset_token_id,
         mt_amount,
-        mt_buyer
+        mt_from
       );
       total_after_all_fees -= rest_royalties[0];
 
@@ -172,7 +172,7 @@ entry manage_transfers(
         mt_buy_asset_type,
         mt_amount,
         mt_bid_fees.origin_fees,
-        mt_buyer);
+        mt_from);
       total_after_all_fees -= rest_bid_origin_fees[0];
       var bid_origin_fees_operations = rest_bid_origin_fees[1];
 
@@ -182,7 +182,7 @@ entry manage_transfers(
         mt_buy_asset_type,
         mt_amount,
         mt_auction_fees.origin_fees,
-        mt_buyer);
+        mt_from);
       total_after_all_fees -= rest_auction_origin_fees[0];
       var auction_origin_fees_operations = rest_auction_origin_fees[1];
       //Finally process the auction and bid payouts, and the matching operations
@@ -190,7 +190,7 @@ entry manage_transfers(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
-        mt_buyer,
+        mt_from,
         mt_auction_fees.payouts);
 
       total_after_all_fees -= auction_payouts_rest[0];
@@ -200,7 +200,7 @@ entry manage_transfers(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
-        mt_buyer,
+        mt_from,
         mt_bid_fees.payouts);
 
       total_after_all_fees -= bid_payouts_rest[0];
@@ -215,7 +215,7 @@ entry manage_transfers(
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = protocol_fees;
-          ptp_origin = mt_buyer;
+          ptp_origin = mt_from;
           ptp_destination = get_fee_receiver(buy_asset_contract)
         });
       //2nd: transfer royalties
@@ -241,8 +241,11 @@ entry manage_transfers(
 
       //Then, transfer sell asset to buyer
       transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>({
-          ptp_asset_type = mt_buy_asset_type;
-          ptp_asset = mt_buy_asset;
+          ptp_asset_type = FA2;
+          ptp_asset = pack({
+            fa2_asset_contract = mt_sell_asset_contract;
+            fa2_asset_token_id = mt_sell_asset_token_id
+            });
           ptp_amount = mt_sell_amount;
           ptp_origin = mt_from;
           ptp_destination = mt_buyer
@@ -253,7 +256,7 @@ entry manage_transfers(
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = total_after_all_fees;
-          ptp_origin = mt_buyer;
+          ptp_origin = mt_from;
           ptp_destination = mt_seller
         });
     }
@@ -297,6 +300,10 @@ entry manage_buyout_transfers(
       | XTZ -> ()
       end;
 
+      var origin = mt_buyer;
+      if (transferred > 0tz) then (
+        origin := selfaddress
+      );
       //First process the total amount of the order, and the protocol fees
       var total = process_total_amount(mt_amount, mt_protocol_fees, mt_bid_fees.origin_fees);
       var rest_fee = process_protocol_fees(total, mt_amount, mt_protocol_fees * 2);
@@ -310,7 +317,7 @@ entry manage_buyout_transfers(
         mt_sell_asset_contract,
         mt_sell_asset_token_id,
         mt_amount,
-        mt_buyer
+        origin
       );
       total_after_all_fees -= rest_royalties[0];
 
@@ -321,7 +328,7 @@ entry manage_buyout_transfers(
         mt_buy_asset_type,
         mt_amount,
         mt_bid_fees.origin_fees,
-        mt_buyer);
+        origin);
       total_after_all_fees -= rest_bid_origin_fees[0];
       var bid_origin_fees_operations = rest_bid_origin_fees[1];
 
@@ -331,7 +338,7 @@ entry manage_buyout_transfers(
         mt_buy_asset_type,
         mt_amount,
         mt_auction_fees.origin_fees,
-        mt_buyer);
+        origin);
       total_after_all_fees -= rest_auction_origin_fees[0];
       var auction_origin_fees_operations = rest_auction_origin_fees[1];
       //Finally process the auction and bid payouts, and the matching operations
@@ -339,7 +346,7 @@ entry manage_buyout_transfers(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
-        mt_buyer,
+        origin,
         mt_auction_fees.payouts);
 
       total_after_all_fees -= auction_payouts_rest[0];
@@ -349,7 +356,7 @@ entry manage_buyout_transfers(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
-        mt_buyer,
+        origin,
         mt_bid_fees.payouts);
 
       total_after_all_fees -= bid_payouts_rest[0];
@@ -363,7 +370,7 @@ entry manage_buyout_transfers(
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = protocol_fees;
-          ptp_origin = mt_buyer;
+          ptp_origin = origin;
           ptp_destination = get_fee_receiver(buy_asset_contract)
         });
       //2nd: transfer royalties
@@ -390,8 +397,11 @@ entry manage_buyout_transfers(
 
       //Then, transfer sell asset to buyer
       transfer 0tz to auction_storage call process_transfer<process_transfer_param>({
-          ptp_asset_type = mt_buy_asset_type;
-          ptp_asset = mt_buy_asset;
+          ptp_asset_type = FA2;
+          ptp_asset = pack({
+            fa2_asset_contract = mt_sell_asset_contract;
+            fa2_asset_token_id = mt_sell_asset_token_id
+            });
           ptp_amount = mt_sell_amount;
           ptp_origin = mt_from;
           ptp_destination = mt_buyer
@@ -403,7 +413,7 @@ entry manage_buyout_transfers(
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = total_after_all_fees;
-          ptp_origin = mt_buyer;
+          ptp_origin = origin;
           ptp_destination = mt_seller
         });
     }
@@ -503,7 +513,8 @@ function process_payouts(
 }
 
 entry process_transfer(pt_transfer: process_transfer_param){
-  called by selfaddress
+  //TODO: add a list o
+  //called by selfaddress
   effect {
     match pt_transfer.ptp_asset_type with
     | FA2  -> (
