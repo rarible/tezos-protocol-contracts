@@ -5,31 +5,22 @@ with metadata ""
 
 constant MISSING_AUCTION_CONTRACT: string = "MISSING_AUCTION_CONTRACT"
 constant MISSING_TRANSFER_MANAGER: string = "MISSING_TRANSFER_MANAGER"
-constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
-constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
 constant MISSING_AUCTION: string = "MISSING_AUCTION"
-constant ROYALTIES_TOO_HIGH: string = "ROYALTIES_TOO_HIGH"
+constant CANT_UNPACK_FA2_BUY_ASSET: string = "CANT_UNPACK_FA2_BUY_ASSET"
+constant CANT_UNPACK_FA12_BUY_ASSET: string = "CANT_UNPACK_FA12_BUY_ASSET"
 
-enum fa2_class =
-| Fungible
-| NonFungible
-| Unknown
-
-enum enum_asset_class =
+enum asset_type =
 | XTZ
-| FA_1_2
-| FA_2<fa2_class>
-| FA_2_LAZY<fa2_class>
-| OTHER<bytes>
+| FA12
+| FA2
 
-record rec_asset_type {
-  asset_class : enum_asset_class;
+record FA2_asset {
+  fa2_asset_contract : address;
+  fa2_asset_token_id: nat;
 }
 
-record %asset {
-  asset_type : rec_asset_type;
-  asset_contract : option<address>;
-  asset_id: option<nat>;
+record FA12_asset {
+  fa12_asset_contract : address;
 }
 
 record part {
@@ -99,33 +90,32 @@ record bid {
 }
 
 record auction_record {
-  auction_record_sell_asset : %asset;
-  auction_record_sell_asset_amount: nat;
-  auction_record_buy_asset : %asset;
-  auction_record_last_bid: option<bid>;
-  auction_record_seller: address;
-  auction_record_start_time: date;
-  auction_record_end_time: date;
-  auction_record_minimal_price: nat;
-  auction_record_buy_out_price: nat;
-  auction_record_minimal_step: nat;
-  auction_record_protocol_fee: nat;
-  auction_record_payouts : list<part>;
-  auction_record_origin_fees : list<part>;
-  auction_record_data_type  : option<bytes>;
-  auction_record_data       : option<bytes>;
+  auction_sell_asset_contract : address;
+  auction_sell_asset_token_id : nat;
+  auction_sell_asset_amount: nat;
+  auction_buy_asset_type : asset_type;
+  auction_buy_asset : bytes;
+  auction_last_bid: option<bid>;
+  auction_seller: address;
+  auction_start_time: date;
+  auction_end_time: date;
+  auction_minimal_price: nat;
+  auction_buy_out_price: nat;
+  auction_minimal_step: nat;
+  auction_payouts : list<part>;
+  auction_origin_fees : list<part>;
+  auction_data_type  : option<bytes>;
+  auction_data       : option<bytes>;
 }
-
 asset auctions identified by auction_asset auction_asset_id to big_map {
   auction_asset : address;
   auction_asset_id: nat;
-  auction_data : auction_record;
+  auction : auction_record;
 }
 
 record process_transfer_param {
-  ptp_asset_class: enum_asset_class;
-  ptp_asset_contract: option<address>;
-  ptp_asset_id: option<nat>;
+  ptp_asset_type: asset_type;
+  ptp_asset: bytes;
   ptp_amount: nat;
   ptp_origin: address;
   ptp_destination: address;
@@ -139,37 +129,22 @@ record transfer_param {
 
 entry set_auction(sa_auction : auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
-  require {
-      r0: issome(auction_contract);
-      r1: issome(sa_auction.auction_record_sell_asset.asset_contract);
-      r2: issome(sa_auction.auction_record_sell_asset.asset_id)
-  }
   effect {
-    var sa_auction_contract = opt_get(auction_contract);
-    var sa_asset_id = opt_get(sa_auction.auction_record_sell_asset.asset_id);
-    var sa_asset_contract = opt_get(sa_auction.auction_record_sell_asset.asset_contract);
-    var sa_buy_asset = sa_auction.auction_record_buy_asset;
-
-    auctions.add({auction_asset = sa_asset_contract; auction_asset_id = sa_asset_id; auction_data = sa_auction});
+    auctions.add({auction_asset = sa_auction.auction_sell_asset_contract; auction_asset_id = sa_auction.auction_sell_asset_token_id; auction = sa_auction});
   }
 }
 
-entry update_auction(auction: auction_record) {
+entry update_auction(ua_auction: auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
-  require {
-      ua_0: issome(auction_contract);
-      ua_1: issome(auction.auction_record_sell_asset.asset_contract);
-      ua_2: issome(auction.auction_record_sell_asset.asset_id)
-  }
   effect {
     //TODO: add checks for fields that should not be updated
     auctions.addupdate(
       (
-        opt_get(auction.auction_record_sell_asset.asset_contract),
-        opt_get(auction.auction_record_sell_asset.asset_id)
+        ua_auction.auction_sell_asset_contract,
+        ua_auction.auction_sell_asset_token_id
       ),
       {
-        auction_data = auction
+        auction = ua_auction
       }
     );
   }
@@ -188,7 +163,7 @@ view auction_exists(ae_asset : address, ae_asset_id : nat) : bool {
 view get_auction(ga_asset : address, ga_asset_id : nat) : option<auction_record> {
 
   if(auctions.contains((ga_asset, ga_asset_id))) then (
-    return some(auctions[(ga_asset, ga_asset_id)].auction_data);
+    return some(auctions[(ga_asset, ga_asset_id)].auction);
    ) else (
     return none;
    )
@@ -197,34 +172,39 @@ view get_auction(ga_asset : address, ga_asset_id : nat) : option<auction_record>
 entry process_transfer(pt_transfer: process_transfer_param){
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT) or require_some(transfer_manager, MISSING_TRANSFER_MANAGER)
   effect {
-    match pt_transfer.ptp_asset_class with
-    | FA_2(fa2t)  -> (
-      dorequire(issome(pt_transfer.ptp_asset_contract), MISSING_ASSET_CONTRACT);
-      dorequire(issome(pt_transfer.ptp_asset_id), MISSING_ASSET_CONTRACT);
-
-      transfer 0tz to opt_get(pt_transfer.ptp_asset_contract) call %transfer<list<address * list<transfer_param>>>(
+    match pt_transfer.ptp_asset_type with
+    | FA2  -> (
+      match unpack<FA2_asset>(pt_transfer.ptp_asset) with
+      | some(buyAsset) -> (
+          transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
             [
                 (
                     pt_transfer.ptp_origin,
                     [
                         {
                             destination_address = pt_transfer.ptp_destination;
-                            token_id = opt_get(pt_transfer.ptp_asset_id);
+                            token_id = buyAsset.fa2_asset_token_id;
                             token_amount = pt_transfer.ptp_amount
                         }
                     ]
                 )
             ]
+          )
         )
+      | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
+      end;
     )
-    | FA_1_2 -> (
-      dorequire(issome(pt_transfer.ptp_asset_contract), MISSING_ASSET_CONTRACT);
-      transfer 0tz to opt_get(pt_transfer.ptp_asset_contract) call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+    | FA12 -> (
+      match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+        | some(buyAsset) -> (
+            transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+        )
+        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
+        end
       )
     | XTZ -> (
-        transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+          transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
       )
-    | _ -> ()
     end;
   }
 }

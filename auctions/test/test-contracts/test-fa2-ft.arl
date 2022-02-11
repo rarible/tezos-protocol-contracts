@@ -456,7 +456,7 @@ entry %transfer (txs : list<address * list<transfer_destination>>) {
         var tokenid = td.token_id_dest;
         var amount = ledger[(tokenid, %from)].lamount;
         if td.token_amount_dest > amount then
-          fail(FA2_INSUFFICIENT_BALANCE)
+          fail((FA2_INSUFFICIENT_BALANCE, caller, txs, "FT"))
         else if td.token_amount_dest = amount then
           ledger.remove((tokenid, %from))
         else
