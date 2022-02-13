@@ -18,6 +18,24 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Bids Tests",
+            "program": "${workspaceFolder}/bids/node_modules/mocha/bin/_mocha",
+            "args": [
+                "--slow",
+                "0",
+                "--timeout",
+                "0",
+                "${workspaceFolder}/bids/test"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "cwd": "${workspaceFolder}/bids",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }

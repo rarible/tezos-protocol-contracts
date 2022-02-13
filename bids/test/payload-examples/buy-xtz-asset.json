@@ -1,0 +1,24 @@
+{
+  "prim": "Pair",
+  "args": [
+    {
+      "prim": "Left",
+      "args": [
+        {
+          "prim": "Unit"
+        }
+      ]
+    },
+    {
+      "prim": "Pair",
+      "args": [
+        {
+          "prim": "None"
+        },
+        {
+          "prim": "None"
+        }
+      ]
+    }
+  ]
+}
