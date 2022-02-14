@@ -1,4 +1,4 @@
-archetype auction_storage(
+archetype bids_storage(
   owner: address
 )
 with metadata ""

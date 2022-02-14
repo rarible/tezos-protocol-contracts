@@ -152,6 +152,7 @@ exports.mkPart = (address, value) => {
     };
 };
 
+
 exports.mkAuction = (
     sellAssetContract,
     sellAssetId,
