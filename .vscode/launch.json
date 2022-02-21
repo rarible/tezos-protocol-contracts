@@ -36,6 +36,24 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Sales Tests",
+            "program": "${workspaceFolder}/exchange-v3/node_modules/mocha/bin/_mocha",
+            "args": [
+                "--slow",
+                "0",
+                "--timeout",
+                "0",
+                "${workspaceFolder}/exchange-v3/test"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "cwd": "${workspaceFolder}/exchange-v3",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }

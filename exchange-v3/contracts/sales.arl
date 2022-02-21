@@ -1,0 +1,331 @@
+archetype exchange(
+    owner: address,
+    protocol_fee: nat,
+    transfer_manager: address,
+    sales_storage: address
+)
+with metadata ""
+
+constant SALE_ALREADY_EXISTS: string = "SALE_ALREADY_EXISTS"
+constant AUCTION_NOT_IN_PROGRESS: string = "AUCTION_NOT_IN_PROGRESS"
+constant AUCTION_NOT_FINISHABLE: string = "AUCTION_NOT_FINISHABLE"
+constant AUCTION_FINISHED: string = "AUCTION_FINISHED"
+constant AUCTION_START_DATE_IN_THE_PAST: string = "AUCTION_START_DATE_IN_THE_PAST"
+constant MISSING_SALE: string = "MISSING_SALE"
+constant AUCTION_BID_TOO_LOW: string = "AUCTION_BID_TOO_LOW"
+constant AUCTION_BID_ALREADY_EXISTS: string = "AUCTION_BID_ALREADY_EXISTS"
+constant AUCTION_BID_AMOUNT_MISMATCH: string = "AUCTION_BID_AMOUNT_MISMATCH"
+constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
+constant AUCTION_WITH_BID_NON_CANCELLABLE: string = "AUCTION_WITH_BID_NON_CANCELLABLE"
+constant FINISHED_AUCTION_NON_CANCELLABLE: string = "FINISHED_AUCTION_NON_CANCELLABLE"
+constant ONLY_SELLER_CAN_CANCEL_AUCTION: string = "ONLY_SELLER_CAN_CANCEL_AUCTION"
+constant CANT_UNPACK_FA2_BID_ASSET: string = "CANT_UNPACK_FA2_BID_ASSET"
+constant CANT_UNPACK_FA12_BID_ASSET: string = "CANT_UNPACK_FA12_BID_ASSET"
+constant WRONG_BUY_ASSET_PAYLOAD: string = "WRONG_BUY_ASSET_PAYLOAD"
+
+//----------------------------------------------------------------------------
+// Owner role transfer
+//----------------------------------------------------------------------------
+
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  called by opt_get(owner_candidate)
+  effect {
+    owner := opt_get(owner_candidate);
+    owner_candidate := none
+  }
+}
+
+
+//----------------------------------------------------------------------------
+// Admin
+//----------------------------------------------------------------------------
+entry set_sales_storage_contract(sesc_contract : address) {
+  called by owner
+  effect {
+    sales_storage := sesc_contract;
+  }
+}
+
+entry set_protocol_fee(spf : nat) {
+  called by owner
+  effect {
+    protocol_fee := spf;
+  }
+}
+
+entry set_transfer_manager(stm_contract : address) {
+  called by owner
+  effect {
+    transfer_manager := stm_contract;
+  }
+}
+
+entry set_sales_storage(sss_contract : address) {
+  called by owner
+  effect {
+    sales_storage := sss_contract;
+  }
+}
+
+//----------------------------------------------------------------------------
+// Types
+//----------------------------------------------------------------------------
+enum asset_type =
+| XTZ
+| FA12
+| FA2
+
+
+record FA2_asset {
+  fa2_asset_contract : address;
+  fa2_asset_token_id: nat;
+}
+
+record FA12_asset {
+  fa12_asset_contract : address;
+}
+
+record transfer_param {
+  destination_address: address;
+  token_id: nat;
+  token_amount: nat
+} as ((%to, (token_id, amount)))
+
+record process_transfer_param {
+  ptp_asset_type: asset_type;
+  ptp_asset: bytes;
+  ptp_amount: nat;
+  ptp_origin: address;
+  ptp_destination: address;
+}
+
+record part {
+  part_account : address;
+  part_value   : nat;
+}
+
+record fees {
+  origin_fees : list<part>;
+  payouts: list<part>;
+}
+
+record sale {
+  sale_payouts : list<part>;
+  sale_origin_fees : list<part>;
+  sale_amount : nat;
+  sale_asset_qty: nat;
+  sale_data_type  : option<bytes>;
+  sale_data       : option<bytes>;
+}
+
+entry sell (
+  s_asset_contract: address,
+  s_asset_token_id: nat,
+  s_seller: address,
+  s_sale_type: asset_type,
+  s_sale_asset: bytes,
+  s_sale : sale) {
+    require {
+        r_pb0: s_sale.sale_amount > 0;
+        r_pb1: s_seller = caller;
+    }
+    effect {
+      var current_sale = get_sale(s_asset_contract, s_asset_token_id, s_seller, s_sale_type, s_sale_asset);
+      var total_amount = process_total_amount(s_sale.sale_amount, protocol_fee, s_sale.sale_origin_fees);
+
+      if(issome(current_sale)) then (
+        fail("SALE_ALREADY_EXISTS")
+      ) else (
+        transfer 0tz to sales_storage call set_sale<address * nat * address * asset_type * bytes * sale>(
+          (
+            s_asset_contract,
+            s_asset_token_id,
+            s_seller,
+            s_sale_type,
+            s_sale_asset,
+            s_sale
+          )
+        );
+      );
+    }
+}
+
+
+entry buy(
+  b_asset_contract: address,
+  b_asset_token_id: nat,
+  b_buyer: address,
+  b_sale_type: asset_type,
+  b_sale_asset: bytes,
+  b_seller: address){
+    effect {
+      var current_sale = require_some(get_sale(b_asset_contract, b_asset_token_id, b_buyer, b_sale_type, b_sale_asset), MISSING_SALE);
+
+      var unpack_result = unpack_asset(b_sale_type, b_sale_asset);
+      var buy_asset_contract = unpack_result[0];
+      var buy_asset_token_id = unpack_result[1];
+
+      transfer 0tz to transfer_manager call manage_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat * address>(
+         (
+            current_sale.sale_amount,
+            current_sale.sale_asset_qty,
+            sales_storage,
+            b_seller,
+            b_buyer,
+            protocol_fee,
+            { origin_fees = current_sale.sale_origin_fees; payouts = current_sale.sale_payouts},
+            { origin_fees = []; payouts = []},
+            b_sale_type,
+            b_sale_asset,
+            b_asset_contract,
+            b_asset_token_id,
+            sales_storage
+         )
+      );
+      transfer 0tz to sales_storage call remove_bid<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_buyer, b_sale_type, b_sale_asset))
+
+    }
+}
+
+entry cancel_sale(
+  cs_asset_contract: address,
+  cs_asset_token_id: nat,
+  cs_bidder: address,
+  cs_bid_type: asset_type,
+  cs_bid_asset: bytes){
+    effect {
+      var current_sale = require_some(get_sale(cs_asset_contract, cs_asset_token_id, cs_bidder, cs_bid_type, cs_bid_asset), MISSING_SALE);
+
+      transfer 0tz to sales_storage call process_transfer<process_transfer_param>({
+        ptp_asset_type = cs_bid_type;
+        ptp_asset = cs_bid_asset;
+        ptp_amount = current_sale.sale_amount;
+        ptp_origin = sales_storage;
+        ptp_destination = cs_bidder
+      });
+      transfer 0tz to sales_storage call remove_bid<address * nat * address * asset_type * bytes>((cs_asset_contract, cs_asset_token_id, cs_bidder, cs_bid_type, cs_bid_asset))
+    }
+}
+
+function sale_exists(se_asset_contract: address, se_asset_id: nat) : bool {
+    return match callview<bool>(
+        sales_storage,
+        "sale_exists",
+        (
+            se_asset_contract,
+            se_asset_id
+        )
+    )
+    with
+        | some(v) -> v
+        | none -> false
+    end
+}
+
+function unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option<address> * option<nat>) {
+    var buy_asset_contract: option<address> = none;
+    var buy_asset_token_id: option<nat> = none;
+    match ua_asset_type with
+      | FA2 -> (
+        match unpack<FA2_asset>(ua_asset_data) with
+        | some(buyAsset) -> (
+            buy_asset_contract := some(buyAsset.fa2_asset_contract);
+            buy_asset_token_id := some(buyAsset.fa2_asset_token_id);
+          )
+        | none -> fail(CANT_UNPACK_FA2_BID_ASSET)
+        end
+      )
+      | FA12 -> (
+        match unpack<FA12_asset>(ua_asset_data) with
+        | some(buyAsset) -> (
+            buy_asset_contract := some(buyAsset.fa12_asset_contract);
+        )
+        | none -> fail(CANT_UNPACK_FA12_BID_ASSET)
+        end
+      )
+      | XTZ -> ()
+      end;
+      return ((buy_asset_contract, buy_asset_token_id))
+}
+
+function get_sale(
+  gb_asset_contract: address,
+  gb_asset_token_id: nat,
+  gb_bidder: address,
+  gb_bid_type: asset_type,
+  gb_bid_asset: bytes) : option<sale> {
+    return opt_get(callview<option<sale>>(
+        sales_storage,
+        "get_sale",
+        (
+          gb_asset_contract,
+          gb_asset_token_id,
+          gb_bidder,
+          gb_bid_type,
+          gb_bid_asset
+        )
+    ))
+}
+
+function bp(bp_value : nat, bp_op_value : nat) : nat {
+  return abs(floor(bp_value * bp_op_value / 10000))
+}
+
+function process_total_amount(cta_amount: nat, cta_fees: nat, cta_order_origin_fees: list<part>) : nat {
+ var total = cta_amount + bp(cta_amount, cta_fees);
+  for item in cta_order_origin_fees do
+    total += bp(cta_amount, item.part_value)
+  done;
+  return total
+}
+
+entry process_transfer(pt_transfer: process_transfer_param){
+  called by selfaddress
+  effect {
+    match pt_transfer.ptp_asset_type with
+    | FA2  -> (
+      match unpack<FA2_asset>(pt_transfer.ptp_asset) with
+      | some(buyAsset) -> (
+          transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
+            [
+                (
+                    pt_transfer.ptp_origin,
+                    [
+                        {
+                            destination_address = pt_transfer.ptp_destination;
+                            token_id = buyAsset.fa2_asset_token_id;
+                            token_amount = pt_transfer.ptp_amount
+                        }
+                    ]
+                )
+            ]
+          )
+        )
+      | none -> fail(CANT_UNPACK_FA2_BID_ASSET)
+      end;
+    )
+    | FA12 -> (
+      match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+        | some(buyAsset) -> (
+            transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+        )
+        | none -> fail(CANT_UNPACK_FA12_BID_ASSET)
+        end
+      )
+    | XTZ -> (
+          transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+      )
+    end;
+  }
+}
+
+entry default() {}

@@ -1,0 +1,544 @@
+/**
+* Public   : Anyone can mint
+* Multiple : Multiple collection
+**/
+archetype multiple_nft_public(owner : address)
+with metadata ""
+
+//----------------------------------------------------------------------------
+// Constants
+//----------------------------------------------------------------------------
+
+constant CALLER_NOT_OWNER         : string = "CALLER_NOT_OWNER"
+constant CONTRACT_PAUSED          : string = "CONTRACT_PAUSED"
+constant CONTRACT_NOT_PAUSED      : string = "CONTRACT_NOT_PAUSED"
+constant EXPIRY_TOO_BIG           : string = "EXPIRY_TOO_BIG"
+constant FA2_INSUFFICIENT_BALANCE : string = "FA2_INSUFFICIENT_BALANCE"
+constant FA2_INVALID_AMOUNT       : string = "FA2_INVALID_AMOUNT"
+constant FA2_NOT_OPERATOR         : string = "FA2_NOT_OPERATOR"
+constant MISSIGNED                : string = "MISSIGNED"
+constant NO_ENTRY_FOR_USER        : string = "NO_ENTRY_FOR_USER"
+constant PERMIT_EXPIRED           : string = "PERMIT_EXPIRED"
+constant PERMIT_NOT_FOUND         : string = "PERMIT_NOT_FOUND"
+constant PERMIT_USER_NOT_FOUND    : string = "PERMIT_USER_NOT_FOUND"
+constant SIGNER_NOT_FROM          : string = "SIGNER_NOT_FROM"
+
+//----------------------------------------------------------------------------
+// Owner role transfer
+//----------------------------------------------------------------------------
+
+variable owner_candidate : option<address> = none
+
+/**
+* Declares candidate for ownership
+* @param candidate address
+*/
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+/**
+* Claims ownership of the contract
+* Note: fails if caller is not declared candidate
+*/
+entry claim_ownership() {
+  called by opt_get(owner_candidate)
+  effect {
+    owner := opt_get(owner_candidate);
+    owner_candidate := none
+  }
+}
+
+//----------------------------------------------------------------------------
+// Contract execution pause/resume
+//----------------------------------------------------------------------------
+
+variable paused : bool = false
+
+/**
+ * Pause the contract execution
+ */
+entry pause() {
+  called by owner
+  effect {
+    dorequire(not paused, CONTRACT_PAUSED);
+    paused := true
+  }
+}
+
+/**
+ * Resume the contract execution
+ */
+entry unpause() {
+  called by owner
+  effect {
+    dorequire(paused, CONTRACT_NOT_PAUSED);
+    paused := false
+  }
+}
+
+/**
+ * Asserts that the contract execution is not paused
+ */
+function is_not_paused() : bool {
+  if (not paused)
+  then return true
+  else fail(CONTRACT_PAUSED)
+}
+
+//----------------------------------------------------------------------------
+// Metadata
+//----------------------------------------------------------------------------
+
+entry set_metadata(ikey: string, idata : bytes) {
+  called by owner
+  require { r3 : is_not_paused() }
+  effect {
+    metadata := put(metadata, ikey, idata)
+  }
+}
+
+//----------------------------------------------------------------------------
+// Data types
+//----------------------------------------------------------------------------
+
+record part {
+  partAccount : address;
+  partValue   : nat;
+}
+
+asset royalties identified by rtokenid to big_map {
+  rtokenid : nat;
+  rvalue : list<part>;
+}
+
+asset ledger identified by ltoken lowner to big_map {
+  ltoken     : nat;
+  lowner     : address;
+  lamount    : nat = 0;
+}
+
+asset operator identified by oaddr otoken oowner to big_map {
+  oaddr       : address;
+  otoken      : nat;
+  oowner      : address;
+  ounit       : unit = Unit;
+}
+
+asset token_metadata to big_map {
+  ftoken_metadata : nat;
+  token_id        : nat;
+  token_info      : map<string, bytes>;
+}
+
+record operator_param {
+  opp_owner    : address;
+  opp_operator : address;
+  opp_token_id : nat
+} as ((owner, (operator, token_id)))
+
+record transfer_destination {
+  to_dest           : address;
+  token_id_dest     : nat;
+  token_amount_dest : nat
+} as ((%to, (token_id, amount)))
+
+record balance_of_request {
+  bo_owner : address;
+  btoken_id : nat;
+} as ((owner, token_id))
+
+record balance_of_response {
+  request : balance_of_request;
+  balance_ : nat;
+} as ((request, balance))
+
+record user_permit {
+  expiry : option<nat>;
+  created_at : date;
+}
+
+asset permits to big_map {
+  user_address : address;
+  counter      : nat = 0;
+  user_expiry  : option<nat> = none;
+  user_permits : map<bytes, user_permit> = [];
+}
+
+asset operator_for_all identified by fa_oaddr fa_oowner to big_map {
+  fa_oaddr    : address;
+  fa_oowner   : address;
+  fa_empty    : unit = Unit;
+}
+
+//----------------------------------------------------------------------------
+// Operators
+//----------------------------------------------------------------------------
+
+/**
+* Adds or removes operators for specified tokens
+* @param upl list of add or remove operator specification
+*/
+entry update_operators (upl : list<or<operator_param, operator_param>>) {
+  require { r0 : is_not_paused() }
+  effect {
+    for up in upl do
+      match up with
+      | left(param)  -> (* add *)
+        dorequire(param.opp_owner = caller , CALLER_NOT_OWNER);
+        operator.add({
+          oaddr  = param.opp_operator;
+          otoken = param.opp_token_id;
+          oowner = param.opp_owner
+        })
+      | right(param) -> (* remove *)
+        dorequire(param.opp_owner = caller , CALLER_NOT_OWNER);
+        operator.remove((param.opp_operator, param.opp_token_id, param.opp_owner))
+      end;
+    done;
+  }
+}
+
+/**
+* Adds or removes an operator for *all* transfers for caller's tokens
+* @param upl list of add or remove operator address
+*/
+entry update_operators_for_all (upl : list<or<address, address>>) {
+  require { r1 : is_not_paused() }
+  effect {
+    for up in upl do
+      match up with
+      | left(op)  -> (* add *)
+        operator_for_all.add({fa_oaddr = op; fa_oowner = caller})
+      | right(op) -> (* remove *)
+        operator_for_all.remove((op, caller))
+      end;
+    done;
+  }
+}
+
+function check_owner_and_operator(txs : list<address * list<transfer_destination>>) : bool {
+  var res = true;
+
+  for tx in txs do
+    var %from = tx[0];
+    var tds = tx[1];
+    for td in tds do begin
+      res &=
+        if caller <> %from then
+          (operator.contains((caller,td.token_id_dest,%from)) or
+           operator_for_all.contains((caller, %from)))
+        else
+          ledger.contains((td.token_id_dest, caller));
+    end
+    done
+  done;
+  return res
+}
+
+//----------------------------------------------------------------------------
+// Feeless expiry
+//----------------------------------------------------------------------------
+
+variable default_expiry : nat =  31556952
+
+function get_default_expiry(addr : address) : nat {
+  var res = default_expiry;
+  if permits.contains(addr) then
+  match permits[addr].user_expiry with
+  | some v -> res := v
+  | none -> res := default_expiry
+  end;
+  return res
+}
+
+function get_expiry(addr : address, ipermitkey : bytes) : nat {
+  var res : nat = get_default_expiry(addr);
+  if permits.contains(addr)
+  then if permits[addr].user_permits.contains(ipermitkey)
+      then match permits[addr].user_permits[ipermitkey].expiry with
+           | some (v) -> res := v
+           | none -> ()
+           end;
+  return res
+}
+
+function has_expired(iuser_permit : user_permit, iexpiry: nat) : bool {
+  match iuser_permit.expiry with
+  | some(v) -> return (iuser_permit.created_at + (v * 1s) < now)
+  | none -> return (iuser_permit.created_at + (iexpiry * 1s) < now)
+  end
+}
+
+entry set_default_expiry(v : nat) {
+  called by owner
+  require { r6: is_not_paused() }
+  effect {
+    default_expiry := v
+  }
+}
+
+/**
+* Sets expiry for permit
+* @param v option of expiry value
+* @param p option of permit
+*/
+entry set_expiry(v : option<nat>, p : option<bytes>) {
+  require { r7: is_not_paused() }
+  effect {
+    match v with
+      | some v_expiry ->
+          dofailif(v_expiry >= default_expiry, EXPIRY_TOO_BIG)
+      | none -> ()
+    end;
+    if permits.contains(caller)
+    then begin
+      match p with
+      | some lpermit ->
+        if permits[caller].user_permits.contains(lpermit)
+        then begin
+          var need_update = true;
+          match v with
+            | some v_expiry ->
+              begin
+                if v_expiry = 0 then
+                begin
+                  need_update := false;
+                  permits[caller].user_permits.remove(lpermit)
+                end
+              end
+            | none -> ()
+          end;
+          if need_update then
+          begin
+            var up : user_permit = permits[caller].user_permits[lpermit];
+            permits[caller].user_permits.update(lpermit, some({up with expiry = v}))
+          end
+        end
+        else fail ((PERMIT_NOT_FOUND, (caller, lpermit)))
+      | none -> permits.update(caller, { user_expiry = v })
+      end
+    end
+    else fail ((PERMIT_USER_NOT_FOUND, caller))
+  }
+}
+
+//----------------------------------------------------------------------------
+// Feeless permit (TZIP17)
+//----------------------------------------------------------------------------
+
+/**
+* Adds a permit
+* @param pk public key that signed
+* @param signature contract address * chain id * counter * data
+* @param data serialisation and hash (blake2B * pack) of transfer parameters (list of pairs of 'from' address and transfer destination)
+* Note: counter is to prevent replay attack
+*/
+entry permit(pk : key, sig : signature, data : bytes) {
+  require { r5: is_not_paused() }
+  effect {
+    var user : address = key_address(pk);
+    var empty : map<bytes, user_permit> = [];
+    var pcounter_user_permits : (nat * map<bytes, user_permit>) =
+      if permits.contains(user) then
+        (permits[user].counter, permits[user].user_permits)
+      else
+        (0, empty);
+    var pcounter = pcounter_user_permits[0];
+    var puser_permits = pcounter_user_permits[1];
+    var tosign : bytes = pack(((selfaddress, chainid), (pcounter, data)));
+    dorequire(check_signature(pk, sig, tosign), (MISSIGNED, tosign));
+    var lexpiry = get_default_expiry(user);
+    permits.addupdate(user, { counter += 1; user_permits = put(puser_permits, data, { expiry = some(lexpiry); created_at = now})});
+    for (k, v) in permits[user].user_permits do
+      if has_expired(v, lexpiry)
+      then permits[user].user_permits.remove(k)
+    done
+  }
+}
+
+//----------------------------------------------------------------------------
+// Feeless transfer (one step)
+//----------------------------------------------------------------------------
+
+/**
+* Transfers tokens with permits
+* @param batch list of pairs of permits (key and signature) and transfer specification
+* Note: a transfer specification is a list of pairs of 'from' address and transfer destination
+* Note: a transfer destination has a 'to' address, a token id and an amount
+*/
+entry transfer_gasless (batch : list<list<address * list<transfer_destination>> * (key * signature)>) {
+  for b in batch do
+    var pk  = b[1][0];
+    var sig = b[1][1];
+    var pkh = key_address(pk);
+
+    var lcounter = if permits.contains(pkh) then permits[pkh].counter else 0;
+    var data : bytes = pack((selfaddress, lcounter, blake2b(pack(b[0]))));
+    if not check_signature(pk, sig, data) then fail((MISSIGNED, data));
+    permits.addupdate(pkh, { counter = (lcounter + 1)});
+
+    for tx in b[0] do
+      var %from = tx[0];
+      var tds = tx[1];
+      dorequire(pkh = %from, (SIGNER_NOT_FROM, (pkh, %from)));
+      for td in tds do begin
+        var %to = td.to_dest;
+        (* set token ownership *)
+        var tokenid = td.token_id_dest;
+        var amount = ledger[(tokenid, %from)].lamount;
+        if td.token_amount_dest > amount then
+          fail(FA2_INSUFFICIENT_BALANCE)
+        else if td.token_amount_dest = amount then
+          ledger.remove((tokenid, %from))
+        else
+          ledger.update((tokenid, %from), { lamount -= td.token_amount_dest });
+        ledger.addupdate((tokenid, td.to_dest), { lamount += td.token_amount_dest })
+      end done;
+    done
+  done
+}
+
+//----------------------------------------------------------------------------
+// FA2 transfer (with permit check)
+//----------------------------------------------------------------------------
+
+function get_from_address(txs : list<address * list<transfer_destination>>) : option<address> {
+  match txs with
+  | hd::tl -> begin
+    var %from = hd[0];
+    for tx in tl do
+      dorequire(%from = tx[0], FA2_NOT_OPERATOR)
+    done;
+    return some(%from)
+  end
+  | [] -> return none
+  end
+}
+
+/**
+* Transfers tokens
+* @param txs list of pairs of 'from' address and transfer destination
+* Note : a transfer destination has a 'to' address, a token id and an amount
+* Note : if caller is not 'from' nor operator, it checks if there is a permit
+*/
+entry %transfer (txs : list<address * list<transfer_destination>>) {
+  require { r8 : is_not_paused() }
+  effect {
+    if not check_owner_and_operator(txs) then begin
+      match get_from_address(txs) with
+      | some(%from) -> begin
+          var permit_key = blake2b(pack(txs));
+          if not permits.contains(%from)
+          then fail((NO_ENTRY_FOR_USER, caller, txs, "FT"))
+          else if not permits[%from].user_permits.contains(permit_key)
+          then fail(FA2_NOT_OPERATOR)
+          else (
+            var iuser_permit = permits[%from].user_permits[permit_key];
+            var iexpiry = get_expiry(%from, permit_key);
+            if has_expired(iuser_permit, iexpiry)
+            then fail(PERMIT_EXPIRED)
+            else permits[%from].user_permits.remove(permit_key)
+          );
+          end
+      | none -> ()
+      end
+    end;
+
+    for tx in txs do
+      var %from = tx[0];
+      var tds = tx[1];
+      for td in tds do begin
+        (* set token ownership *)
+        var tokenid = td.token_id_dest;
+        var amount = ledger[(tokenid, %from)].lamount;
+        if td.token_amount_dest > amount then
+          fail((FA2_INSUFFICIENT_BALANCE, caller, txs, "FT"))
+        else if td.token_amount_dest = amount then
+          ledger.remove((tokenid, %from))
+        else
+          ledger.update((tokenid, %from), { lamount -= td.token_amount_dest });
+        ledger.addupdate((tokenid, td.to_dest), { lamount += td.token_amount_dest })
+      end done;
+    done
+  }
+}
+
+//----------------------------------------------------------------------------
+// Mint & burn
+//----------------------------------------------------------------------------
+
+/**
+* Mint new token
+* @param itokenid token id to mint
+* @param iowner owner of the token
+* @param iamount amount of token
+* @param itokenMetadata token metadata
+* @param iroyalties token's royalties
+*/
+entry mint (itokenid : nat, iowner : address, iamount : nat, itokenMetadata: map<string, bytes>, iroyalties : list<part>) {
+  require { r10: is_not_paused() }
+  effect {
+    token_metadata.add({ftoken_metadata = itokenid; token_id = itokenid; token_info = itokenMetadata});
+    royalties.add({ rtokenid = itokenid; rvalue = iroyalties });
+    ledger.add({ ltoken = itokenid; lowner = iowner; lamount = iamount });
+  }
+}
+
+/**
+* Burn an amount of token
+* @param itokenid token to burn
+* @param iamount amount to burn
+*/
+entry burn(itokenid : nat, iamount : nat) {
+  require { r2 : is_not_paused() }
+  effect {
+    if (ledger.contains((itokenid, caller))) then
+    begin
+      var vamount = ledger[(itokenid, caller)].lamount;
+      if (vamount > iamount)
+      then ledger.update((itokenid, caller), { lamount -= iamount })
+      else if (vamount = iamount)
+        then ledger.remove((itokenid, caller))
+        else fail(FA2_INSUFFICIENT_BALANCE);
+    end
+    else
+      fail(FA2_INSUFFICIENT_BALANCE);
+  }
+}
+
+//----------------------------------------------------------------------------
+// Getters (TZIP4 view) & views (Hangzhou)
+//----------------------------------------------------------------------------
+
+/**
+* TZIP-4 view (aka Archetype getter) to return the list of balances for each balance request
+* @param requests list of balance requests
+*/
+getter balance_of (requests : list<balance_of_request>) : list<balance_of_response> {
+  return map(requests, br -> {
+    request = br;
+    balance_ = (
+      if ledger.contains((br.btoken_id, br.bo_owner))
+      then ledger[(br.btoken_id, br.bo_owner)].lamount
+      else 0
+    )
+  })
+}
+
+/**
+* View (since Hangzhou) to return token's royalties
+* @param tokenid token id
+* Note: returns empty list if token does not exist in royalties map
+*/
+view get_royalties(tokenId : nat) : list<part> {
+  return (
+    if royalties.contains(tokenId) then
+      royalties[tokenId].rvalue
+    else
+      emptylist<part>()
+  )
+}
