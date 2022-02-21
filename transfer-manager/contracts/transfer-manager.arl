@@ -1,6 +1,5 @@
-archetype auction(
+archetype transfer_manager(
     owner: address,
-    auction_storage: address,
     royalties_provider: address,
     default_fee_receiver: address,
 )
@@ -46,13 +45,6 @@ entry set_fee_receiver(token : address, wallet : address) {
   called by owner
   effect {
     fee_receivers.put(token, wallet)
-  }
-}
-
-entry set_auction_storage_contract(sacs_contract : address) {
-  called by owner
-  effect {
-    auction_storage := sacs_contract;
   }
 }
 
@@ -396,7 +388,7 @@ entry manage_buyout_transfers(
       done;
 
       //Then, transfer sell asset to buyer
-      transfer 0tz to auction_storage call process_transfer<process_transfer_param>({
+      transfer 0tz to mt_from call process_transfer<process_transfer_param>({
           ptp_asset_type = FA2;
           ptp_asset = pack({
             fa2_asset_contract = mt_sell_asset_contract;
