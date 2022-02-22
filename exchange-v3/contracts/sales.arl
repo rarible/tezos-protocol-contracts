@@ -19,9 +19,9 @@ constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
 constant AUCTION_WITH_BID_NON_CANCELLABLE: string = "AUCTION_WITH_BID_NON_CANCELLABLE"
 constant FINISHED_AUCTION_NON_CANCELLABLE: string = "FINISHED_AUCTION_NON_CANCELLABLE"
 constant ONLY_SELLER_CAN_CANCEL_AUCTION: string = "ONLY_SELLER_CAN_CANCEL_AUCTION"
-constant CANT_UNPACK_FA2_BID_ASSET: string = "CANT_UNPACK_FA2_BID_ASSET"
-constant CANT_UNPACK_FA12_BID_ASSET: string = "CANT_UNPACK_FA12_BID_ASSET"
-constant WRONG_BUY_ASSET_PAYLOAD: string = "WRONG_BUY_ASSET_PAYLOAD"
+constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
+constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
+constant WRONG_XTZ_PAYLOAD: string = "WRONG_XTZ_PAYLOAD"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -135,26 +135,23 @@ entry sell (
   s_sale_asset: bytes,
   s_sale : sale) {
     require {
-        r_pb0: s_sale.sale_amount > 0;
-        r_pb1: s_seller = caller;
+        r_s0: s_sale.sale_amount > 0;
+        r_s1: s_sale.sale_asset_qty > 0;
+        r_s2: s_seller = caller;
+        r_s3: sale_exists(s_asset_contract, s_asset_token_id, s_seller, s_sale_type, s_sale_asset) = false
     }
     effect {
-      var current_sale = get_sale(s_asset_contract, s_asset_token_id, s_seller, s_sale_type, s_sale_asset);
       var total_amount = process_total_amount(s_sale.sale_amount, protocol_fee, s_sale.sale_origin_fees);
-
-      if(issome(current_sale)) then (
-        fail("SALE_ALREADY_EXISTS")
-      ) else (
-        transfer 0tz to sales_storage call set_sale<address * nat * address * asset_type * bytes * sale>(
-          (
-            s_asset_contract,
-            s_asset_token_id,
-            s_seller,
-            s_sale_type,
-            s_sale_asset,
-            s_sale
-          )
-        );
+      var unpack_result = verify_and_unpack_asset(s_sale_type, s_sale_asset);
+      transfer 0tz to sales_storage call set_sale<address * nat * address * asset_type * bytes * sale>(
+        (
+          s_asset_contract,
+          s_asset_token_id,
+          s_seller,
+          s_sale_type,
+          s_sale_asset,
+          s_sale
+        )
       );
     }
 }
@@ -170,7 +167,7 @@ entry buy(
     effect {
       var current_sale = require_some(get_sale(b_asset_contract, b_asset_token_id, b_buyer, b_sale_type, b_sale_asset), MISSING_SALE);
 
-      var unpack_result = unpack_asset(b_sale_type, b_sale_asset);
+      var unpack_result = verify_and_unpack_asset(b_sale_type, b_sale_asset);
       var buy_asset_contract = unpack_result[0];
       var buy_asset_token_id = unpack_result[1];
 
@@ -216,13 +213,21 @@ entry cancel_sale(
     }
 }
 
-function sale_exists(se_asset_contract: address, se_asset_id: nat) : bool {
+function sale_exists(
+  se_asset_contract: address,
+  se_asset_token_id: nat,
+  se_seller: address,
+  se_sale_type: asset_type,
+  se_sale_asset: bytes) : bool {
     return match callview<bool>(
         sales_storage,
         "sale_exists",
         (
             se_asset_contract,
-            se_asset_id
+            se_asset_token_id,
+            se_seller,
+            se_sale_type,
+            se_sale_asset
         )
     )
     with
@@ -231,7 +236,7 @@ function sale_exists(se_asset_contract: address, se_asset_id: nat) : bool {
     end
 }
 
-function unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option<address> * option<nat>) {
+function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option<address> * option<nat>) {
     var buy_asset_contract: option<address> = none;
     var buy_asset_token_id: option<nat> = none;
     match ua_asset_type with
@@ -241,7 +246,7 @@ function unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option
             buy_asset_contract := some(buyAsset.fa2_asset_contract);
             buy_asset_token_id := some(buyAsset.fa2_asset_token_id);
           )
-        | none -> fail(CANT_UNPACK_FA2_BID_ASSET)
+        | none -> fail(CANT_UNPACK_FA2_ASSET)
         end
       )
       | FA12 -> (
@@ -249,10 +254,14 @@ function unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option
         | some(buyAsset) -> (
             buy_asset_contract := some(buyAsset.fa12_asset_contract);
         )
-        | none -> fail(CANT_UNPACK_FA12_BID_ASSET)
+        | none -> fail(CANT_UNPACK_FA12_ASSET)
         end
       )
-      | XTZ -> ()
+      | XTZ -> (
+          if(ua_asset_data <> 0x) then (
+            fail(WRONG_XTZ_PAYLOAD)
+          )
+      )
       end;
       return ((buy_asset_contract, buy_asset_token_id))
 }
@@ -310,7 +319,7 @@ entry process_transfer(pt_transfer: process_transfer_param){
             ]
           )
         )
-      | none -> fail(CANT_UNPACK_FA2_BID_ASSET)
+      | none -> fail(CANT_UNPACK_FA2_ASSET)
       end;
     )
     | FA12 -> (
@@ -318,7 +327,7 @@ entry process_transfer(pt_transfer: process_transfer_param){
         | some(buyAsset) -> (
             transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
         )
-        | none -> fail(CANT_UNPACK_FA12_BID_ASSET)
+        | none -> fail(CANT_UNPACK_FA12_ASSET)
         end
       )
     | XTZ -> (

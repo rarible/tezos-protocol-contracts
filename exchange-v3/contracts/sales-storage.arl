@@ -148,10 +148,10 @@ entry remove_sale(
 view sale_exists(
   se_asset_contract: address,
   se_asset_token_id: nat,
-  se_bidder: address,
-  se_bid_type: asset_type,
-  se_bid_asset: bytes) : bool {
-  return sales.contains((se_asset_contract, se_asset_token_id, se_bidder, se_bid_type, se_bid_asset))
+  se_seller: address,
+  se_sale_type: asset_type,
+  se_sale_asset: bytes) : bool {
+  return sales.contains((se_asset_contract, se_asset_token_id, se_seller, se_sale_type, se_sale_asset))
 }
 
 view get_sale(
