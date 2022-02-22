@@ -136,12 +136,12 @@ entry set_sale(
 entry remove_sale(
   rs_asset_contract: address,
   rs_asset_token_id: nat,
-  rs_bidder: address,
-  rs_bid_type: asset_type,
-  rs_bid_asset: bytes) {
+  rs_seller: address,
+  rs_sale_type: asset_type,
+  rs_sale_asset: bytes) {
   called by require_some(sales_contract, MISSING_EXCHANGE_CONTRACT)
   effect {
-    sales.remove((rs_asset_contract, rs_asset_token_id, rs_bidder, rs_bid_type, rs_bid_asset));
+    sales.remove((rs_asset_contract, rs_asset_token_id, rs_seller, rs_sale_type, rs_sale_asset));
   }
 }
 

@@ -252,7 +252,6 @@ entry manage_transfers(
           ptp_destination = mt_seller
         });
     }
-
 }
 
 entry manage_buyout_transfers(
@@ -406,6 +405,128 @@ entry manage_buyout_transfers(
           ptp_asset = mt_buy_asset;
           ptp_amount = total_after_all_fees;
           ptp_origin = origin;
+          ptp_destination = mt_seller
+        });
+    }
+}
+
+entry manage_sale_transfers(
+  mt_amount: nat,
+  mt_sell_amount: nat,
+  mt_seller: address,
+  mt_buyer: address,
+  mt_protocol_fees: nat,
+  mt_sale_fees: fees,
+  mt_buy_asset_type: asset_type,
+  mt_buy_asset: bytes,
+  mt_sell_asset_contract: address,
+  mt_sell_asset_token_id: nat) {
+    //called by selfaddress
+    effect {
+      var buy_asset_contract : option<address> = none;
+
+      match mt_buy_asset_type with
+      | FA2 -> (
+        match unpack<FA2_asset>(mt_buy_asset) with
+        | some(buyAsset) -> (
+            buy_asset_contract := some(buyAsset.fa2_asset_contract);
+          )
+        | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
+        end
+      )
+      | FA12 -> (
+        match unpack<FA12_asset>(mt_buy_asset) with
+        | some(buyAsset) -> (
+            buy_asset_contract := some(buyAsset.fa12_asset_contract);
+        )
+        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
+        end
+      )
+      | XTZ -> ()
+      end;
+
+
+      //First process the total amount of the order, and the protocol fees
+      var total = process_total_amount(mt_amount, mt_protocol_fees, mt_sale_fees.origin_fees);
+      var rest_fee = process_protocol_fees(total, mt_amount, mt_protocol_fees * 2);
+
+      var total_after_all_fees = rest_fee[0];
+      var protocol_fees = rest_fee[1];
+      //Then process the amount of royalties, and the matching operations
+      var rest_royalties = process_royalties(
+        mt_buy_asset_type,
+        mt_buy_asset,
+        mt_sell_asset_contract,
+        mt_sell_asset_token_id,
+        mt_amount,
+        mt_buyer
+      );
+      total_after_all_fees -= rest_royalties[0];
+
+      var royalty_operations = rest_royalties[1];
+      //Then process the bid origin fees, and the matching operations
+      var rest_sale_origin_fees = process_fees(
+        mt_buy_asset,
+        mt_buy_asset_type,
+        mt_amount,
+        mt_sale_fees.origin_fees,
+        mt_buyer);
+      total_after_all_fees -= rest_sale_origin_fees[0];
+      var bid_origin_fees_operations = rest_sale_origin_fees[1];
+
+      var bid_payouts_rest = process_payouts(
+        mt_buy_asset,
+        mt_buy_asset_type,
+        mt_amount,
+        mt_buyer,
+        mt_sale_fees.payouts);
+
+      total_after_all_fees -= bid_payouts_rest[0];
+      var bid_payouts_operations = bid_payouts_rest[1];
+
+      dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
+
+      //Now that we have processed all the fees, we need to process the operations
+      //1st: transfer protocol fees
+      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+          ptp_asset_type = mt_buy_asset_type;
+          ptp_asset = mt_buy_asset;
+          ptp_amount = protocol_fees;
+          ptp_origin = mt_buyer;
+          ptp_destination = get_fee_receiver(buy_asset_contract)
+        });
+      //2nd: transfer royalties
+      for royalty_operation in royalty_operations do
+            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(royalty_operation)
+      done;
+
+      //3rd: bid origin fees
+      for bid_origin_fees_operation in bid_origin_fees_operations do
+            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(bid_origin_fees_operation)
+      done;
+      //4th: bid payouts
+      for payouts_operation in bid_payouts_operations do
+            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
+      done;
+
+      //5th: Then, transfer sell asset to buyer
+      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+          ptp_asset_type = FA2;
+          ptp_asset = pack({
+            fa2_asset_contract = mt_sell_asset_contract;
+            fa2_asset_token_id = mt_sell_asset_token_id
+            });
+          ptp_amount = mt_sell_amount;
+          ptp_origin = mt_seller;
+          ptp_destination = mt_buyer
+        });
+
+      //6th: Finally, transfer buy asset to seller
+      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+          ptp_asset_type = mt_buy_asset_type;
+          ptp_asset = mt_buy_asset;
+          ptp_amount = total_after_all_fees;
+          ptp_origin = mt_buyer;
           ptp_destination = mt_seller
         });
     }

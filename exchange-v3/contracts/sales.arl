@@ -14,7 +14,7 @@ constant AUCTION_START_DATE_IN_THE_PAST: string = "AUCTION_START_DATE_IN_THE_PAS
 constant MISSING_SALE: string = "MISSING_SALE"
 constant AUCTION_BID_TOO_LOW: string = "AUCTION_BID_TOO_LOW"
 constant AUCTION_BID_ALREADY_EXISTS: string = "AUCTION_BID_ALREADY_EXISTS"
-constant AUCTION_BID_AMOUNT_MISMATCH: string = "AUCTION_BID_AMOUNT_MISMATCH"
+constant AMOUNT_MISMATCH: string = "AMOUNT_MISMATCH"
 constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
 constant AUCTION_WITH_BID_NON_CANCELLABLE: string = "AUCTION_WITH_BID_NON_CANCELLABLE"
 constant FINISHED_AUCTION_NON_CANCELLABLE: string = "FINISHED_AUCTION_NON_CANCELLABLE"
@@ -141,7 +141,6 @@ entry sell (
         r_s3: sale_exists(s_asset_contract, s_asset_token_id, s_seller, s_sale_type, s_sale_asset) = false
     }
     effect {
-      var total_amount = process_total_amount(s_sale.sale_amount, protocol_fee, s_sale.sale_origin_fees);
       var unpack_result = verify_and_unpack_asset(s_sale_type, s_sale_asset);
       transfer 0tz to sales_storage call set_sale<address * nat * address * asset_type * bytes * sale>(
         (
@@ -160,35 +159,39 @@ entry sell (
 entry buy(
   b_asset_contract: address,
   b_asset_token_id: nat,
-  b_buyer: address,
+  b_seller: address,
   b_sale_type: asset_type,
   b_sale_asset: bytes,
-  b_seller: address){
+  b_buyer: address ){
+      require {
+        r_b0: b_buyer = caller
+    }
     effect {
-      var current_sale = require_some(get_sale(b_asset_contract, b_asset_token_id, b_buyer, b_sale_type, b_sale_asset), MISSING_SALE);
+      var current_sale = require_some(get_sale(b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset), MISSING_SALE);
 
       var unpack_result = verify_and_unpack_asset(b_sale_type, b_sale_asset);
       var buy_asset_contract = unpack_result[0];
       var buy_asset_token_id = unpack_result[1];
 
-      transfer 0tz to transfer_manager call manage_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat * address>(
+      if(b_sale_type = XTZ) then (
+        dorequire(transferred = (process_total_amount(current_sale.sale_amount, protocol_fee, current_sale.sale_origin_fees) * 1utz), AMOUNT_MISMATCH)
+      );
+
+      transfer transferred to transfer_manager call manage_sale_transfers<nat * nat * address * address * nat * fees * asset_type * bytes * address * nat>(
          (
             current_sale.sale_amount,
             current_sale.sale_asset_qty,
-            sales_storage,
             b_seller,
             b_buyer,
             protocol_fee,
             { origin_fees = current_sale.sale_origin_fees; payouts = current_sale.sale_payouts},
-            { origin_fees = []; payouts = []},
             b_sale_type,
             b_sale_asset,
             b_asset_contract,
-            b_asset_token_id,
-            sales_storage
+            b_asset_token_id
          )
       );
-      transfer 0tz to sales_storage call remove_bid<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_buyer, b_sale_type, b_sale_asset))
+      transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset))
 
     }
 }
@@ -196,20 +199,15 @@ entry buy(
 entry cancel_sale(
   cs_asset_contract: address,
   cs_asset_token_id: nat,
-  cs_bidder: address,
-  cs_bid_type: asset_type,
-  cs_bid_asset: bytes){
+  cs_seller: address,
+  cs_sale_type: asset_type,
+  cs_sale_asset: bytes){
+    require {
+        r_cs0: sale_exists(cs_asset_contract, cs_asset_token_id, cs_seller, cs_sale_type, cs_sale_asset) = true;
+        r_cs1: cs_seller = caller
+    }
     effect {
-      var current_sale = require_some(get_sale(cs_asset_contract, cs_asset_token_id, cs_bidder, cs_bid_type, cs_bid_asset), MISSING_SALE);
-
-      transfer 0tz to sales_storage call process_transfer<process_transfer_param>({
-        ptp_asset_type = cs_bid_type;
-        ptp_asset = cs_bid_asset;
-        ptp_amount = current_sale.sale_amount;
-        ptp_origin = sales_storage;
-        ptp_destination = cs_bidder
-      });
-      transfer 0tz to sales_storage call remove_bid<address * nat * address * asset_type * bytes>((cs_asset_contract, cs_asset_token_id, cs_bidder, cs_bid_type, cs_bid_asset))
+      transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((cs_asset_contract, cs_asset_token_id, cs_seller, cs_sale_type, cs_sale_asset))
     }
 }
 
