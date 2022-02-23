@@ -388,8 +388,8 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
       dorequire(auction.auction_start_time < auction.auction_end_time < now, AUCTION_NOT_FINISHABLE);
 
       var last_bid = require_some(auction.auction_last_bid, NO_BID_FOR_AUCTION);
-  
-      transfer 0tz to transfer_manager call manage_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat * address>(
+
+      transfer 0tz to transfer_manager call manage_custodian_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat * address>(
          (
             last_bid.bid_amount,
             auction.auction_sell_asset_amount,

@@ -1,4 +1,4 @@
-archetype exchange(
+archetype sales(
     owner: address,
     protocol_fee: nat,
     transfer_manager: address,
@@ -7,18 +7,8 @@ archetype exchange(
 with metadata ""
 
 constant SALE_ALREADY_EXISTS: string = "SALE_ALREADY_EXISTS"
-constant AUCTION_NOT_IN_PROGRESS: string = "AUCTION_NOT_IN_PROGRESS"
-constant AUCTION_NOT_FINISHABLE: string = "AUCTION_NOT_FINISHABLE"
-constant AUCTION_FINISHED: string = "AUCTION_FINISHED"
-constant AUCTION_START_DATE_IN_THE_PAST: string = "AUCTION_START_DATE_IN_THE_PAST"
 constant MISSING_SALE: string = "MISSING_SALE"
-constant AUCTION_BID_TOO_LOW: string = "AUCTION_BID_TOO_LOW"
-constant AUCTION_BID_ALREADY_EXISTS: string = "AUCTION_BID_ALREADY_EXISTS"
 constant AMOUNT_MISMATCH: string = "AMOUNT_MISMATCH"
-constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
-constant AUCTION_WITH_BID_NON_CANCELLABLE: string = "AUCTION_WITH_BID_NON_CANCELLABLE"
-constant FINISHED_AUCTION_NON_CANCELLABLE: string = "FINISHED_AUCTION_NON_CANCELLABLE"
-constant ONLY_SELLER_CAN_CANCEL_AUCTION: string = "ONLY_SELLER_CAN_CANCEL_AUCTION"
 constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
 constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
 constant WRONG_XTZ_PAYLOAD: string = "WRONG_XTZ_PAYLOAD"

@@ -284,29 +284,41 @@ describe('Auction contract setter tests', async () => {
         });
     });
 
-    describe('Auction storage (Transfer manager) contract setter tests', async () => {
-        it('Set auction storage contract as non admin should fail', async () => {
+    describe('(Transfer manager)Authorize Auction, and auction storage contract tests', async () => {
+        it('Authorize Auction, and auction storage contract as non admin should fail', async () => {
             await expectToThrow(async () => {
-                await transfer_manager.set_auction_storage_contract({
+                await transfer_manager.authorize_contract({
                     arg: {
-                        sacs_contract: auction_storage.address
+                        ac_contract: auction_storage.address
                     },
                     as: bob.pkh
                 });
             }, errors.INVALID_CALLER);
         });
 
-        it('Set auction storage contract as admin should succeed', async () => {
+        it('Authorize Auction, and auction storage contract as admin should succeed', async () => {
             const storage = await transfer_manager.getStorage();
-            assert(storage.auction_storage == royalties.address);
-            await transfer_manager.set_auction_storage_contract({
+            assert(storage.authorized_contracts.length == 0);
+            await transfer_manager.authorize_contract({
                 arg: {
-                    sacs_contract: auction_storage.address
+                    ac_contract: auction_storage.address
                 },
                 as: alice.pkh
             });
-            const post_test_storage = await auction.getStorage();
-            assert(post_test_storage.auction_storage == auction_storage.address);
+            await transfer_manager.authorize_contract({
+                arg: {
+                    ac_contract: auction.address
+                },
+                as: alice.pkh
+            });
+            const post_test_storage = await transfer_manager.getStorage();
+            assert(post_test_storage.authorized_contracts.length == 2);
+            assert(
+                post_test_storage.authorized_contracts.includes(auction_storage.address) &&
+                post_test_storage.authorized_contracts.includes(auction.address)
+
+            );
+
         });
     });
 

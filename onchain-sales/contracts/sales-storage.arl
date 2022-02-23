@@ -1,9 +1,9 @@
-archetype bids_storage(
+archetype sales_storage(
   owner: address
 )
 with metadata ""
 
-constant MISSING_EXCHANGE_CONTRACT: string = "MISSING_EXCHANGE_CONTRACT"
+constant MISSING_SALES_CONTRACT: string = "MISSING_SALES_CONTRACT"
 constant MISSING_TRANSFER_MANAGER: string = "MISSING_TRANSFER_MANAGER"
 constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
 constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
@@ -116,7 +116,7 @@ entry set_sale(
   ss_sale_type: asset_type,
   ss_sale_asset: bytes,
   ss_sale: sale) {
-  called by require_some(sales_contract, MISSING_EXCHANGE_CONTRACT)
+  called by require_some(sales_contract, MISSING_SALES_CONTRACT)
   effect {
     sales.addupdate(
       (
@@ -139,7 +139,7 @@ entry remove_sale(
   rs_seller: address,
   rs_sale_type: asset_type,
   rs_sale_asset: bytes) {
-  called by require_some(sales_contract, MISSING_EXCHANGE_CONTRACT)
+  called by require_some(sales_contract, MISSING_SALES_CONTRACT)
   effect {
     sales.remove((rs_asset_contract, rs_asset_token_id, rs_seller, rs_sale_type, rs_sale_asset));
   }

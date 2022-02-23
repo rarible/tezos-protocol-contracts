@@ -8,12 +8,13 @@ with metadata ""
 constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
 constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
 constant ROYALTIES_TOO_HIGH: string = "ROYALTIES_TOO_HIGH"
-constant MISSING_AUCTION_CUSTODY_CONTRACT: string = "MISSING_AUCTION_CUSTODY_CONTRACT"
 constant TOTAL_AMOUNT_NEGATIVE: string = "TOTAL_AMOUNT_NEGATIVE"
-constant CANT_UNPACK_FA2_BUY_ASSET: string = "CANT_UNPACK_FA2_BUY_ASSET"
-constant CANT_UNPACK_FA12_BUY_ASSET: string = "CANT_UNPACK_FA12_BUY_ASSET"
+constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
+constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
+constant NOT_AUTHORIZED: string = "NOT_AUTHORIZED"
 
 variable fee_receivers   : map<address, address> = []
+variable authorized_contracts   : set<address> = []
 
 function get_fee_receiver(gfr_token : option<address>) : address {
   return
@@ -47,6 +48,27 @@ entry set_fee_receiver(token : address, wallet : address) {
     fee_receivers.put(token, wallet)
   }
 }
+
+entry authorize_contract(ac_contract : address) {
+  called by owner
+  effect {
+    authorized_contracts.add(ac_contract)
+  }
+}
+
+entry revoke_contract(ac_contract : address) {
+  called by owner
+  effect {
+    authorized_contracts.remove(ac_contract)
+  }
+}
+
+function isAuthorized() : bool {
+  if (authorized_contracts.contains(caller) or caller = selfaddress)
+  then return true
+  else fail(NOT_AUTHORIZED)
+}
+
 
 enum asset_type =
 | XTZ
@@ -102,7 +124,7 @@ function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part
     end
 }
 
-entry manage_transfers(
+entry manage_custodian_transfers(
   mt_amount: nat,
   mt_sell_amount: nat,
   mt_from: address,
@@ -116,7 +138,9 @@ entry manage_transfers(
   mt_sell_asset_contract: address,
   mt_sell_asset_token_id: nat,
   mt_transfer_caller: address){
-    //called by selfaddress
+    require {
+      r_mct0 : isAuthorized();
+    }
     effect {
       var buy_asset_contract : option<address> = none;
 
@@ -126,7 +150,7 @@ entry manage_transfers(
         | some(buyAsset) -> (
             buy_asset_contract := some(buyAsset.fa2_asset_contract);
           )
-        | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
+        | none -> fail(CANT_UNPACK_FA2_ASSET)
         end
       )
       | FA12 -> (
@@ -134,7 +158,7 @@ entry manage_transfers(
         | some(buyAsset) -> (
             buy_asset_contract := some(buyAsset.fa12_asset_contract);
         )
-        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
+        | none -> fail(CANT_UNPACK_FA12_ASSET)
         end
       )
       | XTZ -> ()
@@ -200,7 +224,6 @@ entry manage_transfers(
 
       dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
 
-      //fail((total_after_all_fees, protocol_fees, royalty_operations, bid_origin_fees_operations, auction_origin_fees_operations, auction_payouts_operations, bid_payouts_operations));
       //Now that we have processed all the fees, we need to process the operations
       //1st: transfer protocol fees
       transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>({
@@ -267,7 +290,9 @@ entry manage_buyout_transfers(
   mt_buy_asset: bytes,
   mt_sell_asset_contract: address,
   mt_sell_asset_token_id: nat) {
-    //called by selfaddress
+    require {
+      r_mbt0 : isAuthorized();
+    }
     effect {
       var buy_asset_contract : option<address> = none;
 
@@ -277,7 +302,7 @@ entry manage_buyout_transfers(
         | some(buyAsset) -> (
             buy_asset_contract := some(buyAsset.fa2_asset_contract);
           )
-        | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
+        | none -> fail(CANT_UNPACK_FA2_ASSET)
         end
       )
       | FA12 -> (
@@ -285,7 +310,7 @@ entry manage_buyout_transfers(
         | some(buyAsset) -> (
             buy_asset_contract := some(buyAsset.fa12_asset_contract);
         )
-        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
+        | none -> fail(CANT_UNPACK_FA12_ASSET)
         end
       )
       | XTZ -> ()
@@ -398,7 +423,6 @@ entry manage_buyout_transfers(
           ptp_destination = mt_buyer
         });
 
-      //fail(total_after_all_fees);
       //Finally, transfer buy asset to seller
       transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
           ptp_asset_type = mt_buy_asset_type;
@@ -421,7 +445,9 @@ entry manage_sale_transfers(
   mt_buy_asset: bytes,
   mt_sell_asset_contract: address,
   mt_sell_asset_token_id: nat) {
-    //called by selfaddress
+    require {
+      r_mst0 : isAuthorized();
+    }
     effect {
       var buy_asset_contract : option<address> = none;
 
@@ -431,7 +457,7 @@ entry manage_sale_transfers(
         | some(buyAsset) -> (
             buy_asset_contract := some(buyAsset.fa2_asset_contract);
           )
-        | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
+        | none -> fail(CANT_UNPACK_FA2_ASSET)
         end
       )
       | FA12 -> (
@@ -439,7 +465,7 @@ entry manage_sale_transfers(
         | some(buyAsset) -> (
             buy_asset_contract := some(buyAsset.fa12_asset_contract);
         )
-        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
+        | none -> fail(CANT_UNPACK_FA12_ASSET)
         end
       )
       | XTZ -> ()
@@ -626,8 +652,9 @@ function process_payouts(
 }
 
 entry process_transfer(pt_transfer: process_transfer_param){
-  //TODO: add a list o
-  //called by selfaddress
+  require {
+    r_pt0 : isAuthorized();
+  }
   effect {
     match pt_transfer.ptp_asset_type with
     | FA2  -> (
@@ -648,7 +675,7 @@ entry process_transfer(pt_transfer: process_transfer_param){
             ]
           )
         )
-      | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
+      | none -> fail(CANT_UNPACK_FA2_ASSET)
       end;
     )
     | FA12 -> (
@@ -656,7 +683,7 @@ entry process_transfer(pt_transfer: process_transfer_param){
         | some(buyAsset) -> (
             transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
         )
-        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
+        | none -> fail(CANT_UNPACK_FA12_ASSET)
         end
       )
     | XTZ -> (

@@ -5,11 +5,6 @@ const {
     setQuiet,
     expectToThrow,
     exprMichelineToJson,
-    setMockupNow,
-    getEndpoint,
-    isMockup,
-    setEndpoint,
-    setNow,
     getBalance
 } = require('@completium/completium-cli');
 const {
@@ -18,17 +13,9 @@ const {
     FA12,
     FA2,
     XTZ,
-    mkPart,
     mkFungibleFA2Asset,
-    mkFA12Auction,
-    mkFungibleFA2Auction,
-    mkXTZAuction,
-    mkBid,
     getFA2Balance,
     getFA12Balance,
-    mkAuctionWithMissingFA2AssetContract,
-    mkAuctionWithMissingFA2AssetId,
-    mkAuctionWithMissingFA2AssetContractAndId,
     mkXTZAsset,
     mkFA12Asset
 } = require('./utils');
@@ -67,15 +54,9 @@ const token_id_8 = 8;
 const token_id_9 = 9;
 
 const fee = 250;
-const minimal_price = 10;
-const buyout_price = 1000000000;
-const min_step = 2;
 const payout_value = 100;
 const sale_amount = "1000000";
 const qty = "1";
-const duration = 100;
-const auction_amount = "1";
-const start_date = Date.now() / 1000;
 // accounts
 const alice = getAccount(mockup_mode ? 'alice' : 'alice');
 const bob = getAccount(mockup_mode ? 'bob' : 'bob');
@@ -204,6 +185,44 @@ describe('Contract deployments', async () => {
                 as: alice.pkh,
             }
         );
+    });
+});
+
+describe('(Transfer manager)Authorize Auction, and auction storage contract tests', async () => {
+    it('Authorize Auction, and auction storage contract as non admin should fail', async () => {
+        await expectToThrow(async () => {
+            await transfer_manager.authorize_contract({
+                arg: {
+                    ac_contract: sales.address
+                },
+                as: bob.pkh
+            });
+        }, errors.INVALID_CALLER);
+    });
+
+    it('Authorize Auction, and auction storage contract as admin should succeed', async () => {
+        const storage = await transfer_manager.getStorage();
+        assert(storage.authorized_contracts.length == 0);
+        await transfer_manager.authorize_contract({
+            arg: {
+                ac_contract: sales.address
+            },
+            as: alice.pkh
+        });
+        await transfer_manager.authorize_contract({
+            arg: {
+                ac_contract: sales_storage.address
+            },
+            as: alice.pkh
+        });
+        const post_test_storage = await transfer_manager.getStorage();
+        assert(post_test_storage.authorized_contracts.length == 2);
+        assert(
+            post_test_storage.authorized_contracts.includes(sales_storage.address) &&
+            post_test_storage.authorized_contracts.includes(sales.address)
+
+        );
+
     });
 });
 
