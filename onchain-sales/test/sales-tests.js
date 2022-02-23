@@ -9,7 +9,6 @@ const {
 } = require('@completium/completium-cli');
 const {
     errors,
-    mkAuction,
     FA12,
     FA2,
     XTZ,
@@ -154,6 +153,7 @@ describe('Contract deployments', async () => {
                     owner: alice.pkh
                 },
                 as: alice.pkh,
+                named: "sales-storage"
             }
         );
     });
@@ -168,6 +168,7 @@ describe('Contract deployments', async () => {
                     default_fee_receiver: carl.pkh,
                 },
                 as: alice.pkh,
+                named: "transfer-manager"
             }
         );
     });
@@ -183,13 +184,14 @@ describe('Contract deployments', async () => {
                     sales_storage: royalties.address,
                 },
                 as: alice.pkh,
+                named: "sales"
             }
         );
     });
 });
 
-describe('(Transfer manager)Authorize Auction, and auction storage contract tests', async () => {
-    it('Authorize Auction, and auction storage contract as non admin should fail', async () => {
+describe('(Transfer manager)Authorize Sales, and Sales storage contract tests', async () => {
+    it('Authorize Sales, and Sales storage contract as non admin should fail', async () => {
         await expectToThrow(async () => {
             await transfer_manager.authorize_contract({
                 arg: {
@@ -200,7 +202,7 @@ describe('(Transfer manager)Authorize Auction, and auction storage contract test
         }, errors.INVALID_CALLER);
     });
 
-    it('Authorize Auction, and auction storage contract as admin should succeed', async () => {
+    it('Authorize Sales, and Sales storage contract as admin should succeed', async () => {
         const storage = await transfer_manager.getStorage();
         assert(storage.authorized_contracts.length == 0);
         await transfer_manager.authorize_contract({
@@ -289,7 +291,7 @@ describe('Sales contract setter tests', async () => {
             }, errors.INVALID_CALLER);
         });
 
-        it('Set auction storage contract as admin should succeed', async () => {
+        it('Set Sales storage contract as admin should succeed', async () => {
             const storage = await sales.getStorage();
             assert(storage.sales_storage == royalties.address);
             await sales.set_sales_storage({
@@ -889,7 +891,7 @@ describe('Tokens setup', async () => {
 
 describe('Set sales tests', async () => {
     describe('Set sale in Fungible FA2', async () => {
-        it('Set sale buying with Fungible FA2 should succeed (no royalties, no bid payouts, no bid origin fees)', async () => {
+        it('Set sale buying with Fungible FA2 should succeed (no royalties, no sale payouts, no sale origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
             var sale = await getValueFromBigMap(
@@ -935,7 +937,7 @@ describe('Set sales tests', async () => {
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
         });
 
-        it('Set sale buying with Fungible FA2 should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+        it('Set sale buying with Fungible FA2 should succeed (single royalties, single sale payouts, single sale origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString());
             var sale = await getValueFromBigMap(
@@ -993,7 +995,7 @@ describe('Set sales tests', async () => {
         });
 
 
-        it('Set sale buying with Fungible FA2 should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+        it('Set sale buying with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString());
             var sale = await getValueFromBigMap(
@@ -1079,7 +1081,7 @@ describe('Set sales tests', async () => {
 
 
     describe('Set sale in XTZ', async () => {
-        it('Set sale buying with XTZ should succeed (no royalties, no auction payouts, no auction origin fees, no bid payouts, no bid origin fees)', async () => {
+        it('Set sale buying with XTZ should succeed (no royalties, no payouts, no origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkXTZAsset();
             var sale = await getValueFromBigMap(
@@ -1135,7 +1137,7 @@ describe('Set sales tests', async () => {
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
         });
 
-        it('Set sale buying with XTZ should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+        it('Set sale buying with XTZ should succeed (single royalties, single payouts, single origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkXTZAsset();
             var sale = await getValueFromBigMap(
@@ -1201,7 +1203,7 @@ describe('Set sales tests', async () => {
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
         });
 
-        it('Set sale buying with XTZ should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+        it('Set sale buying with XTZ should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkXTZAsset();
             var sale = await getValueFromBigMap(
@@ -1284,8 +1286,8 @@ describe('Set sales tests', async () => {
         });
     });
 
-    describe('Auction with bids in FA12', async () => {
-        it('Set sale buying with FA12 should succeed (no royalties, no auction payouts, no auction origin fees, no bid payouts, no bid origin fees)', async () => {
+    describe('Set sale with FA12', async () => {
+        it('Set sale buying with FA12 should succeed (no royalties, no payouts, no origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkFA12Asset(fa12_ft_0.address);
             var sale = await getValueFromBigMap(
@@ -1341,7 +1343,7 @@ describe('Set sales tests', async () => {
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
         });
 
-        it('Set sale buying with FA12 should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+        it('Set sale buying with FA12 should succeed (single royalties, single payouts, single origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkFA12Asset(fa12_ft_1.address);
             var sale = await getValueFromBigMap(
@@ -1407,7 +1409,7 @@ describe('Set sales tests', async () => {
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
         });
 
-        it('Set sale buying with Fungible FA2 should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+        it('Set sale buying with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
             const storage = await sales_storage.getStorage();
             const sale_asset = mkFA12Asset(fa12_ft_2.address);
             var sale = await getValueFromBigMap(
@@ -1612,7 +1614,7 @@ describe('Set sales tests', async () => {
             }, '(Pair "InvalidCondition" "r_s2")');
         });
 
-        it('Set sale buying with Fungible FA2 that already exists should fail', async () => {
+        it('Set sale buying with a sale that already exists should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkFA12Asset(fa12_ft_1.address);
                 await sales.sell({
@@ -1635,9 +1637,9 @@ describe('Set sales tests', async () => {
 });
 
 describe('Buy tests', async () => {
-    describe('Buy with Fungible FA2 auction tests', async () => {
+    describe('Buy with Fungible FA2 sales tests', async () => {
 
-        it('Buy with Fungible FA2 auction (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
+        it('Buy with Fungible FA2 sales (no royalties, no origin fees, no payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, sales_storage.address);
@@ -1707,7 +1709,7 @@ describe('Buy tests', async () => {
             assert(post_tx_sale == null);
         });
 
-        it('Buy with Fungible FA2 auction (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
+        it('Buy with Fungible FA2 sales (single royalties, single origin fees, single payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, sales_storage.address);
@@ -1779,7 +1781,7 @@ describe('Buy tests', async () => {
 
         });
 
-        it('Buy with Fungible FA2 auction (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
+        it('Buy with Fungible FA2 sales (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_2, sales_storage.address);
@@ -1851,9 +1853,9 @@ describe('Buy tests', async () => {
         });
     });
 
-    describe('Buy with XTZ auction tests', async () => {
+    describe('Buy with XTZ sales tests', async () => {
 
-        it('Buy with XTZ auction (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
+        it('Buy with XTZ sales (no royalties, no origin fees, no payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getBalance(sales_storage.address);
@@ -1915,7 +1917,7 @@ describe('Buy tests', async () => {
             assert(post_tx_sale == null);
         });
 
-        it('Buy with XTZ auction (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
+        it('Buy with XTZ sales (single royalties, single origin fees, single payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getBalance(sales_storage.address);
@@ -1980,7 +1982,7 @@ describe('Buy tests', async () => {
             assert(post_tx_sale == null);
         });
 
-        it('Buy with XTZ auction (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
+        it('Buy with XTZ sales (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getBalance(sales_storage.address);
@@ -2045,9 +2047,9 @@ describe('Buy tests', async () => {
         });
     });
 
-    describe('Buy with FA12 auction tests', async () => {
+    describe('Buy with FA12 sales tests', async () => {
 
-        it('Buy with FA12 auction (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
+        it('Buy with FA12 sales (no royalties, no origin fees, no payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getFA12Balance(fa12_ft_0, sales_storage.address);
@@ -2117,7 +2119,7 @@ describe('Buy tests', async () => {
 
         });
 
-        it('Buy with FA12 auction (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
+        it('Buy with FA12 sales (single royalties, single origin fees, single payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getFA12Balance(fa12_ft_1, sales_storage.address);
@@ -2189,7 +2191,7 @@ describe('Buy tests', async () => {
             assert(post_tx_sale == null);
         });
 
-        it('Buy with FA12 auction (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
+        it('Buy with FA12 sales (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
             const storage = await sales_storage.getStorage();
 
             const custody_ft_balance = await getFA12Balance(fa12_ft_2, sales_storage.address);
@@ -2300,7 +2302,7 @@ describe('Buy tests', async () => {
     });
 });
 
-describe('Cancel auction tests', async () => {
+describe('Cancel sale tests', async () => {
     it('Cancel a non existing sale should fail', async () => {
         await expectToThrow(async () => {
             const sale_asset = mkXTZAsset();
@@ -2312,7 +2314,7 @@ describe('Cancel auction tests', async () => {
         }, '(Pair "InvalidCondition" "r_cs0")');
     });
 
-    it('Cancel someone else auction should fail', async () => {
+    it('Cancel someone else sale should fail', async () => {
         await expectToThrow(async () => {
             const sale_asset = mkXTZAsset();
             const tokenId = 2222;

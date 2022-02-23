@@ -47,10 +47,10 @@
                 "0",
                 "--timeout",
                 "0",
-                "${workspaceFolder}/exchange-v3/test"
+                "${workspaceFolder}/onchain-sales/test"
             ],
             "internalConsoleOptions": "openOnSessionStart",
-            "cwd": "${workspaceFolder}/exchange-v3",
+            "cwd": "${workspaceFolder}/onchain-sales",
             "skipFiles": [
                 "<node_internals>/**"
             ]

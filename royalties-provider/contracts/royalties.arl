@@ -1,0 +1,94 @@
+archetype royalties(
+  owner : address
+)
+with metadata ""
+
+//----------------------------------------------------------------------------
+// Metadata
+//----------------------------------------------------------------------------
+
+entry set_metadata_uri(idata : bytes) {
+  called by owner
+  effect {
+    metadata := put(metadata, "", idata)
+  }
+}
+
+//----------------------------------------------------------------------------
+// Owner role transfer
+//----------------------------------------------------------------------------
+
+variable owner_candidate : option<address>       = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  called by opt_get(owner_candidate)
+  effect {
+    owner := opt_get(owner_candidate);
+    owner_candidate := none
+  }
+}
+
+//----------------------------------------------------------------------------
+// User role
+//----------------------------------------------------------------------------
+
+asset user {
+  addr : address
+}
+
+entry add_user(new_user : address) {
+  called by owner
+  effect {
+    user.add({ new_user })
+  }
+}
+
+entry rm_user(old_user : address) {
+  called by owner
+  effect {
+    user.remove(old_user)
+  }
+}
+
+//----------------------------------------------------------------------------
+// Royalties contract
+//----------------------------------------------------------------------------
+
+record part {
+  partAccount : address;
+  partValue   : nat;
+}
+
+asset royalties identified by rtoken rtokenId to big_map {
+  rtoken : address;
+  rtokenId : option<nat>;
+  rvalue : list<part>;
+}
+
+entry set_royalties(token : address, tokenId : option<nat>, value : list<part>) {
+  called by owner or user
+  effect {
+    royalties.addupdate((token, tokenId), {rvalue = value})
+  }
+}
+
+view get_royalties(token : address, tokenId : nat) : list<part> {
+  return (
+    if royalties.contains((token, some(tokenId))) then
+      royalties[(token, some(tokenId))].rvalue
+    else if royalties.contains((token, none)) then
+      royalties[(token, none)].rvalue
+    else
+      match callview<list<part>>(token, "get_royalties", tokenId) with
+      | some(roy) -> roy
+      | none -> emptylist<part>()
+      end
+  )
+}
