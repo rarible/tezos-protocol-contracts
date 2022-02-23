@@ -2339,4 +2339,27 @@ describe('Cancel sale tests', async () => {
         }, '(Pair "InvalidCondition" "r_cs1")');
     });
 
+    it('Cancel own sale should succeed', async () => {
+        const sale_asset = mkXTZAsset();
+        const tokenId = 2222;
+        const storage = await sales_storage.getStorage();
+
+        const tx_sale = await getValueFromBigMap(
+            parseInt(storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
+        );
+        assert(tx_sale != null);
+        await sales.cancel_sale({
+            argMichelson: `(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
+            as: alice.pkh,
+        });
+        const post_tx_sale = await getValueFromBigMap(
+            parseInt(storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
+        );
+        assert(post_tx_sale == null);
+    });
+
 });
