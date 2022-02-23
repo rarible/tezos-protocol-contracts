@@ -41,7 +41,7 @@
             "type": "node",
             "request": "launch",
             "name": "Mocha Sales Tests",
-            "program": "${workspaceFolder}/exchange-v3/node_modules/mocha/bin/_mocha",
+            "program": "${workspaceFolder}/onchain-sales/node_modules/mocha/bin/_mocha",
             "args": [
                 "--slow",
                 "0",
