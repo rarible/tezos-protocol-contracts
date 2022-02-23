@@ -143,6 +143,7 @@ entry manage_custodian_transfers(
     }
     effect {
       var buy_asset_contract : option<address> = none;
+      var all_operations: list<process_transfer_param> = [];
 
       match mt_buy_asset_type with
       | FA2 -> (
@@ -177,20 +178,22 @@ entry manage_custodian_transfers(
         mt_sell_asset_contract,
         mt_sell_asset_token_id,
         mt_amount,
-        mt_from
+        mt_from,
+        all_operations
       );
       total_after_all_fees -= rest_royalties[0];
 
-      var royalty_operations = rest_royalties[1];
+      all_operations := rest_royalties[1];
       //Then process the bid origin fees, and the matching operations
       var rest_bid_origin_fees = process_fees(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
         mt_bid_fees.origin_fees,
-        mt_from);
+        mt_from,
+        all_operations);
       total_after_all_fees -= rest_bid_origin_fees[0];
-      var bid_origin_fees_operations = rest_bid_origin_fees[1];
+      all_operations := rest_bid_origin_fees[1];
 
       //Then process the auction origin fees, and the matching operations
       var rest_auction_origin_fees = process_fees(
@@ -198,64 +201,48 @@ entry manage_custodian_transfers(
         mt_buy_asset_type,
         mt_amount,
         mt_auction_fees.origin_fees,
-        mt_from);
+        mt_from,
+        all_operations);
       total_after_all_fees -= rest_auction_origin_fees[0];
-      var auction_origin_fees_operations = rest_auction_origin_fees[1];
+      all_operations := rest_auction_origin_fees[1];
       //Finally process the auction and bid payouts, and the matching operations
       var auction_payouts_rest =  process_payouts(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
         mt_from,
-        mt_auction_fees.payouts);
+        mt_auction_fees.payouts,
+        all_operations);
 
       total_after_all_fees -= auction_payouts_rest[0];
-      var auction_payouts_operations = auction_payouts_rest[1];
+      all_operations := auction_payouts_rest[1];
 
       var bid_payouts_rest = process_payouts(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
         mt_from,
-        mt_bid_fees.payouts);
+        mt_bid_fees.payouts,
+        all_operations);
 
       total_after_all_fees -= bid_payouts_rest[0];
-      var bid_payouts_operations = bid_payouts_rest[1];
+      all_operations := bid_payouts_rest[1];
 
       dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
 
       //Now that we have processed all the fees, we need to process the operations
-      //1st: transfer protocol fees
-      transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>({
+      //transfer protocol fees
+      all_operations.prepend({
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = protocol_fees;
           ptp_origin = mt_from;
           ptp_destination = get_fee_receiver(buy_asset_contract)
         });
-      //2nd: transfer royalties
-      for royalty_operation in royalty_operations do
-            transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>(royalty_operation)
-      done;
-      //3rd: bid origin fees
-      for bid_origin_fees_operation in bid_origin_fees_operations do
-            transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>(bid_origin_fees_operation)
-      done;
-      //4th: auction origin fees
-      for auction_origin_fees_operation in auction_origin_fees_operations do
-            transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>(auction_origin_fees_operation)
-      done;
-      //5th: auction payouts
-      for payouts_operation in auction_payouts_operations do
-            transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>(payouts_operation)
-      done;
-      //6th: bid payouts
-      for payouts_operation in bid_payouts_operations do
-            transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>(payouts_operation)
-      done;
 
-      //Then, transfer sell asset to buyer
-      transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>({
+
+      //transfer sell asset to buyer
+      all_operations.prepend({
           ptp_asset_type = FA2;
           ptp_asset = pack({
             fa2_asset_contract = mt_sell_asset_contract;
@@ -266,14 +253,51 @@ entry manage_custodian_transfers(
           ptp_destination = mt_buyer
         });
 
-      //Finally, transfer buy asset to seller
-      transfer 0tz to mt_transfer_caller call process_transfer<process_transfer_param>({
+      //transfer buy asset to seller
+      all_operations.prepend({
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = total_after_all_fees;
           ptp_origin = mt_from;
           ptp_destination = mt_seller
         });
+
+      for pt_transfer in all_operations do
+        match pt_transfer.ptp_asset_type with
+        | FA2  -> (
+          match unpack<FA2_asset>(pt_transfer.ptp_asset) with
+          | some(buyAsset) -> (
+              transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
+                [
+                    (
+                        pt_transfer.ptp_origin,
+                        [
+                            {
+                                destination_address = pt_transfer.ptp_destination;
+                                token_id = buyAsset.fa2_asset_token_id;
+                                token_amount = pt_transfer.ptp_amount
+                            }
+                        ]
+                    )
+                ]
+              )
+            )
+          | none -> fail(CANT_UNPACK_FA2_ASSET)
+          end;
+        )
+        | FA12 -> (
+          match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+            | some(buyAsset) -> (
+                transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+            )
+            | none -> fail(CANT_UNPACK_FA12_ASSET)
+            end
+          )
+        | XTZ -> (
+              transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+          )
+        end;
+      done;
     }
 }
 
@@ -295,6 +319,7 @@ entry manage_buyout_transfers(
     }
     effect {
       var buy_asset_contract : option<address> = none;
+      var all_operations: list<process_transfer_param> = [];
 
       match mt_buy_asset_type with
       | FA2 -> (
@@ -333,20 +358,22 @@ entry manage_buyout_transfers(
         mt_sell_asset_contract,
         mt_sell_asset_token_id,
         mt_amount,
-        origin
+        origin,
+        all_operations
       );
       total_after_all_fees -= rest_royalties[0];
 
-      var royalty_operations = rest_royalties[1];
+      all_operations := rest_royalties[1];
       //Then process the bid origin fees, and the matching operations
       var rest_bid_origin_fees = process_fees(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
         mt_bid_fees.origin_fees,
-        origin);
+        origin,
+        all_operations);
       total_after_all_fees -= rest_bid_origin_fees[0];
-      var bid_origin_fees_operations = rest_bid_origin_fees[1];
+      all_operations := rest_bid_origin_fees[1];
 
       //Then process the auction origin fees, and the matching operations
       var rest_auction_origin_fees = process_fees(
@@ -354,65 +381,47 @@ entry manage_buyout_transfers(
         mt_buy_asset_type,
         mt_amount,
         mt_auction_fees.origin_fees,
-        origin);
+        origin,
+        all_operations);
       total_after_all_fees -= rest_auction_origin_fees[0];
-      var auction_origin_fees_operations = rest_auction_origin_fees[1];
+      all_operations := rest_auction_origin_fees[1];
       //Finally process the auction and bid payouts, and the matching operations
       var auction_payouts_rest = process_payouts(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
         origin,
-        mt_auction_fees.payouts);
+        mt_auction_fees.payouts,
+        all_operations);
 
       total_after_all_fees -= auction_payouts_rest[0];
-      var auction_payouts_operations = auction_payouts_rest[1];
+      all_operations := auction_payouts_rest[1];
 
       var bid_payouts_rest = process_payouts(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
         origin,
-        mt_bid_fees.payouts);
+        mt_bid_fees.payouts,
+        all_operations);
 
       total_after_all_fees -= bid_payouts_rest[0];
-      var bid_payouts_operations = bid_payouts_rest[1];
+      all_operations := bid_payouts_rest[1];
 
       dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
 
       //Now that we have processed all the fees, we need to process the operations
       //1st: transfer protocol fees
-      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+      all_operations.prepend({
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = protocol_fees;
           ptp_origin = origin;
           ptp_destination = get_fee_receiver(buy_asset_contract)
         });
-      //2nd: transfer royalties
-      for royalty_operation in royalty_operations do
-            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(royalty_operation)
-      done;
-
-      //3rd: bid origin fees
-      for bid_origin_fees_operation in bid_origin_fees_operations do
-            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(bid_origin_fees_operation)
-      done;
-      //4th: auction origin fees
-      for auction_origin_fees_operation in auction_origin_fees_operations do
-            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(auction_origin_fees_operation)
-      done;
-      //5th: auction payouts
-      for payouts_operation in auction_payouts_operations do
-            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
-      done;
-      //6th: bid payouts
-      for payouts_operation in bid_payouts_operations do
-            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
-      done;
 
       //Then, transfer sell asset to buyer
-      transfer 0tz to mt_from call process_transfer<process_transfer_param>({
+      all_operations.prepend({
           ptp_asset_type = FA2;
           ptp_asset = pack({
             fa2_asset_contract = mt_sell_asset_contract;
@@ -424,13 +433,51 @@ entry manage_buyout_transfers(
         });
 
       //Finally, transfer buy asset to seller
-      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+      all_operations.prepend({
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = total_after_all_fees;
           ptp_origin = origin;
           ptp_destination = mt_seller
         });
+
+      //process all transfers
+      for pt_transfer in all_operations do
+        match pt_transfer.ptp_asset_type with
+        | FA2  -> (
+          match unpack<FA2_asset>(pt_transfer.ptp_asset) with
+          | some(buyAsset) -> (
+              transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
+                [
+                    (
+                        pt_transfer.ptp_origin,
+                        [
+                            {
+                                destination_address = pt_transfer.ptp_destination;
+                                token_id = buyAsset.fa2_asset_token_id;
+                                token_amount = pt_transfer.ptp_amount
+                            }
+                        ]
+                    )
+                ]
+              )
+            )
+          | none -> fail(CANT_UNPACK_FA2_ASSET)
+          end;
+        )
+        | FA12 -> (
+          match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+            | some(buyAsset) -> (
+                transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+            )
+            | none -> fail(CANT_UNPACK_FA12_ASSET)
+            end
+          )
+        | XTZ -> (
+              transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+          )
+        end;
+      done;
     }
 }
 
@@ -450,6 +497,7 @@ entry manage_sale_transfers(
     }
     effect {
       var buy_asset_contract : option<address> = none;
+      var all_operations: list<process_transfer_param> = [];
 
       match mt_buy_asset_type with
       | FA2 -> (
@@ -485,58 +533,47 @@ entry manage_sale_transfers(
         mt_sell_asset_contract,
         mt_sell_asset_token_id,
         mt_amount,
-        mt_buyer
+        mt_buyer,
+        all_operations
       );
       total_after_all_fees -= rest_royalties[0];
 
-      var royalty_operations = rest_royalties[1];
+      all_operations := rest_royalties[1];
       //Then process the bid origin fees, and the matching operations
       var rest_sale_origin_fees = process_fees(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
         mt_sale_fees.origin_fees,
-        mt_buyer);
+        mt_buyer,
+        all_operations);
       total_after_all_fees -= rest_sale_origin_fees[0];
-      var bid_origin_fees_operations = rest_sale_origin_fees[1];
+      all_operations := rest_sale_origin_fees[1];
 
       var bid_payouts_rest = process_payouts(
         mt_buy_asset,
         mt_buy_asset_type,
         mt_amount,
         mt_buyer,
-        mt_sale_fees.payouts);
+        mt_sale_fees.payouts,
+        all_operations);
 
       total_after_all_fees -= bid_payouts_rest[0];
-      var bid_payouts_operations = bid_payouts_rest[1];
+      all_operations := bid_payouts_rest[1];
 
       dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
 
       //Now that we have processed all the fees, we need to process the operations
-      //1st: transfer protocol fees
-      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+      //transfer protocol fees
+      all_operations.prepend({
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = protocol_fees;
           ptp_origin = mt_buyer;
           ptp_destination = get_fee_receiver(buy_asset_contract)
-        });
-      //2nd: transfer royalties
-      for royalty_operation in royalty_operations do
-            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(royalty_operation)
-      done;
-
-      //3rd: bid origin fees
-      for bid_origin_fees_operation in bid_origin_fees_operations do
-            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(bid_origin_fees_operation)
-      done;
-      //4th: bid payouts
-      for payouts_operation in bid_payouts_operations do
-            transfer 0tz to selfaddress call process_transfer<process_transfer_param>(payouts_operation)
-      done;
-
-      //5th: Then, transfer sell asset to buyer
-      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+      });
+      //transfer nft
+      all_operations.prepend({
           ptp_asset_type = FA2;
           ptp_asset = pack({
             fa2_asset_contract = mt_sell_asset_contract;
@@ -545,16 +582,53 @@ entry manage_sale_transfers(
           ptp_amount = mt_sell_amount;
           ptp_origin = mt_seller;
           ptp_destination = mt_buyer
-        });
-
-      //6th: Finally, transfer buy asset to seller
-      transfer 0tz to selfaddress call process_transfer<process_transfer_param>({
+      });
+      //transfer buyer asset
+      all_operations.prepend({
           ptp_asset_type = mt_buy_asset_type;
           ptp_asset = mt_buy_asset;
           ptp_amount = total_after_all_fees;
           ptp_origin = mt_buyer;
           ptp_destination = mt_seller
-        });
+      });
+
+      //process all transfers
+      for pt_transfer in all_operations do
+        match pt_transfer.ptp_asset_type with
+        | FA2  -> (
+          match unpack<FA2_asset>(pt_transfer.ptp_asset) with
+          | some(buyAsset) -> (
+              transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
+                [
+                    (
+                        pt_transfer.ptp_origin,
+                        [
+                            {
+                                destination_address = pt_transfer.ptp_destination;
+                                token_id = buyAsset.fa2_asset_token_id;
+                                token_amount = pt_transfer.ptp_amount
+                            }
+                        ]
+                    )
+                ]
+              )
+            )
+          | none -> fail(CANT_UNPACK_FA2_ASSET)
+          end;
+        )
+        | FA12 -> (
+          match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+            | some(buyAsset) -> (
+                transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+            )
+            | none -> fail(CANT_UNPACK_FA12_ASSET)
+            end
+          )
+        | XTZ -> (
+              transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+          )
+        end;
+      done;
     }
 }
 
@@ -591,15 +665,16 @@ function process_fees(
     pf_asset_type: asset_type,
     pf_amount: nat,
     pf_fees: list<part>,
-    pf_from: address
+    pf_from: address,
+    pf_operations: list<process_transfer_param>
+
 ) : nat * list<process_transfer_param> {
   var total_fees: nat = 0;
-  var transfers: list<process_transfer_param> = [];
   for fee in pf_fees do
     var processed_fee = bp(pf_amount, fee.part_value);
     total_fees += processed_fee;
     if (processed_fee > 0) then (
-      transfers.prepend({
+      pf_operations.prepend({
         ptp_asset_type = pf_asset_type;
         ptp_asset = pf_asset;
         ptp_amount = processed_fee;
@@ -607,7 +682,7 @@ function process_fees(
         ptp_destination = fee.part_account
       }))
   done;
-  return ((total_fees, transfers))
+  return ((total_fees, pf_operations))
 }
 
 function process_royalties(
@@ -616,10 +691,11 @@ function process_royalties(
     pr_sell_asset_contract: address,
     pr_sell_asset_token_id: nat,
     pr_amount: nat,
-    pr_from: address
+    pr_from: address,
+    pr_operations: list<process_transfer_param>
 ): nat * list<process_transfer_param> {
     var royalties_fees: list<part> = get_royalties(pr_sell_asset_contract, pr_sell_asset_token_id);
-    var rest_royalties = process_fees(pr_buy_asset, pr_buy_asset_type, pr_amount, royalties_fees, pr_from);
+    var rest_royalties = process_fees(pr_buy_asset, pr_buy_asset_type, pr_amount, royalties_fees, pr_from, pr_operations);
     var royalties = rest_royalties[0];
     var transactions = rest_royalties[1];
     dorequire((royalties / pr_amount) < 0.5 , ROYALTIES_TOO_HIGH);
@@ -631,15 +707,15 @@ function process_payouts(
     pp_asset_type: asset_type,
     pp_amount: nat,
     pp_from: address,
-    pp_payouts: list<part>
+    pp_payouts: list<part>,
+    pp_operations: list<process_transfer_param>
 ): nat * list<process_transfer_param> {
     var sum_bps: nat = 0;
-    var transfers: list<process_transfer_param> = [];
     for payout in pp_payouts do
       var current_amount = bp(pp_amount, payout.part_value);
       sum_bps += current_amount;
       if(current_amount > 0) then (
-        transfers.prepend({
+        pp_operations.prepend({
           ptp_asset_type = pp_asset_type;
           ptp_asset = pp_asset;
           ptp_amount = current_amount;
@@ -648,47 +724,49 @@ function process_payouts(
         });
       );
     done;
-    return ((sum_bps, transfers))
+    return ((sum_bps, pp_operations))
 }
 
-entry process_transfer(pt_transfer: process_transfer_param){
+entry process_transfers(pt_transfers: list<process_transfer_param>){
   require {
     r_pt0 : isAuthorized();
   }
   effect {
-    match pt_transfer.ptp_asset_type with
-    | FA2  -> (
-      match unpack<FA2_asset>(pt_transfer.ptp_asset) with
-      | some(buyAsset) -> (
-          transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
-            [
-                (
-                    pt_transfer.ptp_origin,
-                    [
-                        {
-                            destination_address = pt_transfer.ptp_destination;
-                            token_id = buyAsset.fa2_asset_token_id;
-                            token_amount = pt_transfer.ptp_amount
-                        }
-                    ]
-                )
-            ]
-          )
-        )
-      | none -> fail(CANT_UNPACK_FA2_ASSET)
-      end;
-    )
-    | FA12 -> (
-      match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+    for pt_transfer in pt_transfers do
+      match pt_transfer.ptp_asset_type with
+      | FA2  -> (
+        match unpack<FA2_asset>(pt_transfer.ptp_asset) with
         | some(buyAsset) -> (
-            transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+            transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
+              [
+                  (
+                      pt_transfer.ptp_origin,
+                      [
+                          {
+                              destination_address = pt_transfer.ptp_destination;
+                              token_id = buyAsset.fa2_asset_token_id;
+                              token_amount = pt_transfer.ptp_amount
+                          }
+                      ]
+                  )
+              ]
+            )
+          )
+        | none -> fail(CANT_UNPACK_FA2_ASSET)
+        end;
+      )
+      | FA12 -> (
+        match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+          | some(buyAsset) -> (
+              transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+          )
+          | none -> fail(CANT_UNPACK_FA12_ASSET)
+          end
         )
-        | none -> fail(CANT_UNPACK_FA12_ASSET)
-        end
-      )
-    | XTZ -> (
-          transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
-      )
-    end;
+      | XTZ -> (
+            transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+        )
+      end;
+    done;
   }
 }
