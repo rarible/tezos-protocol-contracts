@@ -72,7 +72,7 @@ const buyout_price = 1000000000;
 const min_step = 2;
 const payout_value = 100;
 const bid_amount = "1000000";
-const duration = 100;
+const duration = 1000;
 const auction_amount = "1";
 const start_date = Date.now() / 1000;
 // accounts
@@ -2028,9 +2028,6 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
                     await setMockupNow(start_date + 2);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2053,9 +2050,6 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
                     await setMockupNow(start_date + 2);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2078,9 +2072,6 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
                     await setMockupNow(start_date + 2);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2104,9 +2095,6 @@ describe('Put bid tests', async () => {
 
                 if (isMockup()) {
                     await setMockupNow((Date.now() / 1000) - 400);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2131,9 +2119,6 @@ describe('Put bid tests', async () => {
 
                 if (isMockup()) {
                     await setMockupNow(start_date + 400000000);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2158,9 +2143,6 @@ describe('Put bid tests', async () => {
 
                 if (isMockup()) {
                     await setMockupNow(start_date + 2);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2186,9 +2168,6 @@ describe('Put bid tests', async () => {
         it('Put bid with existing bid should send back funds to previous bidder', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 2);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
             const start_time = Math.floor(Date.now() / 1000 + 41);
 
@@ -2214,9 +2193,6 @@ describe('Put bid tests', async () => {
 
             if (isMockup()) {
                 await setMockupNow((Date.now() / 1000) + 42);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-                await delay(40000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -2379,9 +2355,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of Fungible FA2 should succeed (no bid origin fees, no payouts)', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 3);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -2419,9 +2392,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of Fungible FA2 should succeed (single bid origin fees, single payouts)', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 3);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -2465,9 +2435,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of Fungible FA2 should succeed (multiple bid origin fees, multiple payouts)', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 3);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -2517,9 +2484,6 @@ describe('Put bid tests', async () => {
 
                 if (isMockup()) {
                     await setMockupNow(start_date + 3);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2542,9 +2506,6 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
                     await setMockupNow(start_date + 3);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2570,9 +2531,6 @@ describe('Put bid tests', async () => {
 
                 if (isMockup()) {
                     await setMockupNow(start_date + 3);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                    await delay(40000);
                 }
 
                 await auction.put_bid({
@@ -2595,9 +2553,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of XTZ (no bid origin fees, no payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 2);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
@@ -2636,9 +2591,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of XTZ (single bid origin fees, single payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 3);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
@@ -2682,9 +2634,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of XTZ (multiple bid origin fees, multiple payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 3);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
@@ -2735,9 +2684,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of FA12 should succeed (no bid origin fees, no payouts)', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 3);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
             const storage = await auction_storage.getStorage();
 
@@ -2782,9 +2728,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of FA12 should succeed (single bid origin fees, single payouts)', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 2);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
             const storage = await auction_storage.getStorage();
 
@@ -2835,9 +2778,6 @@ describe('Put bid tests', async () => {
         it('Put bid with good amount of FA12 should succeed (multiple bid origin fees, multiple payouts)', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 2);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
             const storage = await auction_storage.getStorage();
 
@@ -2898,9 +2838,6 @@ describe('Finish auction tests', async () => {
         it('Finish Fungible FA2 auction (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 10000000);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(100000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -2974,9 +2911,6 @@ describe('Finish auction tests', async () => {
         it('Finish Fungible FA2 auction (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 10000000);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(100000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -3051,9 +2985,6 @@ describe('Finish auction tests', async () => {
         it('Finish Fungible FA2 auction (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 10000000);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(100000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -3123,9 +3054,6 @@ describe('Finish auction tests', async () => {
         it('Finish XTZ auction (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 10000000);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(100000);
             }
             const storage = await auction_storage.getStorage();
 
@@ -3188,9 +3116,6 @@ describe('Finish auction tests', async () => {
         it('Finish XTZ auction (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 10000000);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(100000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -3256,9 +3181,6 @@ describe('Finish auction tests', async () => {
         it('Finish XTZ auction (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 10000000);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(100000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -3327,9 +3249,6 @@ describe('Finish auction tests', async () => {
         it('Finish FA12 auction (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 10000000);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(100000);
             }
 
             const storage = await auction_storage.getStorage();
@@ -3393,6 +3312,7 @@ describe('Finish auction tests', async () => {
         });
 
         it('Finish FA12 auction (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
+
             const storage = await auction_storage.getStorage();
 
             const custody_ft_balance = await getFA12Balance(fa12_ft_1, auction_storage.address);
@@ -3534,9 +3454,6 @@ describe('Finish auction tests', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
                     await setMockupNow(start_date);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-                    await delay(40000);
                 }
                 const start_time = Math.floor(start_date + 100);
                 const token_id = 9;
@@ -3571,9 +3488,6 @@ describe('Finish auction tests', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
                     await setMockupNow(start_date + 101);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-                    await delay(40000);
                 }
                 const token_id = 9;
 
@@ -3588,9 +3502,6 @@ describe('Finish auction tests', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
                     await setMockupNow(start_date + 103);
-                } else {
-                    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-                    await delay(40000);
                 }
 
                 const token_id = 9;
@@ -3631,9 +3542,6 @@ describe('Cancel auction tests', async () => {
         await expectToThrow(async () => {
             if (isMockup()) {
                 await setMockupNow(start_date);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(40000);
             }
             const start_time = Math.floor(start_date + 1);
 
@@ -3668,9 +3576,6 @@ describe('Cancel auction tests', async () => {
 
             if (isMockup()) {
                 await setMockupNow(start_date + 100000000);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-                await delay(100000);
             }
             await auction.cancel_auction({
                 argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
@@ -3683,9 +3588,6 @@ describe('Cancel auction tests', async () => {
         await expectToThrow(async () => {
             if (isMockup()) {
                 await setMockupNow(start_date + 2);
-            } else {
-                const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-                await delay(42000);
             }
             await auction.put_bid({
                 argJsonMichelson: mkBid(
@@ -3708,9 +3610,6 @@ describe('Cancel auction tests', async () => {
     it('Cancel a valid auction should succeed', async () => {
         if (isMockup()) {
             await setMockupNow(start_date);
-        } else {
-            const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-            await delay(42000);
         }
         const start_time = Math.floor(start_date + 1);
         await auction.start_auction({

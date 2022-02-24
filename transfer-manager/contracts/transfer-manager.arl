@@ -262,42 +262,7 @@ entry manage_custodian_transfers(
           ptp_destination = mt_seller
         });
 
-      for pt_transfer in all_operations do
-        match pt_transfer.ptp_asset_type with
-        | FA2  -> (
-          match unpack<FA2_asset>(pt_transfer.ptp_asset) with
-          | some(buyAsset) -> (
-              transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
-                [
-                    (
-                        pt_transfer.ptp_origin,
-                        [
-                            {
-                                destination_address = pt_transfer.ptp_destination;
-                                token_id = buyAsset.fa2_asset_token_id;
-                                token_amount = pt_transfer.ptp_amount
-                            }
-                        ]
-                    )
-                ]
-              )
-            )
-          | none -> fail(CANT_UNPACK_FA2_ASSET)
-          end;
-        )
-        | FA12 -> (
-          match unpack<FA12_asset>(pt_transfer.ptp_asset) with
-            | some(buyAsset) -> (
-                transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
-            )
-            | none -> fail(CANT_UNPACK_FA12_ASSET)
-            end
-          )
-        | XTZ -> (
-              transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
-          )
-        end;
-      done;
+      transfer 0tz to mt_from call process_transfers<list<process_transfer_param>>(all_operations);
     }
 }
 
@@ -420,18 +385,6 @@ entry manage_buyout_transfers(
           ptp_destination = get_fee_receiver(buy_asset_contract)
         });
 
-      //Then, transfer sell asset to buyer
-      all_operations.prepend({
-          ptp_asset_type = FA2;
-          ptp_asset = pack({
-            fa2_asset_contract = mt_sell_asset_contract;
-            fa2_asset_token_id = mt_sell_asset_token_id
-            });
-          ptp_amount = mt_sell_amount;
-          ptp_origin = mt_from;
-          ptp_destination = mt_buyer
-        });
-
       //Finally, transfer buy asset to seller
       all_operations.prepend({
           ptp_asset_type = mt_buy_asset_type;
@@ -478,6 +431,19 @@ entry manage_buyout_transfers(
           )
         end;
       done;
+
+      //Then, transfer sell asset to buyer
+      transfer 0tz to mt_from call process_transfer<process_transfer_param>({
+          ptp_asset_type = FA2;
+          ptp_asset = pack({
+            fa2_asset_contract = mt_sell_asset_contract;
+            fa2_asset_token_id = mt_sell_asset_token_id
+            });
+          ptp_amount = mt_sell_amount;
+          ptp_origin = mt_from;
+          ptp_destination = mt_buyer
+          }
+      );
     }
 }
 
