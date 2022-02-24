@@ -128,12 +128,12 @@ entry put_bid(
       var current_bid = get_bid(pb_asset_contract, pb_asset_token_id, pb_bidder, pb_bid_type, pb_bid_asset);
       var is_xtz = (pb_bid_type = XTZ);
       var total_amount = process_total_amount(pb_bid.bid_amount, protocol_fee, pb_bid.bid_origin_fees);
-
+      var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
         if(opt_get(current_bid).bid_amount >= pb_bid.bid_amount) then (
           fail("BID_AMOUNT_TOO_LOW")
         ) else (
-          transfer 0tz to transfer_manager call process_transfer<process_transfer_param>({
+          all_operations.prepend({
             ptp_asset_type = pb_bid_type;
             ptp_asset = pb_bid_asset;
             ptp_amount = total_amount;
@@ -142,6 +142,16 @@ entry put_bid(
           });
         )
       );
+
+      all_operations.prepend({
+          ptp_asset_type = pb_bid_type;
+          ptp_asset = pb_bid_asset;
+          ptp_amount = total_amount;
+          ptp_origin = pb_bidder;
+          ptp_destination = bids_storage
+      });
+
+      transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>(all_operations);
       transfer 0tz to bids_storage call set_bid<address * nat * address * asset_type * bytes * bid>(
         (
           pb_asset_contract,
@@ -152,14 +162,6 @@ entry put_bid(
           pb_bid
         )
       );
-
-      transfer 0tz to transfer_manager call process_transfer<process_transfer_param>({
-          ptp_asset_type = pb_bid_type;
-          ptp_asset = pb_bid_asset;
-          ptp_amount = total_amount;
-          ptp_origin = pb_bidder;
-          ptp_destination = bids_storage
-      });
     }
 }
 
@@ -178,7 +180,7 @@ entry accept_bid(
       var buy_asset_contract = unpack_result[0];
       var buy_asset_token_id = unpack_result[1];
 
-      transfer 0tz to transfer_manager call manage_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat * address>(
+      transfer 0tz to transfer_manager call manage_custodian_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat * address>(
          (
             current_bid.bid_amount,
             current_bid.bid_asset_qty,
@@ -195,8 +197,8 @@ entry accept_bid(
             bids_storage
          )
       );
-      transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset))
 
+      transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset))
     }
 }
 

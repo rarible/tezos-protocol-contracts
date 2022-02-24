@@ -365,6 +365,44 @@ describe('Bids contract setter tests', async () => {
     });
 });
 
+describe('(Transfer manager)Authorize Bids, and Bids storage contract tests', async () => {
+    it('Authorize Bids, and Bids storage contract as non admin should fail', async () => {
+        await expectToThrow(async () => {
+            await transfer_manager.authorize_contract({
+                arg: {
+                    ac_contract: bids.address
+                },
+                as: bob.pkh
+            });
+        }, errors.INVALID_CALLER);
+    });
+
+    it('Authorize Bids, and Bids storage contract as admin should succeed', async () => {
+        const storage = await transfer_manager.getStorage();
+        assert(storage.authorized_contracts.length == 0);
+        await transfer_manager.authorize_contract({
+            arg: {
+                ac_contract: bids_storage.address
+            },
+            as: alice.pkh
+        });
+        await transfer_manager.authorize_contract({
+            arg: {
+                ac_contract: bids.address
+            },
+            as: alice.pkh
+        });
+        const post_test_storage = await transfer_manager.getStorage();
+        assert(post_test_storage.authorized_contracts.length == 2);
+        assert(
+            post_test_storage.authorized_contracts.includes(bids.address) &&
+            post_test_storage.authorized_contracts.includes(bids_storage.address)
+
+        );
+
+    });
+});
+
 describe('Tokens setup', async () => {
     describe('FA1.2 tokens setup', async () => {
         it('Distribute FA1.2 tokens should succeed', async () => {
@@ -868,9 +906,9 @@ describe('Tokens setup', async () => {
     });
 });
 
-describe('Set bid tests', async () => {
-    describe('Set bids in Fungible FA2', async () => {
-        it('Put bid buying with Fungible FA2 should succeed (no royalties, no bid payouts, no bid origin fees)', async () => {
+describe('Put bid tests', async () => {
+    describe('Put bids in Fungible FA2', async () => {
+        it('Put bid with Fungible FA2 should succeed (no royalties, no bid payouts, no bid origin fees)', async () => {
             const storage = await bids_storage.getStorage();
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
             var bid = await getValueFromBigMap(
@@ -896,9 +934,9 @@ describe('Set bid tests', async () => {
                     "args": [
                         [],
                         [], {
-                            "int": ${bid_amount},
+                            "int": "${bid_amount}"
                         }, {
-                            "int": ${qty},
+                            "int": "${qty}"
                         }, {
                             "prim": "None"
                         }, {
@@ -909,211 +947,148 @@ describe('Set bid tests', async () => {
             `);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
         });
-        //STOP HERE
+
+        it('Put bid with Fungible FA2 should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString());
+            var bid = await getValueFromBigMap(
+                parseInt(storage.bids),
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
+            assert(bid == null);
+            await bids.put_bid({
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.bids),
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+        });
+
+        it('Put bid with Fungible FA2 should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString());
+            var bid = await getValueFromBigMap(
+                parseInt(storage.bids),
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_2} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
+            assert(bid == null);
+            await bids.put_bid({
+                argMichelson: `(Pair "${nft.address}"
+                    (Pair ${token_id_2}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${bid_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                            (Pair ${bid_amount}
+                                                (Pair ${qty}
+                                                    (Pair None None)
+                                                )))))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.bids),
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_2} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+        });
     });
 });
-//         it('Starting auction buying with Fungible FA2 should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
-//             if (isMockup()) {
-//                 await setMockupNow(start_date);
-//             }
-//             const start_time = Math.floor(start_date + 1);
-//             const storage = await bids_storage.getStorage();
-//             var auctions = await getValueFromBigMap(
-//                 parseInt(storage.auctions),
-//                 exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-//                 exprMichelineToJson(`(pair address nat)'`)
-//             );
-//             assert(auctions == null);
-
-//             await bids.start_auction({
-//                 argJsonMichelson: mkAuction(
-//                     nft.address,
-//                     token_id_1.toString(),
-//                     mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString()),
-//                     FA2,
-//                     auction_amount,
-//                     alice.pkh,
-//                     start_time,
-//                     duration.toString(),
-//                     minimal_price.toString(),
-//                     buyout_price.toString(),
-//                     min_step.toString(),
-//                     [mkPart(carl.pkh, payout_value)],
-//                     [mkPart(daniel.pkh, payout_value)],
-//                     null,
-//                     null),
-//                 as: alice.pkh,
-//             });
-
-//             var post_tx_auctions = await getValueFromBigMap(
-//                 parseInt(storage.auctions),
-//                 exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-//                 exprMichelineToJson(`(pair address nat)'`)
-//             );
-
-//             const expected_result = JSON.parse(`
-//                 [
-//                     {
-//                         "string": "${nft.address}"
-//                     }, {
-//                         "int": "${token_id_1}"
-//                     }, {
-//                         "int": "${auction_amount}"
-//                     }, {
-//                         "int": "${FA2}"
-//                     }, {
-//                         "bytes": "${mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString())}"
-//                     }, {
-//                         "prim": "None"
-//                     }, {
-//                         "string": "${alice.pkh}"
-//                     }, {
-//                         "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
-//                     }, {
-//                         "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
-//                     }, {
-//                         "int": "${minimal_price}"
-//                     }, {
-//                         "int": "${buyout_price}"
-//                     }, {
-//                         "int": "${min_step}"
-//                     },
-//                     [{
-//                         "prim": "Pair",
-//                         "args": [{
-//                             "string": "${carl.pkh}"
-//                         }, {
-//                             "int": "${payout_value}"
-//                         }]
-//                     }],
-//                     [{
-//                         "prim": "Pair",
-//                         "args": [{
-//                             "string": "${daniel.pkh}"
-//                         }, {
-//                             "int": "${payout_value}"
-//                         }]
-//                     }],
-//                     {
-//                         "prim": "None"
-//                     }, {
-//                         "prim": "None"
-//                     }
-//                 ]
-//             `);
-
-//             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
-//         });
-
-//         it('Starting auction buying with Fungible FA2 should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
-//             if (isMockup()) {
-//                 await setMockupNow(start_date);
-//             }
-//             const start_time = Math.floor(start_date + 1);
-//             const storage = await bids_storage.getStorage();
-//             var auctions = await getValueFromBigMap(
-//                 parseInt(storage.auctions),
-//                 exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
-//                 exprMichelineToJson(`(pair address nat)'`)
-//             );
-//             assert(auctions == null);
-//             await bids.start_auction({
-//                 argJsonMichelson: mkAuction(
-//                     nft.address,
-//                     token_id_2.toString(),
-//                     mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString()),
-//                     FA2,
-//                     auction_amount,
-//                     alice.pkh,
-//                     start_time,
-//                     duration.toString(),
-//                     minimal_price.toString(),
-//                     buyout_price.toString(),
-//                     min_step.toString(),
-//                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
-//                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
-//                     null,
-//                     null),
-//                 as: alice.pkh,
-//             });
-
-//             var post_tx_auctions = await getValueFromBigMap(
-//                 parseInt(storage.auctions),
-//                 exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
-//                 exprMichelineToJson(`(pair address nat)'`)
-//             );
-
-//             const expected_result = JSON.parse(`
-//             [
-//                     {
-//                         "string": "${nft.address}"
-//                     }, {
-//                         "int": "${token_id_2}"
-//                     }, {
-//                         "int": "${auction_amount}"
-//                     }, {
-//                         "int": "${FA2}"
-//                     }, {
-//                         "bytes": "${mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString())}"
-//                     }, {
-//                         "prim": "None"
-//                     }, {
-//                         "string": "${alice.pkh}"
-//                     }, {
-//                         "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
-//                     }, {
-//                         "string": "${new Date((start_time + duration) * 1000).toISOString().split('.')[0] + "Z"}"
-//                     }, {
-//                         "int": "${minimal_price}"
-//                     }, {
-//                         "int": "${buyout_price}"
-//                     }, {
-//                         "int": "${min_step}"
-//                     },
-//                     [{
-//                         "prim": "Pair",
-//                         "args": [{
-//                             "string": "${carl.pkh}"
-//                         }, {
-//                             "int": "${payout_value}"
-//                         }]
-//                     },
-//                     {
-//                         "prim": "Pair",
-//                         "args": [{
-//                             "string": "${daniel.pkh}"
-//                         }, {
-//                             "int": "${payout_value}"
-//                         }]
-//                     }],
-//                     [{
-//                         "prim": "Pair",
-//                         "args": [{
-//                             "string": "${carl.pkh}"
-//                         }, {
-//                             "int": "${payout_value}"
-//                         }]
-//                     },
-//                     {
-//                         "prim": "Pair",
-//                         "args": [{
-//                             "string": "${daniel.pkh}"
-//                         }, {
-//                             "int": "${payout_value}"
-//                         }]
-//                     }],
-//                     {
-//                         "prim": "None"
-//                     }, {
-//                         "prim": "None"
-//                     }
-//             ]`);
-
-//             assert(JSON.stringify(post_tx_auctions.args) === JSON.stringify(expected_result));
-
-//         });
-//     });
-
 //     describe('Auction with bids in XTZ', async () => {
 //         it('Starting auction buying with XTZ should succeed (no royalties, no auction payouts, no auction origin fees, no bid payouts, no bid origin fees)', async () => {
 //             if (isMockup()) {
