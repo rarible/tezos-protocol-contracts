@@ -36,6 +36,24 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Sales Tests",
+            "program": "${workspaceFolder}/onchain-sales/node_modules/mocha/bin/_mocha",
+            "args": [
+                "--slow",
+                "0",
+                "--timeout",
+                "0",
+                "${workspaceFolder}/onchain-sales/test"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "cwd": "${workspaceFolder}/onchain-sales",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }
