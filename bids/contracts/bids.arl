@@ -171,10 +171,13 @@ entry accept_bid(
   ab_bid_type: asset_type,
   ab_bid_asset: bytes,
   ab_seller: address){
+    require {
+      r_ab0: ab_seller = caller;
+    }
     effect {
       var current_bid = require_some(get_bid(ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset), MISSING_BID);
 
-      transfer 0tz to transfer_manager call manage_custodian_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat * address>(
+      transfer 0tz to transfer_manager call manage_bids_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat>(
          (
             current_bid.bid_amount,
             current_bid.bid_asset_qty,
@@ -187,8 +190,7 @@ entry accept_bid(
             ab_bid_type,
             ab_bid_asset,
             ab_asset_contract,
-            ab_asset_token_id,
-            bids_storage
+            ab_asset_token_id
          )
       );
 

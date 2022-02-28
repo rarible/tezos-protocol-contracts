@@ -5,8 +5,8 @@ with metadata ""
 
 constant MISSING_BIDS_CONTRACT: string = "MISSING_BIDS_CONTRACT"
 constant MISSING_TRANSFER_MANAGER: string = "MISSING_TRANSFER_MANAGER"
-constant CANT_UNPACK_FA2_BID_ASSET: string = "CANT_UNPACK_FA2_BID_ASSET"
-constant CANT_UNPACK_FA12_BID_ASSET: string = "CANT_UNPACK_FA12_BID_ASSET"
+constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_BID_ASSET"
+constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_BID_ASSET"
 
 enum asset_type =
 | XTZ
@@ -189,7 +189,7 @@ entry process_transfer(pt_transfer: process_transfer_param){
             ]
           )
         )
-      | none -> fail(CANT_UNPACK_FA2_BID_ASSET)
+      | none -> fail(CANT_UNPACK_FA2_ASSET)
       end;
     )
     | FA12 -> (
@@ -197,13 +197,55 @@ entry process_transfer(pt_transfer: process_transfer_param){
         | some(buyAsset) -> (
             transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
         )
-        | none -> fail(CANT_UNPACK_FA12_BID_ASSET)
+        | none -> fail(CANT_UNPACK_FA12_ASSET)
         end
       )
     | XTZ -> (
           transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
       )
     end;
+  }
+}
+
+entry process_transfers(pt_transfers: list<process_transfer_param>){
+  called by require_some(bids_contract, MISSING_BIDS_CONTRACT) or require_some(transfer_manager, MISSING_TRANSFER_MANAGER)
+  effect {
+    for pt_transfer in pt_transfers do
+      match pt_transfer.ptp_asset_type with
+      | FA2  -> (
+        match unpack<FA2_asset>(pt_transfer.ptp_asset) with
+        | some(buyAsset) -> (
+            transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
+              [
+                  (
+                      pt_transfer.ptp_origin,
+                      [
+                          {
+                              destination_address = pt_transfer.ptp_destination;
+                              token_id = buyAsset.fa2_asset_token_id;
+                              token_amount = pt_transfer.ptp_amount
+                          }
+                      ]
+                  )
+              ]
+            )
+          )
+        | none -> fail(CANT_UNPACK_FA2_ASSET)
+        end;
+      )
+      | FA12 -> (
+        match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+          | some(buyAsset) -> (
+              transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+          )
+          | none -> fail(CANT_UNPACK_FA12_ASSET)
+          end
+        )
+      | XTZ -> (
+            transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+        )
+      end;
+    done
   }
 }
 
