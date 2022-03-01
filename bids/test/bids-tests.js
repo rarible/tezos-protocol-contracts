@@ -2311,236 +2311,72 @@ describe('Accept bid tests', async () => {
 
     });
 
-    // describe('Common Finish auction tests', async () => {
-    //     it('Finish a non existing auction should fail', async () => {
-    //         await expectToThrow(async () => {
-    //             await bids.accept_bid({
-    //                 argMichelson: `(Pair "${nft.address}" 99)`,
-    //                 as: bob.pkh,
-    //             });
-    //         }, '"MISSING_AUCTION"');
-    //     });
+    describe('Common Accept bid tests', async () => {
+        it('Accept a non existing bid should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_2.address);
 
-    //     it('Finish an auction not started should fail', async () => {
-    //         await expectToThrow(async () => {
-    //             if (isMockup()) {
-    //                 await setMockupNow(start_date);
-    //             } else {
-    //                 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-    //                 await delay(40000);
-    //             }
-    //             const start_time = Math.floor(start_date + 100);
-    //             const token_id = 9;
-    //             await bids.start_auction({
-    //                 argJsonMichelson: mkAuction(
-    //                     nft.address,
-    //                     token_id.toString(),
-    //                     mkFungibleFA2Asset(fa2_ft.address, token_id.toString()),
-    //                     FA2,
-    //                     auction_amount,
-    //                     alice.pkh,
-    //                     start_time,
-    //                     duration.toString(),
-    //                     minimal_price.toString(),
-    //                     buyout_price.toString(),
-    //                     min_step.toString(),
-    //                     [mkPart(alice.pkh, "100")],
-    //                     [mkPart(alice.pkh, "100")],
-    //                     null,
-    //                     null),
-    //                 as: alice.pkh,
-    //             });
+                await bids.accept_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair 999999 (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                    as: alice.pkh,
+                });
+            }, '"MISSING_BID"');
+        });
 
-    //             await bids.accept_bid({
-    //                 argMichelson: `(Pair "${nft.address}" ${token_id})`,
-    //                 as: bob.pkh,
-    //             });
-    //         }, '"AUCTION_NOT_FINISHABLE"');
-    //     });
+        it('Accept someone else bid should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_2.address);
 
-    //     it('Finish an auction not ended (without bid) should fail', async () => {
-    //         await expectToThrow(async () => {
-    //             if (isMockup()) {
-    //                 await setMockupNow(start_date + 101);
-    //             } else {
-    //                 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-    //                 await delay(40000);
-    //             }
-    //             const token_id = 9;
-
-    //             await bids.accept_bid({
-    //                 argMichelson: `(Pair "${nft.address}" ${token_id})`,
-    //                 as: bob.pkh,
-    //             });
-    //         }, '"AUCTION_NOT_FINISHABLE"');
-    //     });
-
-    //     it('Finish an auction not ended (with bid) should fail', async () => {
-    //         await expectToThrow(async () => {
-    //             if (isMockup()) {
-    //                 await setMockupNow(start_date + 103);
-    //             } else {
-    //                 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-    //                 await delay(40000);
-    //             }
-
-    //             const token_id = 9;
-
-    //             await bids.put_bid({
-    //                 argJsonMichelson: mkBid(
-    //                     nft.address,
-    //                     token_id.toString(),
-    //                     10000,
-    //                     bob.pkh,
-    //                     [],
-    //                     [],
-    //                     null,
-    //                     null
-    //                 ),
-    //                 as: bob.pkh,
-    //             });
-    //             await bids.accept_bid({
-    //                 argMichelson: `(Pair "${nft.address}" ${token_id})`,
-    //                 as: bob.pkh,
-    //             });
-    //         }, '"AUCTION_NOT_FINISHABLE"');
-    //     });
-    // });
+                await bids.accept_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair 999999 (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                    as: bob.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_ab0")');
+        });
+    });
 });
 
-// describe('Cancel auction tests', async () => {
-//     it('Cancel a non existing auction should fail', async () => {
-//         await expectToThrow(async () => {
-//             await bids.cancel_auction({
-//                 argMichelson: `(Pair "${nft.address}" 999999)`,
-//                 as: bob.pkh,
-//             });
-//         }, '"MISSING_AUCTION"');
-//     });
+describe('Cancel auction tests', async () => {
+    it('Cancel a non existing bid should fail', async () => {
+        await expectToThrow(async () => {
+            const bid_asset = mkFA12Asset(fa12_ft_2.address);
 
-//     it('Cancel someone else auction should fail', async () => {
-//         await expectToThrow(async () => {
-//             if (isMockup()) {
-//                 await setMockupNow(start_date);
-//             } else {
-//                 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-//                 await delay(40000);
-//             }
-//             const start_time = Math.floor(start_date + 1);
+            await bids.cancel_bid({
+                argMichelson: `(Pair "${nft.address}" (Pair 999999 (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                as: bob.pkh,
+            });
+        }, '"MISSING_BID"');
+    });
 
-//             await bids.start_auction({
-//                 argJsonMichelson: mkAuction(
-//                     nft.address,
-//                     token_id_0.toString(),
-//                     mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString()),
-//                     FA2,
-//                     auction_amount,
-//                     alice.pkh,
-//                     start_time,
-//                     duration.toString(),
-//                     minimal_price.toString(),
-//                     buyout_price.toString(),
-//                     min_step.toString(),
-//                     [mkPart(alice.pkh, "100")],
-//                     [mkPart(alice.pkh, "100")],
-//                     null,
-//                     null),
-//                 as: alice.pkh,
-//             });
-//             await bids.cancel_auction({
-//                 argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
-//                 as: bob.pkh,
-//             });
-//         }, '"ONLY_SELLER_CAN_CANCEL_AUCTION"');
-//     });
+    it('Accept someone else bid should fail', async () => {
+        await expectToThrow(async () => {
+            const bid_asset = mkFA12Asset(fa12_ft_2.address);
+            await bids.put_bid({
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_9} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
+                as: bob.pkh,
+            });
+            await bids.cancel_bid({
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_9} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r_cb0")');
+    });
 
-//     it('Cancel an already finished auction should fail', async () => {
-//         await expectToThrow(async () => {
 
-//             if (isMockup()) {
-//                 await setMockupNow(start_date + 100000000);
-//             } else {
-//                 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-//                 await delay(100000);
-//             }
-//             await bids.cancel_auction({
-//                 argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
-//                 as: alice.pkh,
-//             });
-//         }, '"FINISHED_AUCTION_NON_CANCELLABLE"');
-//     });
+    it('Cancel a valid auction should succeed', async () => {
+        const bid_asset = mkFA12Asset(fa12_ft_2.address);
 
-//     it('Cancel an auction with an existing bid should fail', async () => {
-//         await expectToThrow(async () => {
-//             if (isMockup()) {
-//                 await setMockupNow(start_date + 2);
-//             } else {
-//                 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-//                 await delay(42000);
-//             }
-//             await bids.put_bid({
-//                 argJsonMichelson: mkBid(
-//                     nft.address,
-//                     token_id_0.toString(),
-//                     10000,
-//                     bob.pkh,
-//                     [],
-//                     []
-//                 ),
-//                 as: bob.pkh,
-//             });
-//             await bids.cancel_auction({
-//                 argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
-//                 as: alice.pkh,
-//             });
-//         }, '"AUCTION_WITH_BID_NON_CANCELLABLE"');
-//     });
+        await bids.cancel_bid({
+            argMichelson: `(Pair "${nft.address}" (Pair ${token_id_9} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+            as: bob.pkh,
+        });
+        const storage = await bids_storage.getStorage();
 
-//     it('Cancel a valid auction should succeed', async () => {
-//         if (isMockup()) {
-//             await setMockupNow(start_date);
-//         } else {
-//             const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-//             await delay(42000);
-//         }
-//         const start_time = Math.floor(start_date + 1);
-//         await bids.start_auction({
-//             argJsonMichelson: mkAuction(
-//                 nft.address,
-//                 token_id_1.toString(),
-//                 mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString()),
-//                 FA2,
-//                 auction_amount,
-//                 alice.pkh,
-//                 start_time,
-//                 duration.toString(),
-//                 minimal_price.toString(),
-//                 buyout_price.toString(),
-//                 min_step.toString(),
-//                 [mkPart(alice.pkh, "100")],
-//                 [mkPart(alice.pkh, "100")],
-//                 null,
-//                 null),
-//             as: alice.pkh,
-//         });
-//         const storage = await bids_storage.getStorage();
-//         var bid_record = await getValueFromBigMap(
-//             parseInt(storage.bids),
-//             exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-//             exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
-//         );
-//         assert(bid_record != null);
-
-//         await bids.cancel_auction({
-//             argMichelson: `(Pair "${nft.address}" ${token_id_1})`,
-//             as: alice.pkh,
-//         });
-
-//         var post_tx_bid = await getValueFromBigMap(
-//             parseInt(storage.bids),
-//             exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-//             exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
-//         );
-//         assert(post_tx_bid == null);
-//     });
-// });
+        var post_tx_bid = await getValueFromBigMap(
+            parseInt(storage.bids),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
+        );
+        assert(post_tx_bid == null);
+    });
+});

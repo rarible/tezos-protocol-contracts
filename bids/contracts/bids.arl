@@ -204,6 +204,9 @@ entry cancel_bid(
   cb_bidder: address,
   cb_bid_type: asset_type,
   cb_bid_asset: bytes){
+    require {
+      r_cb0: cb_bidder = caller;
+    }
     effect {
       var current_bid = require_some(get_bid(cb_asset_contract, cb_asset_token_id, cb_bidder, cb_bid_type, cb_bid_asset), MISSING_BID);
 
