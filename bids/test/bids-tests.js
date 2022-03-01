@@ -1916,7 +1916,7 @@ describe('Accept bid tests', async () => {
             const custody_ft_balance = await getBalance(bids_storage.address);
             const auction_ft_balance = await getBalance(bids.address);
             const alice_ft_balance = await getBalance(alice.pkh);
-            //const bob_ft_balance = await getBalance(bob.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
             const carl_ft_balance = await getBalance(carl.pkh);
             const daniel_ft_balance = await getBalance(daniel.pkh);
             const custody_nft_balance = await getFA2Balance(nft, token_id_3, bids_storage.address);
@@ -1940,7 +1940,7 @@ describe('Accept bid tests', async () => {
             const post_custody_ft_balance = await getBalance(bids_storage.address);
             const post_auction_ft_balance = await getBalance(bids.address);
             const post_alice_ft_balance = await getBalance(alice.pkh);
-            //const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
             const post_carl_ft_balance = await getBalance(carl.pkh);
             const post_daniel_ft_balance = await getBalance(daniel.pkh);
             const post_custody_nft_balance = await getFA2Balance(nft, token_id_3, bids_storage.address);
@@ -1952,9 +1952,8 @@ describe('Accept bid tests', async () => {
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
             assert(post_auction_ft_balance.isEqualTo(auction_ft_balance));
-            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
-            //Can't do this assert because bob balance will change because of gas fees
-            //assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
             assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
@@ -1977,7 +1976,7 @@ describe('Accept bid tests', async () => {
             const custody_ft_balance = await getBalance(bids_storage.address);
             const auction_ft_balance = await getBalance(bids.address);
             const alice_ft_balance = await getBalance(alice.pkh);
-            //const bob_ft_balance = await getBalance(bob.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
             const carl_ft_balance = await getBalance(carl.pkh);
             const daniel_ft_balance = await getBalance(daniel.pkh);
             const custody_nft_balance = await getFA2Balance(nft, token_id_4, bids_storage.address);
@@ -2001,7 +2000,7 @@ describe('Accept bid tests', async () => {
             const post_custody_ft_balance = await getBalance(bids_storage.address);
             const post_auction_ft_balance = await getBalance(bids.address);
             const post_alice_ft_balance = await getBalance(alice.pkh);
-            //const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
             const post_carl_ft_balance = await getBalance(carl.pkh);
             const post_daniel_ft_balance = await getBalance(daniel.pkh);
             const post_custody_nft_balance = await getFA2Balance(nft, token_id_4, bids_storage.address);
@@ -2015,11 +2014,10 @@ describe('Accept bid tests', async () => {
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
             assert(post_auction_ft_balance.isEqualTo(auction_ft_balance));
-            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
-            //Can't do this assert because bob balance will change because of gas fees
-            //assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2)));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value)));
             assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -2040,7 +2038,7 @@ describe('Accept bid tests', async () => {
             const custody_ft_balance = await getBalance(bids_storage.address);
             const auction_ft_balance = await getBalance(bids.address);
             const alice_ft_balance = await getBalance(alice.pkh);
-            //const bob_ft_balance = await getBalance(bob.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
             const carl_ft_balance = await getBalance(carl.pkh);
             const daniel_ft_balance = await getBalance(daniel.pkh);
             const custody_nft_balance = await getFA2Balance(nft, token_id_5, bids_storage.address);
@@ -2064,7 +2062,7 @@ describe('Accept bid tests', async () => {
             const post_custody_ft_balance = await getBalance(bids_storage.address);
             const post_auction_ft_balance = await getBalance(bids.address);
             const post_alice_ft_balance = await getBalance(alice.pkh);
-            //const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
             const post_carl_ft_balance = await getBalance(carl.pkh);
             const post_daniel_ft_balance = await getBalance(daniel.pkh);
             const post_custody_nft_balance = await getFA2Balance(nft, token_id_5, bids_storage.address);
@@ -2078,11 +2076,10 @@ describe('Accept bid tests', async () => {
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
             assert(post_auction_ft_balance.isEqualTo(auction_ft_balance));
-            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
-            //Can't do this assert because bob balance will change because of gas fees
-            //assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 4 + royalties)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 4 + royalties)));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2 + royalties)));
             assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
