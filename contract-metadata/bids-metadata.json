@@ -7,7 +7,7 @@
       "name": "ISC",
       "details": "ISC License"
     },
-    "homepage": "https://github.com/rarible/tezos-protocol-contracts/tree/main/onchain-sales",
+    "homepage": "https://github.com/rarible/tezos-protocol-contracts/tree/main/bids",
     "interfaces": [
       "TZIP-16"
     ]

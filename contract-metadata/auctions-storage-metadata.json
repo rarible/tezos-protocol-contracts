@@ -1,6 +1,6 @@
 {
-    "name": "Rarible Auctions",
-    "description": "Rarible custodial on chain auction contract",
+    "name": "Rarible Auctions storage",
+    "description": "Rarible custodial on chain auction storage contract",
     "version": "1.0.0",
     "authors": [ "Florian PAUTOT <florian.pautot@gmail.com>" ],
     "license": {

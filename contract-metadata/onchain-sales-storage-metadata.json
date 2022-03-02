@@ -1,13 +1,13 @@
 {
-    "name": "Rarible Auctions",
-    "description": "Rarible custodial on chain auction contract",
+    "name": "Rarible Sales Storage",
+    "description": "Rarible marketplace on chain sales storage contract",
     "version": "1.0.0",
     "authors": [ "Florian PAUTOT <florian.pautot@gmail.com>" ],
     "license": {
       "name": "ISC",
       "details": "ISC License"
     },
-    "homepage": "https://github.com/rarible/tezos-protocol-contracts/tree/main/auctions",
+    "homepage": "https://github.com/rarible/tezos-protocol-contracts/tree/main/onchain-sales",
     "interfaces": [
       "TZIP-16"
     ]

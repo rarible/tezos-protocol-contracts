@@ -1,0 +1,14 @@
+{
+    "diff": true,
+    "extension": ["js"],
+    "package": "package.json",
+    "slow": 0,
+    "timeout": 0,
+    "recursive": true,
+    "file": [
+        "deploy.js"
+    ],
+    "ui": "bdd",
+    "watch-files": ["*.js"],
+    "watch-ignore": []
+}

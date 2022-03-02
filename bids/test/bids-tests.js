@@ -207,8 +207,8 @@ describe('Contract deployments', async () => {
     });
 });
 
-describe('Auction storage setter tests', async () => {
-    it('Set auction contract as non admin should fail', async () => {
+describe('Bids storage setter tests', async () => {
+    it('Set Bids contract as non admin should fail', async () => {
         await expectToThrow(async () => {
             await bids_storage.set_bids_contract({
                 arg: {
@@ -219,9 +219,9 @@ describe('Auction storage setter tests', async () => {
         }, errors.INVALID_CALLER);
     });
 
-    it('Set auction contract as admin should succeed', async () => {
+    it('Set Bids contract as admin should succeed', async () => {
         const storage = await bids_storage.getStorage();
-        assert(storage.auction_contract == null);
+        assert(storage.bids_contract == null);
         await bids_storage.set_bids_contract({
             arg: {
                 sac_contract: bids.address
@@ -270,7 +270,7 @@ describe('Bids contract setter tests', async () => {
             }, errors.INVALID_CALLER);
         });
 
-        it('Set auction storage contract as admin should succeed', async () => {
+        it('Set Bids storage contract as admin should succeed', async () => {
             const storage = await bids.getStorage();
             assert(storage.bids_storage == royalties.address);
             await bids.set_bids_storage_contract({
