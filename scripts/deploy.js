@@ -11,12 +11,11 @@ let sales;
 let sales_storage;
 
 
-const stage = 'mockup';
-const prefix = '';
+const stage = process.env.STAGE || 'mockup';
 
 const PROTOCOL_FEE = 250;
 
-const getName = name => stage + '_' + prefix + '_' + name;
+const getName = name => stage + '_' + name;
 
 
 const originator = getAccount(env.stages[stage].originator_alias);
