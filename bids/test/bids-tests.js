@@ -5,30 +5,16 @@ const {
     setQuiet,
     expectToThrow,
     exprMichelineToJson,
-    setMockupNow,
-    getEndpoint,
-    isMockup,
-    setEndpoint,
-    setNow,
     getBalance
 } = require('@completium/completium-cli');
 const {
     errors,
-    mkAuction,
     FA12,
     FA2,
     XTZ,
-    mkPart,
     mkFungibleFA2Asset,
-    mkFA12Auction,
-    mkFungibleFA2Auction,
-    mkXTZAuction,
-    mkBid,
     getFA2Balance,
     getFA12Balance,
-    mkAuctionWithMissingFA2AssetContract,
-    mkAuctionWithMissingFA2AssetId,
-    mkAuctionWithMissingFA2AssetContractAndId,
     mkXTZAsset,
     mkFA12Asset
 } = require('./utils');
@@ -67,15 +53,9 @@ const token_id_8 = 8;
 const token_id_9 = 9;
 
 const fee = 250;
-const minimal_price = 10;
-const buyout_price = 1000000000;
-const min_step = 2;
 const payout_value = 100;
 const bid_amount = "1000000";
 const qty = "1";
-const duration = 100;
-const auction_amount = "1";
-const start_date = Date.now() / 1000;
 // accounts
 const alice = getAccount(mockup_mode ? 'alice' : 'alice');
 const bob = getAccount(mockup_mode ? 'bob' : 'bob');
@@ -958,7 +938,7 @@ describe('Put bid tests', async () => {
             assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
         });
 
-        it('Put bid with Fungible FA2 should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+        it('Put bid with Fungible FA2 should succeed (single royalties, single payouts, single origin fees)', async () => {
             const storage = await bids_storage.getStorage();
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString());
             var bid = await getValueFromBigMap(
@@ -1026,7 +1006,7 @@ describe('Put bid tests', async () => {
             assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
         });
 
-        it('Put bid with Fungible FA2 should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+        it('Put bid with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
             const storage = await bids_storage.getStorage();
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString());
             var bid = await getValueFromBigMap(
@@ -1191,7 +1171,7 @@ describe('Put bid tests', async () => {
             assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
         });
 
-        it('Put bid with XTZ should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+        it('Put bid with XTZ should succeed (single royalties, single payouts, single origin fees)', async () => {
             const storage = await bids_storage.getStorage();
             const bid_asset = mkXTZAsset();
             var bid = await getValueFromBigMap(
@@ -1270,7 +1250,7 @@ describe('Put bid tests', async () => {
             assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
         });
 
-        it('Put bid with XTZ should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+        it('Put bid with XTZ should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
             const storage = await bids_storage.getStorage();
             const bid_asset = mkXTZAsset();
             var bid = await getValueFromBigMap(
@@ -1418,7 +1398,7 @@ describe('Put bid tests', async () => {
             assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
         });
 
-        it('Put bid with FA12 should succeed (single royalties, single auction payouts, single auction origin fees, single bid payouts, single bid origin fees)', async () => {
+        it('Put bid with FA12 should succeed (single royalties, single payouts, single origin fees)', async () => {
             const storage = await bids_storage.getStorage();
             const bid_asset = mkFA12Asset(fa12_ft_1.address);
             var bid = await getValueFromBigMap(
@@ -1486,7 +1466,7 @@ describe('Put bid tests', async () => {
             assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
         });
 
-        it('Put bid with FA12 should succeed (multiple royalties, multiple auction payouts, multiple auction origin fees, multiple bid payouts, multiple bid origin fees)', async () => {
+        it('Put bid with FA12 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
             const storage = await bids_storage.getStorage();
             const bid_asset = mkFA12Asset(fa12_ft_2.address);
             var bid = await getValueFromBigMap(
@@ -1691,13 +1671,13 @@ describe('Put bid tests', async () => {
 describe('Accept bid tests', async () => {
     describe('Accept FA2 bid tests', async () => {
 
-        it('Accept FA2 bid (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
+        it('Accept FA2 bid (no royalties, no origin fees, no payouts,) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
 
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bids_storage.address);
-            const auction_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bids.address);
+            const bids_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bids.address);
             const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
             const carl_ft_balance = await getFA2Balance(fa2_ft, token_id_0, carl.pkh);
@@ -1709,7 +1689,7 @@ describe('Accept bid tests', async () => {
             const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
             assert(custody_ft_balance == total_bid_amount);
-            assert(auction_ft_balance == 0);
+            assert(bids_ft_balance == 0);
             assert(alice_ft_balance == initial_fa2_ft_amount / 2);
             assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
             assert(carl_ft_balance == 0);
@@ -1732,7 +1712,7 @@ describe('Accept bid tests', async () => {
 
 
             const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bids_storage.address);
-            const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bids.address);
+            const post_bids_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bids.address);
             const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
             const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
             const post_carl_ft_balance = await getFA2Balance(fa2_ft, token_id_0, carl.pkh);
@@ -1745,7 +1725,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees;
 
             assert(post_custody_ft_balance == 0);
-            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
@@ -1762,13 +1742,13 @@ describe('Accept bid tests', async () => {
             assert(post_tx_bid == null);
         });
 
-        it('Accept FA2 bid (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
+        it('Accept FA2 bid (single royalties, single origin fees, single payouts) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString());
 
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bids_storage.address);
-            const auction_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bids.address);
+            const bids_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bids.address);
             const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_1, alice.pkh);
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
             const carl_ft_balance = await getFA2Balance(fa2_ft, token_id_1, carl.pkh);
@@ -1780,7 +1760,7 @@ describe('Accept bid tests', async () => {
             const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             assert(custody_ft_balance == total_bid_amount);
-            assert(auction_ft_balance == 0);
+            assert(bids_ft_balance == 0);
             assert(alice_ft_balance == initial_fa2_ft_amount / 2);
             assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
             assert(daniel_ft_balance == 0);
@@ -1801,7 +1781,7 @@ describe('Accept bid tests', async () => {
             });
 
             const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bids_storage.address);
-            const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bids.address);
+            const post_bids_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bids.address);
             const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_1, alice.pkh);
             const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
             const post_carl_ft_balance = await getFA2Balance(fa2_ft, token_id_1, carl.pkh);
@@ -1816,7 +1796,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees - royalties -  fee_value;
 
             assert(post_custody_ft_balance == 0);
-            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
@@ -1834,13 +1814,13 @@ describe('Accept bid tests', async () => {
 
         });
 
-        it('Accept FA2 bid (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
+        it('Accept FA2 bid (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString());
 
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bids_storage.address);
-            const auction_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bids.address);
+            const bids_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bids.address);
             const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_2, alice.pkh);
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
             const carl_ft_balance = await getFA2Balance(fa2_ft, token_id_2, carl.pkh);
@@ -1859,7 +1839,7 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             assert(custody_ft_balance == total_bid_amount);
-            assert(auction_ft_balance == 0);
+            assert(bids_ft_balance == 0);
             assert(alice_ft_balance == initial_fa2_ft_amount / 2);
             assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
             assert(daniel_ft_balance == 0);
@@ -1873,7 +1853,7 @@ describe('Accept bid tests', async () => {
             });
 
             const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bids_storage.address);
-            const post_auction_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bids.address);
+            const post_bids_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bids.address);
             const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_2, alice.pkh);
             const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
             const post_carl_ft_balance = await getFA2Balance(fa2_ft, token_id_2, carl.pkh);
@@ -1888,7 +1868,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
 
             assert(post_custody_ft_balance == 0);
-            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
@@ -1908,13 +1888,13 @@ describe('Accept bid tests', async () => {
 
     describe('Accept XTZ Bid tests', async () => {
 
-        it('Accept XTZ Bid (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
+        it('Accept XTZ Bid (no royalties, no origin fees, no payouts,) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkXTZAsset();
 
             const custody_ft_balance = await getBalance(bids_storage.address);
-            const auction_ft_balance = await getBalance(bids.address);
+            const bids_ft_balance = await getBalance(bids.address);
             const alice_ft_balance = await getBalance(alice.pkh);
             const bob_ft_balance = await getBalance(bob.pkh);
             const carl_ft_balance = await getBalance(carl.pkh);
@@ -1938,7 +1918,7 @@ describe('Accept bid tests', async () => {
             });
 
             const post_custody_ft_balance = await getBalance(bids_storage.address);
-            const post_auction_ft_balance = await getBalance(bids.address);
+            const post_bids_ft_balance = await getBalance(bids.address);
             const post_alice_ft_balance = await getBalance(alice.pkh);
             const post_bob_ft_balance = await getBalance(bob.pkh);
             const post_carl_ft_balance = await getBalance(carl.pkh);
@@ -1951,7 +1931,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees;
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
-            assert(post_auction_ft_balance.isEqualTo(auction_ft_balance));
+            assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
             assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
@@ -1968,13 +1948,13 @@ describe('Accept bid tests', async () => {
             assert(post_tx_bid == null);
         });
 
-        it('Accept XTZ Bid (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
+        it('Accept XTZ Bid (single royalties, single origin fees, single payouts) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkXTZAsset();
 
             const custody_ft_balance = await getBalance(bids_storage.address);
-            const auction_ft_balance = await getBalance(bids.address);
+            const bids_ft_balance = await getBalance(bids.address);
             const alice_ft_balance = await getBalance(alice.pkh);
             const bob_ft_balance = await getBalance(bob.pkh);
             const carl_ft_balance = await getBalance(carl.pkh);
@@ -1998,7 +1978,7 @@ describe('Accept bid tests', async () => {
             });
 
             const post_custody_ft_balance = await getBalance(bids_storage.address);
-            const post_auction_ft_balance = await getBalance(bids.address);
+            const post_bids_ft_balance = await getBalance(bids.address);
             const post_alice_ft_balance = await getBalance(alice.pkh);
             const post_bob_ft_balance = await getBalance(bob.pkh);
             const post_carl_ft_balance = await getBalance(carl.pkh);
@@ -2013,7 +1993,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees - royalties -  fee_value;
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
-            assert(post_auction_ft_balance.isEqualTo(auction_ft_balance));
+            assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
             assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties)));
@@ -2030,13 +2010,13 @@ describe('Accept bid tests', async () => {
             assert(post_tx_bid == null);
         });
 
-        it('Accept XTZ Bid (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
+        it('Accept XTZ Bid (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkXTZAsset();
 
             const custody_ft_balance = await getBalance(bids_storage.address);
-            const auction_ft_balance = await getBalance(bids.address);
+            const bids_ft_balance = await getBalance(bids.address);
             const alice_ft_balance = await getBalance(alice.pkh);
             const bob_ft_balance = await getBalance(bob.pkh);
             const carl_ft_balance = await getBalance(carl.pkh);
@@ -2060,7 +2040,7 @@ describe('Accept bid tests', async () => {
             });
 
             const post_custody_ft_balance = await getBalance(bids_storage.address);
-            const post_auction_ft_balance = await getBalance(bids.address);
+            const post_bids_ft_balance = await getBalance(bids.address);
             const post_alice_ft_balance = await getBalance(alice.pkh);
             const post_bob_ft_balance = await getBalance(bob.pkh);
             const post_carl_ft_balance = await getBalance(carl.pkh);
@@ -2075,7 +2055,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
-            assert(post_auction_ft_balance.isEqualTo(auction_ft_balance));
+            assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
             assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
@@ -2095,13 +2075,13 @@ describe('Accept bid tests', async () => {
 
     describe('Accept FA12 Bid tests', async () => {
 
-        it('Accept FA12 Bid (no royalties, no auction origin fees, no auction payouts, no bid origin fees, no bid payouts) should succeed', async () => {
+        it('Accept FA12 Bid (no royalties, no origin fees, no payouts,) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkFA12Asset(fa12_ft_0.address);
 
             const custody_ft_balance = await getFA12Balance(fa12_ft_0, bids_storage.address);
-            const auction_ft_balance = await getFA12Balance(fa12_ft_0, bids.address);
+            const bids_ft_balance = await getFA12Balance(fa12_ft_0, bids.address);
             const alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
             const bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
             const carl_ft_balance = await getFA12Balance(fa12_ft_0, carl.pkh);
@@ -2120,7 +2100,7 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             assert(custody_ft_balance == total_bid_amount);
-            assert(auction_ft_balance == 0);
+            assert(bids_ft_balance == 0);
             assert(alice_ft_balance == initial_fa2_ft_amount / 2);
             assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
             assert(daniel_ft_balance == 0);
@@ -2134,7 +2114,7 @@ describe('Accept bid tests', async () => {
             });
 
             const post_custody_ft_balance = await getFA12Balance(fa12_ft_0, bids_storage.address);
-            const post_auction_ft_balance = await getFA12Balance(fa12_ft_0, bids.address);
+            const post_bids_ft_balance = await getFA12Balance(fa12_ft_0, bids.address);
             const post_alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
             const post_bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
             const post_carl_ft_balance = await getFA12Balance(fa12_ft_0, carl.pkh);
@@ -2147,7 +2127,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees;
 
             assert(post_custody_ft_balance == 0);
-            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
@@ -2165,13 +2145,13 @@ describe('Accept bid tests', async () => {
 
         });
 
-        it('Accept FA12 Bid (single royalties, single auction origin fees, single auction payouts, single bid origin fees, single bid payouts) should succeed', async () => {
+        it('Accept FA12 Bid (single royalties, single origin fees, single payouts) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkFA12Asset(fa12_ft_1.address);
 
             const custody_ft_balance = await getFA12Balance(fa12_ft_1, bids_storage.address);
-            const auction_ft_balance = await getFA12Balance(fa12_ft_1, bids.address);
+            const bids_ft_balance = await getFA12Balance(fa12_ft_1, bids.address);
             const alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
             const bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
             const carl_ft_balance = await getFA12Balance(fa12_ft_1, carl.pkh);
@@ -2190,7 +2170,7 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             assert(custody_ft_balance == total_bid_amount);
-            assert(auction_ft_balance == 0);
+            assert(bids_ft_balance == 0);
             assert(alice_ft_balance == initial_fa2_ft_amount / 2);
             assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
             assert(carl_ft_balance == 0);
@@ -2205,7 +2185,7 @@ describe('Accept bid tests', async () => {
             });
 
             const post_custody_ft_balance = await getFA12Balance(fa12_ft_1, bids_storage.address);
-            const post_auction_ft_balance = await getFA12Balance(fa12_ft_1, bids.address);
+            const post_bids_ft_balance = await getFA12Balance(fa12_ft_1, bids.address);
             const post_alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
             const post_bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
             const post_carl_ft_balance = await getFA12Balance(fa12_ft_1, carl.pkh);
@@ -2220,7 +2200,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees - royalties -  fee_value;
 
             assert(post_custody_ft_balance == 0);
-            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
@@ -2237,13 +2217,13 @@ describe('Accept bid tests', async () => {
             assert(post_tx_bid == null);
         });
 
-        it('Accept FA12 Bid (multiple royalties, multiple auction origin fees, multiple auction payouts, multiple bid origin fees, multiple bid payouts) should succeed', async () => {
+        it('Accept FA12 Bid (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
             const storage = await bids_storage.getStorage();
 
             const bid_asset = mkFA12Asset(fa12_ft_2.address);
 
             const custody_ft_balance = await getFA12Balance(fa12_ft_2, bids_storage.address);
-            const auction_ft_balance = await getFA12Balance(fa12_ft_2, bids.address);
+            const bids_ft_balance = await getFA12Balance(fa12_ft_2, bids.address);
             const alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
             const bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
             const carl_ft_balance = await getFA12Balance(fa12_ft_2, carl.pkh);
@@ -2262,7 +2242,7 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             assert(custody_ft_balance == total_bid_amount);
-            assert(auction_ft_balance == 0);
+            assert(bids_ft_balance == 0);
             assert(alice_ft_balance == initial_fa2_ft_amount / 2);
             assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
             assert(carl_ft_balance == 0);
@@ -2277,7 +2257,7 @@ describe('Accept bid tests', async () => {
             });
 
             const post_custody_ft_balance = await getFA12Balance(fa12_ft_2, bids_storage.address);
-            const post_auction_ft_balance = await getFA12Balance(fa12_ft_2, bids.address);
+            const post_bids_ft_balance = await getFA12Balance(fa12_ft_2, bids.address);
             const post_alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
             const post_bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
             const post_carl_ft_balance = await getFA12Balance(fa12_ft_2, carl.pkh);
@@ -2292,7 +2272,7 @@ describe('Accept bid tests', async () => {
             const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
 
             assert(post_custody_ft_balance == 0);
-            assert(post_auction_ft_balance == auction_ft_balance);
+            assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
@@ -2336,7 +2316,7 @@ describe('Accept bid tests', async () => {
     });
 });
 
-describe('Cancel auction tests', async () => {
+describe('Cancel bid tests', async () => {
     it('Cancel a non existing bid should fail', async () => {
         await expectToThrow(async () => {
             const bid_asset = mkFA12Asset(fa12_ft_2.address);
@@ -2363,7 +2343,7 @@ describe('Cancel auction tests', async () => {
     });
 
 
-    it('Cancel a valid auction should succeed', async () => {
+    it('Cancel a valid bid should succeed', async () => {
         const bid_asset = mkFA12Asset(fa12_ft_2.address);
 
         await bids.cancel_bid({
