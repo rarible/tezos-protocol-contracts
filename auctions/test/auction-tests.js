@@ -6,10 +6,7 @@ const {
     expectToThrow,
     exprMichelineToJson,
     setMockupNow,
-    getEndpoint,
     isMockup,
-    setEndpoint,
-    setNow,
     getBalance
 } = require('@completium/completium-cli');
 const {
@@ -20,15 +17,9 @@ const {
     XTZ,
     mkPart,
     mkFungibleFA2Asset,
-    mkFA12Auction,
-    mkFungibleFA2Auction,
-    mkXTZAuction,
     mkBid,
     getFA2Balance,
     getFA12Balance,
-    mkAuctionWithMissingFA2AssetContract,
-    mkAuctionWithMissingFA2AssetId,
-    mkAuctionWithMissingFA2AssetContractAndId,
     mkXTZAsset,
     mkFA12Asset
 } = require('./utils');
@@ -336,7 +327,7 @@ describe('Auction contract setter tests', async () => {
 
         it('Set extension duration as admin should succeed', async () => {
             const extension = 10;
-            const storage = await auction.getStorage();
+            //const storage = await auction.getStorage();
             //assert(storage.extension_duration.toFixed() == BigNumber(900).toFixed());
             await auction.set_extension_duration({
                 arg: {
@@ -1890,6 +1881,32 @@ describe('Start Auction tests', async () => {
             }, '(Pair "InvalidCondition" "r_sa8")');
         });
 
+        it('Starting auction with not enough NFT balance should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_9.toString(),
+                        mkFungibleFA2Asset(fa2_ft.address, token_id_9.toString()),
+                        FA2,
+                        "999999999999999999999999",
+                        alice.pkh,
+                        start_time,
+                        duration.toString(),
+                        minimal_price.toString(),
+                        buyout_price.toString(),
+                        min_step.toString(),
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
+                    as: alice.pkh,
+                });
+            }, '"FA2_INSUFFICIENT_BALANCE"');
+        });
+
         it('Starting auction with duration < extension duration should fail', async () => {
             await expectToThrow(async () => {
                 const start_time = Math.floor(start_date + 1);
@@ -2044,6 +2061,29 @@ describe('Put bid tests', async () => {
                     as: bob.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_pb0")');
+        });
+
+        it('Put bid with not enough balance should fail', async () => {
+            if (isMockup()) {
+                await setMockupNow(start_date + 2);
+            }
+            try {
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        "999999999999999999999999",
+                        bob.pkh,
+                        [],
+                        [],
+                        null,
+                        null
+                    ),
+                    as: bob.pkh,
+                });
+            } catch (error) {
+                assert(error.includes('"FA2_INSUFFICIENT_BALANCE"'));
+            }
         });
 
         it('Put bid for another user should fail should fail', async () => {
@@ -2279,7 +2319,6 @@ describe('Put bid tests', async () => {
 
             const storage = await auction_storage.getStorage();
 
-            const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_9, auction_storage.address);
             const auction_ft_balance = await getFA2Balance(fa2_ft, token_id_9, auction.address);
             const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_9, alice.pkh);
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
@@ -2828,8 +2867,6 @@ describe('Put bid tests', async () => {
             );
         });
     });
-
-
 });
 
 describe('Finish auction tests', async () => {
