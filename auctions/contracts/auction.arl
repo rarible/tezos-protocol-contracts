@@ -355,7 +355,10 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
             }
           ]);
         );
-        if(auction.auction_end_time - now < extension_duration) then (
+        if(
+            auction.auction_end_time - now < extension_duration and
+            auction.auction_end_time + extension_duration < auction.auction_start_time + max_duration
+          ) then (
           auction.auction_end_time := now + extension_duration;
         );
         auction.auction_last_bid := some(pb_bid);
