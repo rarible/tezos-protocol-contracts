@@ -20,12 +20,12 @@ const mockup_mode = true;
 let fa2;
 
 // accounts
-const alice  = getAccount(mockup_mode ? 'alice'      : 'alice');
-const bob    = getAccount(mockup_mode ? 'bob'        : 'bob');
-const carl   = getAccount(mockup_mode ? 'carl'       : 'carl');
+const alice = getAccount(mockup_mode ? 'alice' : 'alice');
+const bob = getAccount(mockup_mode ? 'bob' : 'bob');
+const carl = getAccount(mockup_mode ? 'carl' : 'carl');
 const daniel = getAccount(mockup_mode ? 'bootstrap1' : 'bootstrap1');
 
-//set endpointhead 
+//set endpointhead
 setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
 
 const amount = 1;
@@ -858,7 +858,7 @@ describe('[Single Public NFT] Transfers gasless ', async () => {
         );
 
         assert(
-            ""+alicePermitNb == addedPermit.args[0].int
+            "" + alicePermitNb == addedPermit.args[0].int
         );
 
         var alicePostTransferBalances = await getValueFromBigMap(
@@ -1165,6 +1165,41 @@ describe('[Single Public NFT] Burn', async () => {
         );
         assert(alicePostTransferBalances === null);
     });
+
+    it('Re-mint a burnt token', async () => {
+        const storage = await fa2.getStorage();
+        const testTokenId = tokenId + 666;
+        await fa2.mint({
+            arg: {
+                itokenid: testTokenId,
+                iowner: alice.pkh,
+                itokenMetadata: [{ key: '', value: '0x' }],
+                iroyalties: [
+                    [alice.pkh, 1000],
+                    [bob.pkh, 500],
+                ],
+            },
+            as: alice.pkh,
+        });
+
+        var aliceTransferBalances = await getValueFromBigMap(
+            parseInt(storage.ledger),
+            exprMichelineToJson(`${testTokenId}`),
+            exprMichelineToJson(`nat`)
+        );
+        assert(aliceTransferBalances.string === alice.pkh);
+        await fa2.burn({
+            argMichelson: `${testTokenId}`,
+            as: alice.pkh,
+        });
+
+        var alicePostTransferBalances = await getValueFromBigMap(
+            parseInt(storage.ledger),
+            exprMichelineToJson(`${testTokenId}`),
+            exprMichelineToJson(`nat`)
+        );
+        assert(alicePostTransferBalances === null);
+    });
 });
 
 describe('[Single Public NFT] Pause', async () => {
@@ -1236,8 +1271,8 @@ describe('[Single Public NFT] Pause', async () => {
     it('Set metadata is not possible when contract is paused should fail', async () => {
         await expectToThrow(async () => {
             const bytes =
-            '0x05070707070a00000016016a5569553c34c4bfe352ad21740dea4e2faad3da000a00000004f5f466ab070700000a000000209aabe91d035d02ffb550bb9ea6fe19970f6fb41b5e69459a60b1ae401192a2dc';
-            const argM = `(Pair "" ${bytes})`;            
+                '0x05070707070a00000016016a5569553c34c4bfe352ad21740dea4e2faad3da000a00000004f5f466ab070700000a000000209aabe91d035d02ffb550bb9ea6fe19970f6fb41b5e69459a60b1ae401192a2dc';
+            const argM = `(Pair "" ${bytes})`;
             await fa2.set_metadata({
                 argMichelson: argM,
                 as: alice.pkh,
@@ -1256,7 +1291,7 @@ describe('[Single Public NFT] Pause', async () => {
             tokenId,
             carlPermitNb
         );
-        const argMExp = `(Pair (Some ${expiry}) (Some 0x${permit.hash}))`;        
+        const argMExp = `(Pair (Some ${expiry}) (Some 0x${permit.hash}))`;
         await expectToThrow(async () => {
             await fa2.set_expiry({
                 argMichelson: argMExp,
