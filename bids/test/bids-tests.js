@@ -69,7 +69,7 @@ describe('Contract deployments', async () => {
 
     it('Fungible token 0 (FA1.2) contract deployment should succeed', async () => {
         [fa12_ft_0, _] = await deploy(
-            './test/test-contracts/test-fa12-ft.arl',
+            '../test-contracts/test-fa12-ft.arl',
             {
                 parameters: {
                     initialholder: alice.pkh,
@@ -83,7 +83,7 @@ describe('Contract deployments', async () => {
 
     it('Fungible token 1 (FA1.2) contract deployment should succeed', async () => {
         [fa12_ft_1, _] = await deploy(
-            './test/test-contracts/test-fa12-ft.arl',
+            '../test-contracts/test-fa12-ft.arl',
             {
                 parameters: {
                     initialholder: alice.pkh,
@@ -97,7 +97,7 @@ describe('Contract deployments', async () => {
 
     it('Fungible token 2 (FA1.2) contract deployment should succeed', async () => {
         [fa12_ft_2, _] = await deploy(
-            './test/test-contracts/test-fa12-ft.arl',
+            '../test-contracts/test-fa12-ft.arl',
             {
                 parameters: {
                     initialholder: alice.pkh,
@@ -111,7 +111,7 @@ describe('Contract deployments', async () => {
 
     it('Fungible token (FA2) contract deployment should succeed', async () => {
         [fa2_ft, _] = await deploy(
-            './test/test-contracts/test-fa2-ft.arl',
+            '../test-contracts/test-fa2-ft.arl',
             {
                 parameters: {
                     owner: alice.pkh
@@ -123,7 +123,7 @@ describe('Contract deployments', async () => {
 
     it('Non Fungible token (FA2) contract deployment should succeed', async () => {
         [nft, _] = await deploy(
-            './test/test-contracts/test-nft.arl',
+            '../test-contracts/test-nft.arl',
             {
                 parameters: {
                     owner: alice.pkh
@@ -135,7 +135,7 @@ describe('Contract deployments', async () => {
 
     it('Royalties provider contract deployment should succeed', async () => {
         [royalties, _] = await deploy(
-            './test/test-contracts/test-royalties-provider.arl',
+            '../royalties-provider/contracts/royalties.arl',
             {
                 parameters: {
                     owner: alice.pkh
