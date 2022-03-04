@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "deploy-mockup": "env STAGE=mockup mocha ./deploy.js --timeout 0 --slow 0",
-        "deploy-privatenet": "env STAGE=testnet mocha ./deploy.js --timeout 0 --slow 0",
+        "deploy-privatenet": "env STAGE=privatenet mocha ./deploy.js --timeout 0 --slow 0",
         "deploy-testnet": "env STAGE=testnet mocha ./deploy.js --timeout 0 --slow 0",
         "deploy-mainnet": "env STAGE=mainnet mocha ./deploy.js --timeout 0 --slow 0"
     },

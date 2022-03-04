@@ -9,7 +9,9 @@ let bids;
 let bids_storage;
 let sales;
 let sales_storage;
-
+let fa2_ft;
+let fa12_ft;
+let nft;
 
 const stage = process.env.STAGE || 'mockup';
 
@@ -123,6 +125,40 @@ describe("Contracts deployment", async () => {
       },
       named: getName(env.contracts.sales.id),
       metadata_uri: env.stages[stage].metadata.sales,
+      as: originator.pkh
+    });
+  });
+
+  it("Deploy FA2 FT", async () => {
+    [fa2_ft, _] = await deploy(env.contracts.fa12_ft.path, {
+      parameters: {
+        owner: originator.pkh
+      },
+      named: getName(env.contracts.fa2_ft.id),
+      metadata_uri: env.stages[stage].metadata.fa2_ft,
+      as: originator.pkh
+    });
+  });
+
+  it("Deploy FA12 FT", async () => {
+    [fa12_ft, _] = await deploy(env.contracts.fa12_ft.path, {
+      parameters: {
+        initialholder: originator.pkh,
+        totalsupply: 99999999999999999999
+      },
+      named: getName(env.contracts.fa12_ft.id),
+      metadata_uri: env.stages[stage].metadata.fa12_ft,
+      as: originator.pkh
+    });
+  });
+
+  it("Deploy NFT", async () => {
+    [nft, _] = await deploy(env.contracts.nft.path, {
+      parameters: {
+        owner: originator.pkh
+      },
+      named: getName(env.contracts.nft.id),
+      metadata_uri: env.stages[stage].metadata.nft,
       as: originator.pkh
     });
   });

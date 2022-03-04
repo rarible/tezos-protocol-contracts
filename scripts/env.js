@@ -16,7 +16,30 @@ exports.env = {
         royalties: 'ipfs://QmSofEJWZh8PZfJMx4rnE5QPkA5tYf62J9jPNqj68HqGYG',
         transfer_manager: 'ipfs://QmPRAGfBUpJHEUWgkkFq93cBFJJ75pp2aXGcgUJAAyAG9w',
         sales: 'ipfs://QmenX7zhseqRj3hU6ysuz4yiwexzK4Bi7riTnuZp5hvdu3',
-        sales_storage: 'ipfs://QmX1TT4Nh9hyrZSHQxEftVmA9fQvqmSKv6QDGRFhMCmTks'
+        sales_storage: 'ipfs://QmX1TT4Nh9hyrZSHQxEftVmA9fQvqmSKv6QDGRFhMCmTks',
+        fa2_ft: 'ipfs://QmP4xGtQiWvUJ3JV8yrvFuMAEGS86C3qXWgaykZBgD3jdC',
+        fa12_ft: 'ipfs://QmfTz6pcSPcnJHBnreCJYa6FcRLMTbcz4CW76nwFEmKsji',
+        nft: 'ipfs://QmYjV7PcSLeYuJJ3BSMagNPjjpVNL6D4u8SbJWFpbUBxRM',
+      }
+    },
+    privatenet: {
+      quiet: false,
+      endpoint: 'http://localhost:8732',
+      originator_alias: 'bob',
+      owner_address: 'tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6',
+      fee_receiver_address: 'tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6',
+      metadata: {
+        auctions: 'ipfs://QmVBugYxi3Ssxai5qhgRPkQfPNaiSykHU9FzmQvnizA3uK',
+        auctions_storage: 'ipfs://QmUaVcNn6DP3knNcnp4WDReg9r6PfNYkJZ15BZ9PVetzpx',
+        bids: 'ipfs://QmQEwbNd163Rw3T9KDLUeYM5kTb479Xhj2E5cmwXTKfAZE',
+        bids_storage: 'ipfs://QmVo95JtWjHVLUHJLfNswitx4XXos6nqSgyih7XWixjJcn',
+        royalties: 'ipfs://QmSofEJWZh8PZfJMx4rnE5QPkA5tYf62J9jPNqj68HqGYG',
+        transfer_manager: 'ipfs://QmPRAGfBUpJHEUWgkkFq93cBFJJ75pp2aXGcgUJAAyAG9w',
+        sales: 'ipfs://QmenX7zhseqRj3hU6ysuz4yiwexzK4Bi7riTnuZp5hvdu3',
+        sales_storage: 'ipfs://QmX1TT4Nh9hyrZSHQxEftVmA9fQvqmSKv6QDGRFhMCmTks',
+        fa2_ft: 'ipfs://QmP4xGtQiWvUJ3JV8yrvFuMAEGS86C3qXWgaykZBgD3jdC',
+        fa12_ft: 'ipfs://QmfTz6pcSPcnJHBnreCJYa6FcRLMTbcz4CW76nwFEmKsji',
+        nft: 'ipfs://QmYjV7PcSLeYuJJ3BSMagNPjjpVNL6D4u8SbJWFpbUBxRM',
       }
     },
     testnet: {
@@ -33,7 +56,10 @@ exports.env = {
         royalties: 'ipfs://QmSofEJWZh8PZfJMx4rnE5QPkA5tYf62J9jPNqj68HqGYG',
         transfer_manager: 'ipfs://QmPRAGfBUpJHEUWgkkFq93cBFJJ75pp2aXGcgUJAAyAG9w',
         sales: 'ipfs://QmenX7zhseqRj3hU6ysuz4yiwexzK4Bi7riTnuZp5hvdu3',
-        sales_storage: 'ipfs://QmX1TT4Nh9hyrZSHQxEftVmA9fQvqmSKv6QDGRFhMCmTks'
+        sales_storage: 'ipfs://QmX1TT4Nh9hyrZSHQxEftVmA9fQvqmSKv6QDGRFhMCmTks',
+        fa2_ft: 'ipfs://QmP4xGtQiWvUJ3JV8yrvFuMAEGS86C3qXWgaykZBgD3jdC',
+        fa12_ft: 'ipfs://QmfTz6pcSPcnJHBnreCJYa6FcRLMTbcz4CW76nwFEmKsji',
+        nft: 'ipfs://QmYjV7PcSLeYuJJ3BSMagNPjjpVNL6D4u8SbJWFpbUBxRM',
       }
     },
     mainnet: {
@@ -86,6 +112,18 @@ exports.env = {
     bids_storage: {
       id: 'bids_storage',
       path: '../bids/contracts/bids-storage.arl',
+    },
+    fa2_ft: {
+      id: 'fa2_ft',
+      path: '../test-contracts/test-fa2-ft.arl',
+    },
+    fa12_ft: {
+      id: 'fa12_ft',
+      path: '../test-contracts/test-fa12-ft.arl',
+    },
+    nft: {
+      id: 'nft',
+      path: '../test-contracts/test-nft.arl',
     }
   }
 };

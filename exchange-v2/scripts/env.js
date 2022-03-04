@@ -5,21 +5,7 @@ exports.env = {
     mockup: {
       quiet: true,
       endpoint: 'mockup',
-      originator_alias: 'completium-deploy',
-      owner_address: 'tz1PyW1EznU9ADpocaauSi41NCPynBuqf1Kc',
-      fee_receiver_address: 'tz1PyW1EznU9ADpocaauSi41NCPynBuqf1Kc',
-      metadata: {
-        royalties: undefined,
-        transfer_proxy: undefined,
-        transfer_manager: undefined,
-        fill: undefined,
-        exchange: undefined
-      }
-    },
-    testnet: {
-      quiet: false,
-      endpoint: 'https://hangzhounet.smartpy.io',
-      originator_alias: 'rarible_admin',
+      originator_alias: 'alice',
       owner_address: 'tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb',
       fee_receiver_address: 'tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb',
       metadata: {
@@ -27,7 +13,44 @@ exports.env = {
         transfer_proxy: 'ipfs://QmQrBsY2XQn2XHkpd1gaVCE9Uy8CCRYdAXjavkmCJCYa1q',
         transfer_manager: 'ipfs://QmbffXr3cLoMMzaCqU5AiMR858X4WEyfxLD7p71HG11pqb',
         fill: 'ipfs://QmZeoyeADuWfp17884BJdqBnEXeEyXZB6FiK3mGcKTDJZh',
-        exchange: 'ipfs://QmU1QKVfp5XMkv7EZNF7ir9GpMJRbiVKaDoEv1BxtD8gFC'
+        exchange: 'ipfs://QmU1QKVfp5XMkv7EZNF7ir9GpMJRbiVKaDoEv1BxtD8gFC',
+        fa2_ft: 'ipfs://QmP4xGtQiWvUJ3JV8yrvFuMAEGS86C3qXWgaykZBgD3jdC',
+        fa12_ft: 'ipfs://QmfTz6pcSPcnJHBnreCJYa6FcRLMTbcz4CW76nwFEmKsji',
+        nft: 'ipfs://QmYjV7PcSLeYuJJ3BSMagNPjjpVNL6D4u8SbJWFpbUBxRM',
+      }
+    },
+    testnet: {
+      quiet: false,
+      endpoint: 'https://hangzhounet.smartpy.io',
+      originator_alias: 'alice',
+      owner_address: 'tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb',
+      fee_receiver_address: 'tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb',
+      metadata: {
+        royalties: 'ipfs://QmXWYogA9afUcciA8KAeV8ArtVPfSQEbqppv4GPSa6ng6S',
+        transfer_proxy: 'ipfs://QmQrBsY2XQn2XHkpd1gaVCE9Uy8CCRYdAXjavkmCJCYa1q',
+        transfer_manager: 'ipfs://QmbffXr3cLoMMzaCqU5AiMR858X4WEyfxLD7p71HG11pqb',
+        fill: 'ipfs://QmZeoyeADuWfp17884BJdqBnEXeEyXZB6FiK3mGcKTDJZh',
+        exchange: 'ipfs://QmU1QKVfp5XMkv7EZNF7ir9GpMJRbiVKaDoEv1BxtD8gFC',
+        fa2_ft: 'ipfs://QmP4xGtQiWvUJ3JV8yrvFuMAEGS86C3qXWgaykZBgD3jdC',
+        fa12_ft: 'ipfs://QmfTz6pcSPcnJHBnreCJYa6FcRLMTbcz4CW76nwFEmKsji',
+        nft: 'ipfs://QmYjV7PcSLeYuJJ3BSMagNPjjpVNL6D4u8SbJWFpbUBxRM',
+      }
+    },
+    privatenet: {
+      quiet: false,
+      endpoint: 'http://localhost:8732',
+      originator_alias: 'bob',
+      owner_address: 'tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6',
+      fee_receiver_address: 'tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6',
+      metadata: {
+        royalties: 'ipfs://QmXWYogA9afUcciA8KAeV8ArtVPfSQEbqppv4GPSa6ng6S',
+        transfer_proxy: 'ipfs://QmQrBsY2XQn2XHkpd1gaVCE9Uy8CCRYdAXjavkmCJCYa1q',
+        transfer_manager: 'ipfs://QmbffXr3cLoMMzaCqU5AiMR858X4WEyfxLD7p71HG11pqb',
+        fill: 'ipfs://QmZeoyeADuWfp17884BJdqBnEXeEyXZB6FiK3mGcKTDJZh',
+        exchange: 'ipfs://QmU1QKVfp5XMkv7EZNF7ir9GpMJRbiVKaDoEv1BxtD8gFC',
+        fa2_ft: 'ipfs://QmP4xGtQiWvUJ3JV8yrvFuMAEGS86C3qXWgaykZBgD3jdC',
+        fa12_ft: 'ipfs://QmfTz6pcSPcnJHBnreCJYa6FcRLMTbcz4CW76nwFEmKsji',
+        nft: 'ipfs://QmYjV7PcSLeYuJJ3BSMagNPjjpVNL6D4u8SbJWFpbUBxRM',
       }
     },
     mainnet: {
@@ -37,11 +60,14 @@ exports.env = {
       owner_address: 'tz1PyW1EznU9ADpocaauSi41NCPynBuqf1Kc',
       fee_receiver_address: 'tz1PyW1EznU9ADpocaauSi41NCPynBuqf1Kc',
       metadata: {
-        royalties: 'ipfs://QmTiCbNJeSCxBn6PZCSVScspj95gLMt79girvoUSMDTDdH',
-        transfer_proxy: 'ipfs://QmfELb4Mss27ocueXQapH4pyxREQ7bRALsG3a3YcPxCmVo',
-        transfer_manager: 'ipfs://QmPTXe6mzApc7qt4BLtRmjrGgE9QhhnSmodFzgBHWuxbX9',
-        fill: 'ipfs://QmXH74QDmqWaSx2KhQJmfEQwjUf9gWrczk22E3f2NWPefa',
-        exchange: 'ipfs://QmaVdGJJf5YnknVXJiCQMnefWLnQrkkuHCm3Y7JjCZFucs'
+        royalties: 'ipfs://QmXWYogA9afUcciA8KAeV8ArtVPfSQEbqppv4GPSa6ng6S',
+        transfer_proxy: 'ipfs://QmQrBsY2XQn2XHkpd1gaVCE9Uy8CCRYdAXjavkmCJCYa1q',
+        transfer_manager: 'ipfs://QmbffXr3cLoMMzaCqU5AiMR858X4WEyfxLD7p71HG11pqb',
+        fill: 'ipfs://QmZeoyeADuWfp17884BJdqBnEXeEyXZB6FiK3mGcKTDJZh',
+        exchange: 'ipfs://QmU1QKVfp5XMkv7EZNF7ir9GpMJRbiVKaDoEv1BxtD8gFC',
+        fa2_ft: 'ipfs://QmP4xGtQiWvUJ3JV8yrvFuMAEGS86C3qXWgaykZBgD3jdC',
+        fa12_ft: 'ipfs://QmfTz6pcSPcnJHBnreCJYa6FcRLMTbcz4CW76nwFEmKsji',
+        nft: 'ipfs://QmYjV7PcSLeYuJJ3BSMagNPjjpVNL6D4u8SbJWFpbUBxRM',
       }
     }
   },
@@ -65,6 +91,18 @@ exports.env = {
     exchange: {
       id: 'rarible_exchange',
       path: './contracts/exchange.arl',
+    },
+    fa2_ft: {
+      id: 'fa2_ft',
+      path: '../test-contracts/test-fa2-ft.arl',
+    },
+    fa12_ft: {
+      id: 'fa12_ft',
+      path: '../test-contracts/test-fa12-ft.arl',
+    },
+    nft: {
+      id: 'nft',
+      path: '../test-contracts/test-nft.arl',
     }
   }
-}
+};
