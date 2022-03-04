@@ -198,25 +198,7 @@ entry start_auction(
             sa_auction.auction_args_sell_asset_token_id
             ) = false, AUCTION_ALREADY_EXISTS);
 
-        match sa_auction.auction_args_buy_asset_type with
-        | FA2 -> (
-          match unpack<FA2_asset>(sa_auction.auction_args_buy_asset) with
-          | some(buyAsset) -> ()
-          | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
-          end
-        )
-        | FA12 -> (
-          match unpack<FA12_asset>(sa_auction.auction_args_buy_asset) with
-          | some(buyAsset) -> ()
-          | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
-          end
-        )
-        | XTZ -> (
-          if(sa_auction.auction_args_buy_asset <> 0x) then (
-            fail(WRONG_BUY_ASSET_PAYLOAD)
-          )
-        )
-        end;
+        var processed_asset = verify_and_unpack_asset(sa_auction.auction_args_buy_asset_type, sa_auction.auction_args_buy_asset);
 
         var start_time: date = now;
         var end_time: date = now;
@@ -279,26 +261,9 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
       dorequire(auction.auction_start_time < now, AUCTION_NOT_IN_PROGRESS);
       dorequire(auction.auction_end_time > now, AUCTION_FINISHED);
 
-      match auction.auction_buy_asset_type with
-      | FA2 -> (
-        match unpack<FA2_asset>(auction.auction_buy_asset) with
-        | some(buyAsset) -> (
-            buy_asset_contract := some(buyAsset.fa2_asset_contract);
-            buy_asset_token_id := some(buyAsset.fa2_asset_token_id);
-          )
-        | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
-        end
-      )
-      | FA12 -> (
-        match unpack<FA12_asset>(auction.auction_buy_asset) with
-        | some(buyAsset) -> (
-            buy_asset_contract := some(buyAsset.fa12_asset_contract);
-        )
-        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
-        end
-      )
-      | XTZ -> ()
-      end;
+      var processed_asset = verify_and_unpack_asset(auction.auction_buy_asset_type, auction.auction_buy_asset);
+      buy_asset_contract := processed_asset[0];
+      buy_asset_token_id := processed_asset[1];
 
       if(is_xtz) then (
         dorequire(transferred = (total_amount * 1utz), AUCTION_BID_AMOUNT_MISMATCH);
@@ -455,6 +420,36 @@ function process_total_amount(cta_amount: nat, cta_fees: nat, cta_order_origin_f
     total += bp(cta_amount, item.part_value)
   done;
   return total
+}
+
+function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option<address> * option<nat>) {
+    var buy_asset_contract: option<address> = none;
+    var buy_asset_token_id: option<nat> = none;
+    match ua_asset_type with
+      | FA2 -> (
+        match unpack<FA2_asset>(ua_asset_data) with
+        | some(buyAsset) -> (
+            buy_asset_contract := some(buyAsset.fa2_asset_contract);
+            buy_asset_token_id := some(buyAsset.fa2_asset_token_id);
+          )
+        | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
+        end
+      )
+      | FA12 -> (
+        match unpack<FA12_asset>(ua_asset_data) with
+        | some(buyAsset) -> (
+            buy_asset_contract := some(buyAsset.fa12_asset_contract);
+        )
+        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
+        end
+      )
+      | XTZ -> (
+          if(ua_asset_data <> 0x) then (
+            fail(WRONG_BUY_ASSET_PAYLOAD)
+          )
+      )
+      end;
+      return ((buy_asset_contract, buy_asset_token_id))
 }
 
 entry default() {}
