@@ -167,20 +167,25 @@ entry buy(
         dorequire(transferred = (process_total_amount(current_sale.sale_amount, protocol_fee, current_sale.sale_origin_fees) * 1utz), AMOUNT_MISMATCH)
       );
 
-      transfer transferred to transfer_manager call manage_sale_transfers<nat * nat * address * address * nat * fees * asset_type * bytes * address * nat>(
-         (
-            current_sale.sale_amount,
-            current_sale.sale_asset_qty,
-            b_seller,
-            b_buyer,
-            protocol_fee,
-            { origin_fees = current_sale.sale_origin_fees; payouts = current_sale.sale_payouts},
-            b_sale_type,
-            b_sale_asset,
-            b_asset_contract,
-            b_asset_token_id
-         )
+      transfer transferred to transfer_manager call manage_transfers<nat * address * nat * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
+        (
+          current_sale.sale_asset_qty,
+          b_asset_contract,
+          b_asset_token_id,
+          b_seller,
+          b_buyer,
+          current_sale.sale_amount,
+          b_sale_type,
+          b_sale_asset,
+          b_buyer,
+          b_seller,
+          sales_storage,
+          protocol_fee,
+          current_sale.sale_origin_fees,
+          current_sale.sale_payouts
+        )
       );
+
       transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset))
 
     }

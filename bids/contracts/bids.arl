@@ -177,22 +177,24 @@ entry accept_bid(
     effect {
       var current_bid = require_some(get_bid(ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset), MISSING_BID);
 
-      transfer 0tz to transfer_manager call manage_bids_transfers<nat * nat * address * address * address * nat * fees * fees * asset_type * bytes * address * nat>(
-         (
-            current_bid.bid_amount,
-            current_bid.bid_asset_qty,
-            bids_storage,
-            ab_seller,
-            ab_bidder,
-            protocol_fee,
-            { origin_fees = current_bid.bid_origin_fees; payouts = current_bid.bid_payouts},
-            { origin_fees = []; payouts = []},
-            ab_bid_type,
-            ab_bid_asset,
-            ab_asset_contract,
-            ab_asset_token_id
-         )
-      );
+      transfer transferred to transfer_manager call manage_transfers<nat * address * nat * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
+        (
+          current_bid.bid_asset_qty,
+          ab_asset_contract,
+          ab_asset_token_id,
+          ab_seller,
+          ab_bidder,
+          current_bid.bid_amount,
+          ab_bid_type,
+          ab_bid_asset,
+          bids_storage,
+          ab_seller,
+          bids_storage,
+          protocol_fee,
+          current_bid.bid_origin_fees,
+          current_bid.bid_payouts)
+        );
+
 
       transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset))
     }
@@ -210,13 +212,13 @@ entry cancel_bid(
     effect {
       var current_bid = require_some(get_bid(cb_asset_contract, cb_asset_token_id, cb_bidder, cb_bid_type, cb_bid_asset), MISSING_BID);
 
-      transfer 0tz to bids_storage call process_transfer<process_transfer_param>({
+      transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
         ptp_asset_type = cb_bid_type;
         ptp_asset = cb_bid_asset;
         ptp_amount = current_bid.bid_amount;
         ptp_origin = bids_storage;
         ptp_destination = cb_bidder
-      });
+      }]);
       transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((cb_asset_contract, cb_asset_token_id, cb_bidder, cb_bid_type, cb_bid_asset))
     }
 }
