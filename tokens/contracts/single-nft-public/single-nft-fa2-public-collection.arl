@@ -183,7 +183,7 @@ variable default_expiry : nat =  31556952
 /**
 * Adds or removes operators for specified tokens
 * @param upl list of add or remove operator specification
-*/ 
+*/
 entry update_operators (upl : list<or<operator_param, operator_param>>) {
   require { r0 : is_not_paused() }
   effect {
@@ -192,8 +192,8 @@ entry update_operators (upl : list<or<operator_param, operator_param>>) {
       | left(param)  -> (* add *)
         dorequire(param.opp_owner = caller , CALLER_NOT_OWNER);
         operator.add({
-          oaddr  = param.opp_operator; 
-          otoken = param.opp_token_id; 
+          oaddr  = param.opp_operator;
+          otoken = param.opp_token_id;
           oowner = param.opp_owner
         })
       | right(param) -> (* remove *)
@@ -207,7 +207,7 @@ entry update_operators (upl : list<or<operator_param, operator_param>>) {
 /**
 * Adds or removes an operator for *all* transfers for caller's tokens
 * @param upl list of add or remove operator address
-*/ 
+*/
 entry update_operators_for_all (upl : list<or<address, address>>) {
   require { r1 : is_not_paused() }
   effect {
@@ -228,10 +228,10 @@ function check_owner_and_operator(txs : list<address * list<transfer_destination
     var %from = tx[0];
     var tds = tx[1];
     for td in tds do begin
-      res &= 
-        if caller <> %from then 
-          (operator.contains((caller,td.token_id_dest,%from)) or 
-           operator_for_all.contains((caller, %from))) 
+      res &=
+        if caller <> %from then
+          (operator.contains((caller,td.token_id_dest,%from)) or
+           operator_for_all.contains((caller, %from)))
         else ledger[td.token_id_dest].lowner = caller;
     end
     done
@@ -283,7 +283,7 @@ entry set_default_expiry(v : nat) {
 * Sets expiry for permit
 * @param v option of expiry value
 * @param p option of permit
-*/ 
+*/
 entry set_expiry(v : option<nat>, p : option<bytes>) {
   require { r7: is_not_paused() }
   effect {
@@ -329,8 +329,8 @@ entry set_expiry(v : option<nat>, p : option<bytes>) {
 //----------------------------------------------------------------------------
 
 /**
-* Adds a permit 
-* @param pk public key that signed 
+* Adds a permit
+* @param pk public key that signed
 * @param signature contract address * chain id * counter * data
 * @param data serialisation and hash (blake2B * pack) of transfer parameters (list of pairs of 'from' address and transfer destination)
 * Note: counter is to prevent replay attack
@@ -340,9 +340,9 @@ entry permit(pk : key, sig : signature, data : bytes) {
   effect {
     var user : address = key_address(pk);
     var empty : map<bytes, user_permit> = [];
-    var pcounter_user_permits : (nat * map<bytes, user_permit>) = 
-      if permits.contains(user) then 
-        (permits[user].counter, permits[user].user_permits) 
+    var pcounter_user_permits : (nat * map<bytes, user_permit>) =
+      if permits.contains(user) then
+        (permits[user].counter, permits[user].user_permits)
       else (0, empty);
     var pcounter = pcounter_user_permits[0];
     var puser_permits = pcounter_user_permits[1];
@@ -362,11 +362,11 @@ entry permit(pk : key, sig : signature, data : bytes) {
 //----------------------------------------------------------------------------
 
 /**
-* Transfers tokens with permits 
+* Transfers tokens with permits
 * @param batch list of pairs of permits (key and signature) and transfer specification
 * Note: a transfer specification is a list of pairs of 'from' address and transfer destination
 * Note: a transfer destination has a 'to' address, a token id and an amount
-*/ 
+*/
 entry transfer_gasless (batch : list<list<address * list<transfer_destination>> * (key * signature)>) {
   for b in batch do
     var pk  = b[1][0];
@@ -487,7 +487,7 @@ view get_royalties(tokenId : nat) : list<part> {
   return (
     if royalties.contains(tokenId) then
       royalties[tokenId].rvalue
-    else 
+    else
       emptylist<part>()
   )
 }
@@ -506,9 +506,9 @@ view get_royalties(tokenId : nat) : list<part> {
 entry mint (itokenid : nat, iowner : address, itokenMetadata: map<string, bytes>, iroyalties : list<part>) {
   require { r10: is_not_paused() }
   effect {
-    token_metadata.addupdate(itokenid, {token_id = itokenid; token_info = itokenMetadata});
-    royalties.add({ rtokenid = itokenid; rvalue = iroyalties });
     ledger.add({ ltoken = itokenid; lowner = iowner});
+    token_metadata.add({ftoken_metadata = itokenid; token_id = itokenid; token_info = itokenMetadata});
+    royalties.add({ rtokenid = itokenid; rvalue = iroyalties });
   }
 }
 
@@ -522,6 +522,7 @@ entry burn(itokenid : nat) {
     if ledger.contains(itokenid) and ledger[itokenid].lowner = caller then begin
       ledger.remove(itokenid);
       token_metadata.remove(itokenid);
+      royalties.remove(itokenid)
     end else
       fail(CALLER_NOT_OWNER);
   }

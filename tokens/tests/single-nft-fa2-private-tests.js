@@ -28,7 +28,7 @@ const bob    = getAccount(mockup_mode ? 'bob'        : 'bob');
 const carl   = getAccount(mockup_mode ? 'carl'       : 'carl');
 const daniel = getAccount(mockup_mode ? 'bootstrap1' : 'bootstrap1');
 
-//set endpointhead 
+//set endpointhead
 setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
 
 const amount = 1;
@@ -1207,6 +1207,41 @@ describe('[Single Private NFT] Burn', async () => {
     });
 
     it('Burn tokens with enough tokens should succeed', async () => {
+        const storage = await fa2.getStorage();
+        const testTokenId = tokenId + 666;
+        await fa2.mint({
+            arg: {
+                itokenid: testTokenId,
+                iowner: alice.pkh,
+                itokenMetadata: [{ key: '', value: '0x' }],
+                iroyalties: [
+                    [alice.pkh, 1000],
+                    [bob.pkh, 500],
+                ],
+            },
+            as: alice.pkh,
+        });
+
+        var aliceTransferBalances = await getValueFromBigMap(
+            parseInt(storage.ledger),
+            exprMichelineToJson(`${testTokenId}`),
+            exprMichelineToJson(`nat`)
+        );
+        assert(aliceTransferBalances.string === alice.pkh);
+        await fa2.burn({
+            argMichelson: `${testTokenId}`,
+            as: alice.pkh,
+        });
+
+        var alicePostTransferBalances = await getValueFromBigMap(
+            parseInt(storage.ledger),
+            exprMichelineToJson(`${testTokenId}`),
+            exprMichelineToJson(`nat`)
+        );
+        assert(alicePostTransferBalances === null);
+    });
+
+    it('Re-mint a burnt token', async () => {
         const storage = await fa2.getStorage();
         const testTokenId = tokenId + 666;
         await fa2.mint({

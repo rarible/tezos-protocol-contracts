@@ -778,6 +778,6 @@ exports.errors = {
     EXPIRY_TOO_BIG: '"EXPIRY_TOO_BIG"',
     NOT_PERMIT_ISSUER: '"NOT_PERMIT_ISSUER"',
     CONTRACT_PAUSED: '"CONTRACT_PAUSED"',
-    KEY_EXISTS: '(Pair "KeyExists" "royalties")',
+    KEY_EXISTS: '(Pair "KeyExists" "ledger")',
     TOKEN_METADATA_KEY_EXISTS: '(Pair "KeyExists" "token_metadata")',
 };
