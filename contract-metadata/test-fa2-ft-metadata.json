@@ -1,0 +1,16 @@
+{
+    "name": "Test FT FA2",
+    "description": "Rarible test FA2 FT contract",
+    "version": "1.0.0",
+    "authors": [ "Florian PAUTOT <florian.pautot@gmail.com>" ],
+    "license": {
+      "name": "ISC",
+      "details": "ISC License"
+    },
+    "homepage": "https://github.com/rarible/tezos-protocol-contracts/tree/main/test-contracts",
+    "interfaces": [
+      "TZIP-12",
+      "TZIP-16",
+      "TZIP-21"
+    ]
+  }

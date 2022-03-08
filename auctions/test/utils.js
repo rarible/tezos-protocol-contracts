@@ -924,6 +924,7 @@ exports.mkXTZAuction = (
 exports.mkBid = (
     assetContract,
     assetId,
+    assetSeller,
     amount,
     bidder,
     payouts,
@@ -946,32 +947,40 @@ exports.mkBid = (
                     {
                         "prim": "Pair",
                         "args": [
-                            payouts,
+                            {
+                                "string": `${assetSeller}`
+                            },
                             {
                                 "prim": "Pair",
                                 "args": [
-                                    originFees,
+                                    payouts,
                                     {
                                         "prim": "Pair",
                                         "args": [
-                                            {
-                                                "int": `${amount}`
-                                            },
+                                            originFees,
                                             {
                                                 "prim": "Pair",
-                                                "args": [{
-                                                    "string": `${bidder}`
-                                                },
-                                                {
-                                                    "prim": "Pair",
-                                                    "args": [{
-                                                        "prim": "None"
+                                                "args": [
+                                                    {
+                                                        "int": `${amount}`
                                                     },
                                                     {
-                                                        "prim": "None"
+                                                        "prim": "Pair",
+                                                        "args": [{
+                                                            "string": `${bidder}`
+                                                        },
+                                                        {
+                                                            "prim": "Pair",
+                                                            "args": [{
+                                                                "prim": "None"
+                                                            },
+                                                            {
+                                                                "prim": "None"
+                                                            }
+                                                            ]
+                                                        }
+                                                        ]
                                                     }
-                                                    ]
-                                                }
                                                 ]
                                             }
                                         ]

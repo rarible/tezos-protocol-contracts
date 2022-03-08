@@ -6,11 +6,14 @@ let transfer_proxy;
 let transfer_manager;
 let fill;
 let exchange;
+let fa2_ft;
+let fa12_ft;
+let nft;
 
-const stage = 'mockup'
-const prefix = 'deploy'
+const stage = 'privatenet'
+const prefix = 'legacy'
 
-const PROTOCOL_FEE = 300
+const PROTOCOL_FEE = 250
 
 const getName = name => stage + '_' + prefix + '_' + name
 
@@ -94,6 +97,37 @@ describe("Deploying", async () => {
       },
       named: getName(env.contracts.exchange.id),
       metadata_uri: env.stages[stage].metadata.exchange,
+      as: originator.pkh
+    });
+  });
+  it("Deploy FA2 FT", async () => {
+    [fa2_ft, _] = await deploy(env.contracts.fa2_ft.path, {
+      parameters: {
+        owner: originator.pkh
+      },
+      named: getName(env.contracts.fa2_ft.id),
+      metadata_uri: env.stages[stage].metadata.fa2_ft,
+      as: originator.pkh
+    });
+  });
+  it("Deploy FA12 FT", async () => {
+    [fa12_ft, _] = await deploy(env.contracts.fa12_ft.path, {
+      parameters: {
+        initialholder: originator.pkh,
+        totalsupply: 99999999999999999999
+      },
+      named: getName(env.contracts.fa12_ft.id),
+      metadata_uri: env.stages[stage].metadata.fa12_ft,
+      as: originator.pkh
+    });
+  });
+  it("Deploy NFT", async () => {
+    [nft, _] = await deploy(env.contracts.nft.path, {
+      parameters: {
+        owner: originator.pkh
+      },
+      named: getName(env.contracts.nft.id),
+      metadata_uri: env.stages[stage].metadata.nft,
       as: originator.pkh
     });
   });

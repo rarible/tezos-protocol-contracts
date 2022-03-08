@@ -28,12 +28,6 @@ record part {
   part_value   : nat;
 }
 
-record operator_param {
-  opp_owner    : address;
-  opp_operator : address;
-  opp_token_id : nat
-} as ((owner, (operator, token_id)))
-
 //----------------------------------------------------------------------------
 // Owner role transfer
 //----------------------------------------------------------------------------
@@ -105,9 +99,10 @@ record auction_record {
   auction_data_type  : option<bytes>;
   auction_data       : option<bytes>;
 }
-asset auctions identified by auction_asset auction_asset_id to big_map {
+asset auctions identified by auction_asset auction_asset_id auction_asset_owner to big_map {
   auction_asset : address;
   auction_asset_id: nat;
+  auction_asset_owner: address;
   auction : auction_record;
 }
 
@@ -128,18 +123,18 @@ record transfer_param {
 entry set_auction(sa_auction : auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   effect {
-    auctions.add({auction_asset = sa_auction.auction_sell_asset_contract; auction_asset_id = sa_auction.auction_sell_asset_token_id; auction = sa_auction});
+    auctions.add({auction_asset = sa_auction.auction_sell_asset_contract; auction_asset_id = sa_auction.auction_sell_asset_token_id; auction_asset_owner = sa_auction.auction_seller; auction = sa_auction});
   }
 }
 
 entry update_auction(ua_auction: auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   effect {
-    //TODO: add checks for fields that should not be updated
     auctions.addupdate(
       (
         ua_auction.auction_sell_asset_contract,
-        ua_auction.auction_sell_asset_token_id
+        ua_auction.auction_sell_asset_token_id,
+        ua_auction.auction_seller
       ),
       {
         auction = ua_auction
@@ -148,63 +143,22 @@ entry update_auction(ua_auction: auction_record) {
   }
 }
 
-entry remove_auction(ra_asset : address, ra_asset_id : nat) {
+entry remove_auction(ra_asset : address, ra_asset_id : nat, ra_asset_seller: address) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   effect {
-    auctions.remove((ra_asset, ra_asset_id));
+    auctions.remove((ra_asset, ra_asset_id, ra_asset_seller));
   }
 }
 
-view auction_exists(ae_asset : address, ae_asset_id : nat) : bool {
-  return auctions.contains((ae_asset, ae_asset_id))
+view auction_exists(ae_asset : address, ae_asset_id : nat, ae_asset_seller: address) : bool {
+  return auctions.contains((ae_asset, ae_asset_id, ae_asset_seller))
 }
-view get_auction(ga_asset : address, ga_asset_id : nat) : option<auction_record> {
-
-  if(auctions.contains((ga_asset, ga_asset_id))) then (
-    return some(auctions[(ga_asset, ga_asset_id)].auction);
+view get_auction(ga_asset : address, ga_asset_id : nat, ga_asset_seller: address) : option<auction_record> {
+  if(auctions.contains((ga_asset, ga_asset_id, ga_asset_seller))) then (
+    return some(auctions[(ga_asset, ga_asset_id, ga_asset_seller)].auction);
    ) else (
     return none;
    )
-}
-
-entry process_transfer(pt_transfer: process_transfer_param){
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT) or require_some(transfer_manager, MISSING_TRANSFER_MANAGER)
-  effect {
-    match pt_transfer.ptp_asset_type with
-    | FA2  -> (
-      match unpack<FA2_asset>(pt_transfer.ptp_asset) with
-      | some(buyAsset) -> (
-          transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
-            [
-                (
-                    pt_transfer.ptp_origin,
-                    [
-                        {
-                            destination_address = pt_transfer.ptp_destination;
-                            token_id = buyAsset.fa2_asset_token_id;
-                            token_amount = pt_transfer.ptp_amount
-                        }
-                    ]
-                )
-            ]
-          )
-        )
-      | none -> fail(CANT_UNPACK_FA2_BUY_ASSET)
-      end;
-    )
-    | FA12 -> (
-      match unpack<FA12_asset>(pt_transfer.ptp_asset) with
-        | some(buyAsset) -> (
-            transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
-        )
-        | none -> fail(CANT_UNPACK_FA12_BUY_ASSET)
-        end
-      )
-    | XTZ -> (
-          transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
-      )
-    end;
-  }
 }
 
 entry process_transfers(pt_transfers: list<process_transfer_param>){

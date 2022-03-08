@@ -1,0 +1,23 @@
+{
+    "name": "rarible-tezos-protocol-contracts-deployer",
+    "version": "1.0.0",
+    "description": "Rarible Tezos protocol contracts deployer",
+    "main": "index.js",
+    "scripts": {
+        "deploy-mockup": "env STAGE=mockup mocha ./deploy.js --timeout 0 --slow 0",
+        "deploy-privatenet": "env STAGE=privatenet mocha ./deploy.js --timeout 0 --slow 0",
+        "deploy-testnet": "env STAGE=testnet mocha ./deploy.js --timeout 0 --slow 0",
+        "deploy-mainnet": "env STAGE=mainnet mocha ./deploy.js --timeout 0 --slow 0"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@completium/completium-cli": "^0.3.19",
+        "bignumber.js": "^9.0.2",
+        "chai": "^4.3.4",
+        "mocha": "^9.1.2"
+    },
+    "devDependencies": {
+        "prettier": "2.4.1"
+    }
+}

@@ -4,7 +4,6 @@ archetype sales_storage(
 with metadata ""
 
 constant MISSING_SALES_CONTRACT: string = "MISSING_SALES_CONTRACT"
-constant MISSING_TRANSFER_MANAGER: string = "MISSING_TRANSFER_MANAGER"
 constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
 constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
 
@@ -94,20 +93,6 @@ asset sales identified by sale_asset_contract sale_asset_token_id sale_asset_sel
   sale_asset : bytes;
   sale_record: sale;
 }
-
-record process_transfer_param {
-  ptp_asset_type: asset_type;
-  ptp_asset: bytes;
-  ptp_amount: nat;
-  ptp_origin: address;
-  ptp_destination: address;
-}
-
-record transfer_param {
-  destination_address: address;
-  token_id: nat;
-  token_amount: nat
-} as ((%to, (token_id, amount)))
 
 entry set_sale(
   ss_asset_contract: address,

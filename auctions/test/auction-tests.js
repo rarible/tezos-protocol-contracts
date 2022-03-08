@@ -6,10 +6,7 @@ const {
     expectToThrow,
     exprMichelineToJson,
     setMockupNow,
-    getEndpoint,
     isMockup,
-    setEndpoint,
-    setNow,
     getBalance
 } = require('@completium/completium-cli');
 const {
@@ -20,15 +17,9 @@ const {
     XTZ,
     mkPart,
     mkFungibleFA2Asset,
-    mkFA12Auction,
-    mkFungibleFA2Auction,
-    mkXTZAuction,
     mkBid,
     getFA2Balance,
     getFA12Balance,
-    mkAuctionWithMissingFA2AssetContract,
-    mkAuctionWithMissingFA2AssetId,
-    mkAuctionWithMissingFA2AssetContractAndId,
     mkXTZAsset,
     mkFA12Asset
 } = require('./utils');
@@ -88,7 +79,7 @@ describe('Contract deployments', async () => {
 
     it('Fungible token 0 (FA1.2) contract deployment should succeed', async () => {
         [fa12_ft_0, _] = await deploy(
-            './test/test-contracts/test-fa12-ft.arl',
+            '../test-contracts/test-fa12-ft.arl',
             {
                 parameters: {
                     initialholder: alice.pkh,
@@ -102,7 +93,7 @@ describe('Contract deployments', async () => {
 
     it('Fungible token 1 (FA1.2) contract deployment should succeed', async () => {
         [fa12_ft_1, _] = await deploy(
-            './test/test-contracts/test-fa12-ft.arl',
+            '../test-contracts/test-fa12-ft.arl',
             {
                 parameters: {
                     initialholder: alice.pkh,
@@ -116,7 +107,7 @@ describe('Contract deployments', async () => {
 
     it('Fungible token 2 (FA1.2) contract deployment should succeed', async () => {
         [fa12_ft_2, _] = await deploy(
-            './test/test-contracts/test-fa12-ft.arl',
+            '../test-contracts/test-fa12-ft.arl',
             {
                 parameters: {
                     initialholder: alice.pkh,
@@ -130,7 +121,7 @@ describe('Contract deployments', async () => {
 
     it('Fungible token (FA2) contract deployment should succeed', async () => {
         [fa2_ft, _] = await deploy(
-            './test/test-contracts/test-fa2-ft.arl',
+            '../test-contracts/test-fa2-ft.arl',
             {
                 parameters: {
                     owner: alice.pkh
@@ -142,7 +133,7 @@ describe('Contract deployments', async () => {
 
     it('Non Fungible token (FA2) contract deployment should succeed', async () => {
         [nft, _] = await deploy(
-            './test/test-contracts/test-nft.arl',
+            '../test-contracts/test-nft.arl',
             {
                 parameters: {
                     owner: alice.pkh
@@ -154,7 +145,7 @@ describe('Contract deployments', async () => {
 
     it('Royalties provider contract deployment should succeed', async () => {
         [royalties, _] = await deploy(
-            './test/test-contracts/test-royalties-provider.arl',
+            '../royalties-provider/contracts/royalties.arl',
             {
                 parameters: {
                     owner: alice.pkh
@@ -336,7 +327,7 @@ describe('Auction contract setter tests', async () => {
 
         it('Set extension duration as admin should succeed', async () => {
             const extension = 10;
-            const storage = await auction.getStorage();
+            //const storage = await auction.getStorage();
             //assert(storage.extension_duration.toFixed() == BigNumber(900).toFixed());
             await auction.set_extension_duration({
                 arg: {
@@ -970,8 +961,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
             await auction.start_auction({
@@ -996,8 +987,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
 
             const expected_result = JSON.parse(`
@@ -1046,8 +1037,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
 
@@ -1073,8 +1064,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
 
             const expected_result = JSON.parse(`
@@ -1139,8 +1130,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_2} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
             await auction.start_auction({
@@ -1165,8 +1156,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_2} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
 
             const expected_result = JSON.parse(`
@@ -1249,8 +1240,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_3} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
 
@@ -1276,8 +1267,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_3} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             const expected_result = JSON.parse(`
             [
@@ -1325,8 +1316,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_4} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
             await auction.start_auction({
@@ -1351,8 +1342,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_4} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             const expected_result = JSON.parse(`
                 [{
@@ -1414,8 +1405,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_5})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_5} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
             await auction.start_auction({
@@ -1440,8 +1431,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_5})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_5} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             const expected_result = JSON.parse(`
                 [{
@@ -1521,8 +1512,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_6} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
             await auction.start_auction({
@@ -1547,8 +1538,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_6} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             const expected_result = JSON.parse(`
             [{
@@ -1596,8 +1587,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_7} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
             await auction.start_auction({
@@ -1622,8 +1613,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_7} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             const expected_result = JSON.parse(`
             [{
@@ -1685,8 +1676,8 @@ describe('Start Auction tests', async () => {
             const storage = await auction_storage.getStorage();
             var auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_8} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auctions == null);
             await auction.start_auction({
@@ -1711,8 +1702,8 @@ describe('Start Auction tests', async () => {
 
             var post_tx_auctions = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_8} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             const expected_result = JSON.parse(`
             [{
@@ -1890,6 +1881,32 @@ describe('Start Auction tests', async () => {
             }, '(Pair "InvalidCondition" "r_sa8")');
         });
 
+        it('Starting auction with not enough NFT balance should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_auction({
+                    argJsonMichelson: mkAuction(
+                        nft.address,
+                        token_id_9.toString(),
+                        mkFungibleFA2Asset(fa2_ft.address, token_id_9.toString()),
+                        FA2,
+                        "999999999999999999999999",
+                        alice.pkh,
+                        start_time,
+                        duration.toString(),
+                        minimal_price.toString(),
+                        buyout_price.toString(),
+                        min_step.toString(),
+                        [mkPart(alice.pkh, "100")],
+                        [mkPart(alice.pkh, "100")],
+                        null,
+                        null),
+                    as: alice.pkh,
+                });
+            }, '"FA2_INSUFFICIENT_BALANCE"');
+        });
+
         it('Starting auction with duration < extension duration should fail', async () => {
             await expectToThrow(async () => {
                 const start_time = Math.floor(start_date + 1);
@@ -2034,6 +2051,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_0.toString(),
+                        alice.pkh,
                         0,
                         bob.pkh,
                         [],
@@ -2046,6 +2064,30 @@ describe('Put bid tests', async () => {
             }, '(Pair "InvalidCondition" "r_pb0")');
         });
 
+        it('Put bid with not enough balance should fail', async () => {
+            if (isMockup()) {
+                await setMockupNow(start_date + 2);
+            }
+            try {
+                await auction.put_bid({
+                    argJsonMichelson: mkBid(
+                        nft.address,
+                        token_id_0.toString(),
+                        alice.pkh,
+                        "999999999999999999999999",
+                        bob.pkh,
+                        [],
+                        [],
+                        null,
+                        null
+                    ),
+                    as: bob.pkh,
+                });
+            } catch (error) {
+                assert(error.includes('"FA2_INSUFFICIENT_BALANCE"'));
+            }
+        });
+
         it('Put bid for another user should fail should fail', async () => {
             await expectToThrow(async () => {
                 if (isMockup()) {
@@ -2056,6 +2098,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_0.toString(),
+                        alice.pkh,
                         100,
                         bob.pkh,
                         [],
@@ -2078,6 +2121,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         fa2_ft.address,
                         token_id_3.toString(),
+                        alice.pkh,
                         111,
                         bob.pkh,
                         [],
@@ -2101,6 +2145,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_0.toString(),
+                        alice.pkh,
                         bid_amount,
                         bob.pkh,
                         [],
@@ -2125,6 +2170,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_0.toString(),
+                        alice.pkh,
                         bid_amount,
                         bob.pkh,
                         [],
@@ -2149,6 +2195,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_0.toString(),
+                        alice.pkh,
                         1,
                         bob.pkh,
                         [],
@@ -2198,8 +2245,8 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
@@ -2209,6 +2256,7 @@ describe('Put bid tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_9.toString(),
+                    alice.pkh,
                     `${parseInt(bid_amount) - 1}`,
                     bob.pkh,
                     [],
@@ -2228,8 +2276,8 @@ describe('Put bid tests', async () => {
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2243,6 +2291,7 @@ describe('Put bid tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_9.toString(),
+                    alice.pkh,
                     bid_amount,
                     alice.pkh,
                     [],
@@ -2257,8 +2306,8 @@ describe('Put bid tests', async () => {
 
             const post_alice_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
 
             assert(
@@ -2279,7 +2328,6 @@ describe('Put bid tests', async () => {
 
             const storage = await auction_storage.getStorage();
 
-            const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_9, auction_storage.address);
             const auction_ft_balance = await getFA2Balance(fa2_ft, token_id_9, auction.address);
             const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_9, alice.pkh);
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_9, bob.pkh);
@@ -2295,8 +2343,8 @@ describe('Put bid tests', async () => {
 
             var auction_record = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auction_record != null);
 
@@ -2305,6 +2353,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_9.toString(),
+                        alice.pkh,
                         new_bid_amount.toString(),
                         bob.pkh,
                         [],
@@ -2344,8 +2393,8 @@ describe('Put bid tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_9})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
         });
@@ -2360,14 +2409,15 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
             await auction.put_bid({
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_0.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [],
@@ -2379,8 +2429,8 @@ describe('Put bid tests', async () => {
             });
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2397,8 +2447,8 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
 
@@ -2406,6 +2456,7 @@ describe('Put bid tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_1.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value)],
@@ -2418,8 +2469,8 @@ describe('Put bid tests', async () => {
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2440,8 +2491,8 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_2} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
 
@@ -2449,6 +2500,7 @@ describe('Put bid tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_2.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
@@ -2461,8 +2513,8 @@ describe('Put bid tests', async () => {
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_2} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2490,6 +2542,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_0.toString(),
+                        alice.pkh,
                         bid_amount + 1,
                         bob.pkh,
                         [],
@@ -2512,6 +2565,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_0.toString(),
+                        alice.pkh,
                         bid_amount - 1,
                         bob.pkh,
                         [],
@@ -2537,6 +2591,7 @@ describe('Put bid tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id_3.toString(),
+                        alice.pkh,
                         bid_amount,
                         bob.pkh,
                         [],
@@ -2557,8 +2612,8 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_3} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
             const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
@@ -2566,6 +2621,7 @@ describe('Put bid tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_3.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [],
@@ -2578,8 +2634,8 @@ describe('Put bid tests', async () => {
             });
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_3} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2595,8 +2651,8 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_4} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
             const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (bid_amount * (payout_value / 10000)));
@@ -2604,6 +2660,7 @@ describe('Put bid tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_4.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value)],
@@ -2617,8 +2674,8 @@ describe('Put bid tests', async () => {
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_4} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2638,8 +2695,8 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_5})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_5} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
 
@@ -2648,6 +2705,7 @@ describe('Put bid tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_5.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
@@ -2661,8 +2719,8 @@ describe('Put bid tests', async () => {
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_5})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_5} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2692,14 +2750,15 @@ describe('Put bid tests', async () => {
 
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_6} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
             await auction.put_bid({
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_6.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [],
@@ -2715,8 +2774,8 @@ describe('Put bid tests', async () => {
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_6} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2736,14 +2795,15 @@ describe('Put bid tests', async () => {
 
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_7} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
             await auction.put_bid({
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_7.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value)],
@@ -2761,8 +2821,8 @@ describe('Put bid tests', async () => {
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_7} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2786,14 +2846,15 @@ describe('Put bid tests', async () => {
 
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_8} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[5].prim == 'None');
             await auction.put_bid({
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_8.toString(),
+                    alice.pkh,
                     bid_amount,
                     bob.pkh,
                     [mkPart(carl.pkh, payout_value), mkPart(daniel.pkh, payout_value)],
@@ -2810,8 +2871,8 @@ describe('Put bid tests', async () => {
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_8} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(
                 post_bid.args[5].prim == 'Some' &&
@@ -2828,8 +2889,6 @@ describe('Put bid tests', async () => {
             );
         });
     });
-
-
 });
 
 describe('Finish auction tests', async () => {
@@ -2866,13 +2925,13 @@ describe('Finish auction tests', async () => {
 
             var auction_record = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auction_record != null);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -2902,8 +2961,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_0})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
         });
@@ -2938,13 +2997,13 @@ describe('Finish auction tests', async () => {
 
             var auction_record = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auction_record != null);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_1})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -2975,8 +3034,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
 
@@ -3011,7 +3070,7 @@ describe('Finish auction tests', async () => {
             assert(bob_nft_balance == 0);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_2})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_2} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -3042,8 +3101,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_2})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_2} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
         });
@@ -3071,13 +3130,13 @@ describe('Finish auction tests', async () => {
 
             var auction_record = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_3} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auction_record != null);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_3})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_3} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -3107,8 +3166,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_3})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_3} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
         });
@@ -3134,13 +3193,13 @@ describe('Finish auction tests', async () => {
 
             var auction_record = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_4} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auction_record != null);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_4})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_4} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -3172,8 +3231,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_4})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_4} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
         });
@@ -3199,13 +3258,13 @@ describe('Finish auction tests', async () => {
 
             var auction_record = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_5})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_5} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(auction_record != null);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_5})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_5} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -3237,8 +3296,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_5})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_5} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
         });
@@ -3275,7 +3334,7 @@ describe('Finish auction tests', async () => {
             assert(bob_nft_balance == 0);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_6})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_6} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -3304,8 +3363,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_6})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_6} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
 
@@ -3338,7 +3397,7 @@ describe('Finish auction tests', async () => {
             assert(bob_nft_balance == 0);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_7})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_7} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -3369,8 +3428,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_7})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_7} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
         });
@@ -3401,7 +3460,7 @@ describe('Finish auction tests', async () => {
             assert(bob_nft_balance == 0);
 
             await auction.finish_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_8})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_8} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
 
@@ -3432,8 +3491,8 @@ describe('Finish auction tests', async () => {
 
             var post_tx_auction = await getValueFromBigMap(
                 parseInt(storage.auctions),
-                exprMichelineToJson(`(Pair "${nft.address}" ${token_id_8})`),
-                exprMichelineToJson(`(pair address nat)'`)
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_8} "${alice.pkh}"))`),
+                exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(post_tx_auction == null);
         });
@@ -3444,7 +3503,7 @@ describe('Finish auction tests', async () => {
         it('Finish a non existing auction should fail', async () => {
             await expectToThrow(async () => {
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" 99)`,
+                    argMichelson: `(Pair "${nft.address}" (Pair 99 "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
             }, '"MISSING_AUCTION"');
@@ -3478,7 +3537,7 @@ describe('Finish auction tests', async () => {
                 });
 
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3492,7 +3551,7 @@ describe('Finish auction tests', async () => {
                 const token_id = 9;
 
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3510,6 +3569,7 @@ describe('Finish auction tests', async () => {
                     argJsonMichelson: mkBid(
                         nft.address,
                         token_id.toString(),
+                        alice.pkh,
                         10000,
                         bob.pkh,
                         [],
@@ -3520,7 +3580,7 @@ describe('Finish auction tests', async () => {
                     as: bob.pkh,
                 });
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3532,7 +3592,7 @@ describe('Cancel auction tests', async () => {
     it('Cancel a non existing auction should fail', async () => {
         await expectToThrow(async () => {
             await auction.cancel_auction({
-                argMichelson: `(Pair "${nft.address}" 999999)`,
+                argMichelson: `(Pair "${nft.address}" (Pair 999999 "${alice.pkh}"))`,
                 as: bob.pkh,
             });
         }, '"MISSING_AUCTION"');
@@ -3565,24 +3625,12 @@ describe('Cancel auction tests', async () => {
                 as: alice.pkh,
             });
             await auction.cancel_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`,
                 as: bob.pkh,
             });
         }, '"ONLY_SELLER_CAN_CANCEL_AUCTION"');
     });
 
-    it('Cancel an already finished auction should fail', async () => {
-        await expectToThrow(async () => {
-
-            if (isMockup()) {
-                await setMockupNow(start_date + 100000000);
-            }
-            await auction.cancel_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
-                as: alice.pkh,
-            });
-        }, '"FINISHED_AUCTION_NON_CANCELLABLE"');
-    });
 
     it('Cancel an auction with an existing bid should fail', async () => {
         await expectToThrow(async () => {
@@ -3593,6 +3641,7 @@ describe('Cancel auction tests', async () => {
                 argJsonMichelson: mkBid(
                     nft.address,
                     token_id_0.toString(),
+                    alice.pkh,
                     10000,
                     bob.pkh,
                     [],
@@ -3601,7 +3650,7 @@ describe('Cancel auction tests', async () => {
                 as: bob.pkh,
             });
             await auction.cancel_auction({
-                argMichelson: `(Pair "${nft.address}" ${token_id_0})`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`,
                 as: alice.pkh,
             });
         }, '"AUCTION_WITH_BID_NON_CANCELLABLE"');
@@ -3634,20 +3683,20 @@ describe('Cancel auction tests', async () => {
         const storage = await auction_storage.getStorage();
         var auction_record = await getValueFromBigMap(
             parseInt(storage.auctions),
-            exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-            exprMichelineToJson(`(pair address nat)'`)
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`),
+            exprMichelineToJson(`(pair address (pair nat address))`)
         );
         assert(auction_record != null);
 
         await auction.cancel_auction({
-            argMichelson: `(Pair "${nft.address}" ${token_id_1})`,
+            argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`,
             as: alice.pkh,
         });
 
         var post_tx_auction = await getValueFromBigMap(
             parseInt(storage.auctions),
-            exprMichelineToJson(`(Pair "${nft.address}" ${token_id_1})`),
-            exprMichelineToJson(`(pair address nat)'`)
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} "${alice.pkh}"))`),
+            exprMichelineToJson(`(pair address (pair nat address))`)
         );
         assert(post_tx_auction == null);
     });
