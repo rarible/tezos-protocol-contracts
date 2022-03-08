@@ -17,7 +17,7 @@ constant AUCTION_BID_ALREADY_EXISTS: string = "AUCTION_BID_ALREADY_EXISTS"
 constant AUCTION_BID_AMOUNT_MISMATCH: string = "AUCTION_BID_AMOUNT_MISMATCH"
 constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
 constant AUCTION_WITH_BID_NON_CANCELLABLE: string = "AUCTION_WITH_BID_NON_CANCELLABLE"
-constant FINISHED_AUCTION_NON_CANCELLABLE: string = "FINISHED_AUCTION_NON_CANCELLABLE"
+constant FINISHED_AUCTION_WITH_BID_NON_CANCELLABLE: string = "FINISHED_AUCTION_WITH_BID_NON_CANCELLABLE"
 constant ONLY_SELLER_CAN_CANCEL_AUCTION: string = "ONLY_SELLER_CAN_CANCEL_AUCTION"
 constant CANT_UNPACK_FA2_BUY_ASSET: string = "CANT_UNPACK_FA2_BUY_ASSET"
 constant CANT_UNPACK_FA12_BUY_ASSET: string = "CANT_UNPACK_FA12_BUY_ASSET"
@@ -195,7 +195,8 @@ entry start_auction(
         dorequire(
           auction_exists(
             sa_auction.auction_args_sell_asset_contract,
-            sa_auction.auction_args_sell_asset_token_id
+            sa_auction.auction_args_sell_asset_token_id,
+            sa_auction.auction_args_seller
             ) = false, AUCTION_ALREADY_EXISTS);
 
         var processed_asset = verify_and_unpack_asset(sa_auction.auction_args_buy_asset_type, sa_auction.auction_args_buy_asset);
@@ -244,13 +245,13 @@ entry start_auction(
     }
 }
 
-entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
+entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: address, pb_bid: bid){
     require {
         r_pb0: pb_bid.bid_amount > 0;
         r_pb1: pb_bid.bid_bidder = caller;
     }
     effect {
-      var auction = require_some(get_auction_record(pb_asset_contract, pb_asset_id), MISSING_AUCTION);
+      var auction = require_some(get_auction_record(pb_asset_contract, pb_asset_id, pb_asset_seller), MISSING_AUCTION);
       var is_xtz = (auction.auction_buy_asset_type = XTZ);
       var previous_bid = auction.auction_last_bid;
       var is_buyout = auction.auction_buy_out_price > 0 and pb_bid.bid_amount >= auction.auction_buy_out_price;
@@ -309,7 +310,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
          )
         );
 
-        transfer 0tz to auction_storage call remove_auction<address * nat>((auction.auction_sell_asset_contract, auction.auction_sell_asset_token_id));
+        transfer 0tz to auction_storage call remove_auction<address * nat * address>((auction.auction_sell_asset_contract, auction.auction_sell_asset_token_id, auction.auction_seller));
       ) else (
         if(is_xtz = false) then (
           transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([
@@ -335,9 +336,9 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_bid: bid){
 }
 
 
-entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
+entry finish_auction(fa_asset_contract: address, fa_asset_id: nat, fa_asset_seller: address){
     effect {
-      var auction = require_some(get_auction_record(fa_asset_contract, fa_asset_id), MISSING_AUCTION);
+      var auction = require_some(get_auction_record(fa_asset_contract, fa_asset_id, fa_asset_seller), MISSING_AUCTION);
 
       dorequire(auction.auction_start_time < auction.auction_end_time < now, AUCTION_NOT_FINISHABLE);
 
@@ -362,17 +363,17 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat){
         )
       );
 
-      transfer 0tz to auction_storage call remove_auction<address * nat>((fa_asset_contract, fa_asset_id))
+      transfer 0tz to auction_storage call remove_auction<address * nat * address>((fa_asset_contract, fa_asset_id, auction.auction_seller))
     }
 }
 
-entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat){
+entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat, ca_asset_seller: address){
     effect {
-      var auction = require_some(get_auction_record(ca_asset_contract, ca_asset_id), MISSING_AUCTION);
+      var auction = require_some(get_auction_record(ca_asset_contract, ca_asset_id, ca_asset_seller), MISSING_AUCTION);
 
       dorequire(isnone(auction.auction_last_bid), AUCTION_WITH_BID_NON_CANCELLABLE);
       dorequire(auction.auction_seller = caller, ONLY_SELLER_CAN_CANCEL_AUCTION);
-      dorequire(auction.auction_end_time > now, FINISHED_AUCTION_NON_CANCELLABLE);
+      dorequire(auction.auction_end_time > now and isnone(auction.auction_last_bid), FINISHED_AUCTION_WITH_BID_NON_CANCELLABLE);
 
       transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
         ptp_asset_type = FA2;
@@ -384,17 +385,18 @@ entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat){
         ptp_origin = auction_storage;
         ptp_destination = auction.auction_seller
       }]);
-      transfer 0tz to auction_storage call remove_auction<address * nat>((ca_asset_contract, ca_asset_id))
+      transfer 0tz to auction_storage call remove_auction<address * nat * address>((ca_asset_contract, ca_asset_id, auction.auction_seller))
     }
 }
 
-function auction_exists(ae_asset_contract: address, ae_asset_id: nat) : bool {
+function auction_exists(ae_asset_contract: address, ae_asset_id: nat, ae_asset_seller: address) : bool {
     return match callview<bool>(
         auction_storage,
         "auction_exists",
         (
             ae_asset_contract,
-            ae_asset_id
+            ae_asset_id,
+            ae_asset_seller
         )
     )
     with
@@ -403,13 +405,14 @@ function auction_exists(ae_asset_contract: address, ae_asset_id: nat) : bool {
     end
 }
 
-function get_auction_record(gar_asset_contract: address, gar_asset_id: nat) : option<auction_record> {
+function get_auction_record(gar_asset_contract: address, gar_asset_id: nat, gar_asset_seller: address) : option<auction_record> {
     return opt_get(callview<option<auction_record>>(
         auction_storage,
         "get_auction",
         (
             gar_asset_contract,
-            gar_asset_id
+            gar_asset_id,
+            gar_asset_seller
         )
     ))
 }
