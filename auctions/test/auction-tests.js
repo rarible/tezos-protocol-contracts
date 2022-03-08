@@ -3503,7 +3503,7 @@ describe('Finish auction tests', async () => {
         it('Finish a non existing auction should fail', async () => {
             await expectToThrow(async () => {
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" 99)`,
+                    argMichelson: `(Pair "${nft.address}" (Pair 99 "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
             }, '"MISSING_AUCTION"');
@@ -3537,7 +3537,7 @@ describe('Finish auction tests', async () => {
                 });
 
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3551,7 +3551,7 @@ describe('Finish auction tests', async () => {
                 const token_id = 9;
 
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3580,7 +3580,7 @@ describe('Finish auction tests', async () => {
                     as: bob.pkh,
                 });
                 await auction.finish_auction({
-                    argMichelson: `(Pair "${nft.address}" ${token_id})`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
             }, '"AUCTION_NOT_FINISHABLE"');
@@ -3592,7 +3592,7 @@ describe('Cancel auction tests', async () => {
     it('Cancel a non existing auction should fail', async () => {
         await expectToThrow(async () => {
             await auction.cancel_auction({
-                argMichelson: `(Pair "${nft.address}" 999999)`,
+                argMichelson: `(Pair "${nft.address}" (Pair 999999 "${alice.pkh}"))`,
                 as: bob.pkh,
             });
         }, '"MISSING_AUCTION"');
@@ -3631,18 +3631,6 @@ describe('Cancel auction tests', async () => {
         }, '"ONLY_SELLER_CAN_CANCEL_AUCTION"');
     });
 
-    it('Cancel an already finished auction should fail', async () => {
-        await expectToThrow(async () => {
-
-            if (isMockup()) {
-                await setMockupNow(start_date + 100000000);
-            }
-            await auction.cancel_auction({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} "${alice.pkh}"))`,
-                as: alice.pkh,
-            });
-        }, '"FINISHED_AUCTION_NON_CANCELLABLE"');
-    });
 
     it('Cancel an auction with an existing bid should fail', async () => {
         await expectToThrow(async () => {

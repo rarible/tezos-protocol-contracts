@@ -17,7 +17,7 @@ constant AUCTION_BID_ALREADY_EXISTS: string = "AUCTION_BID_ALREADY_EXISTS"
 constant AUCTION_BID_AMOUNT_MISMATCH: string = "AUCTION_BID_AMOUNT_MISMATCH"
 constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
 constant AUCTION_WITH_BID_NON_CANCELLABLE: string = "AUCTION_WITH_BID_NON_CANCELLABLE"
-constant FINISHED_AUCTION_WITH_BID_NON_CANCELLABLE: string = "FINISHED_AUCTION_WITH_BID_NON_CANCELLABLE"
+constant AUCTION_NON_CANCELLABLE: string = "AUCTION_NON_CANCELLABLE"
 constant ONLY_SELLER_CAN_CANCEL_AUCTION: string = "ONLY_SELLER_CAN_CANCEL_AUCTION"
 constant CANT_UNPACK_FA2_BUY_ASSET: string = "CANT_UNPACK_FA2_BUY_ASSET"
 constant CANT_UNPACK_FA12_BUY_ASSET: string = "CANT_UNPACK_FA12_BUY_ASSET"
@@ -373,7 +373,6 @@ entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat, ca_asset_sell
 
       dorequire(isnone(auction.auction_last_bid), AUCTION_WITH_BID_NON_CANCELLABLE);
       dorequire(auction.auction_seller = caller, ONLY_SELLER_CAN_CANCEL_AUCTION);
-      dorequire(auction.auction_end_time > now and isnone(auction.auction_last_bid), FINISHED_AUCTION_WITH_BID_NON_CANCELLABLE);
 
       transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
         ptp_asset_type = FA2;
