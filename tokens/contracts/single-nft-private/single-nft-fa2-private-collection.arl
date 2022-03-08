@@ -531,9 +531,9 @@ entry mint (itokenid : nat, iowner : address, itokenMetadata: map<string, bytes>
   called by owner or minters
   require { r11: is_not_paused() }
   effect {
-    token_metadata.addupdate(itokenid, {token_id = itokenid; token_info = itokenMetadata});
-    royalties.addupdate(itokenid, { rvalue = iroyalties });
     ledger.add({ ltoken = itokenid; lowner = iowner});
+    token_metadata.add({ftoken_metadata = itokenid; token_id = itokenid; token_info = itokenMetadata});
+    royalties.add({ itokenid; iroyalties });
   }
 }
 
