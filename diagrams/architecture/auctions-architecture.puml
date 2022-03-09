@@ -1,0 +1,47 @@
+@startuml
+class Transfer_Manager {
+  {method} manage_transfers
+  {method} process_transfers
+}
+
+class Royalties_Provider {
+  {field} royalties
+  {method} get_royalties
+  {method} set_royalties
+}
+
+class Auctions {
+  {field} max_duration
+  {field} extension_duration
+  {field} protocol_fee
+
+  {method} start_auction
+  {method} put_bid
+  {method} finish_auction
+  {method} cancel_auction
+}
+
+class Auctions_Storage {
+  {field} auction_contract
+  {field} transfer_manager
+  {field} auctions
+
+  {method} set_auction
+  {method} update_auction
+  {method} remove_auction
+  {method} process_transfers
+  {view} auction_exists
+  {view} get_auction
+
+}
+
+Auctions --> Auctions_Storage : set_auction
+Auctions --> Auctions_Storage : remove_auction
+Auctions --> Auctions_Storage : process_transfers
+Auctions --> Transfer_Manager : process_transfers
+Auctions --> Transfer_Manager : manage_transfers
+
+Transfer_Manager --> Auctions_Storage: process_transfers
+Transfer_Manager --> Royalties_Provider: get_royalties
+
+@enduml
