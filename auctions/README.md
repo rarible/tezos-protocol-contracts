@@ -38,6 +38,8 @@ You can finally run the tests:
 ```
 ### Deployment
 To deploy the Auction smart contracts, please refer to the [scripts](../scripts/README.md) folder.
+* Testnet deployed version:
+  * https://better-call.dev/hangzhou2net/KT1AzMzwUgc2Kf3XsjHMF7iHxXsmbUvUez7J/operations
 #### Select network
 
 To select the network Mockup/Tesnet/Mainnet, you can use the following command:
