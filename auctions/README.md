@@ -3,8 +3,10 @@
 ## Features
 * Start timed NFT (FA2) auctions
   * Only one auction per user per NFT at the same time
-* Place bids with XTZ, FA12, FA2 fungible tokens
+* Place bids with XTZ, FA12, FA2 fungible tokens (with buyout possibility)
+  * Bids possible in XTZ, FA2, or FA12 fungible tokens
 * Process auction payment with split royalties, and custom fee policies
+* Cancel auctions
 
 ## Architecture
 ![auction-architecture](http://plantuml.com/plantuml/png/dPDDJWCn38NtSugvG2_G1Ie7G4B0FZA9PnefFvNjbAAgTwUb7N18f4fi_Jt7xyNoXWL8IWo33S0ylX4adf3C4oIOaSRZC8x7YBBDxZJ6xwAHcuWrsr6soApWQRWz-f8_8OX7Di-KzzujpquUmxcJ5goVcr5C5x02QiPZiU9pukhb20VZ2i65g38U11EVQmsyvf1iSp0Jub0D5Y0nS9rJ9IzYthtJfSadpzkUs4Ao61RI-ZUlaWbch7BSrCRc90HM599bOTVTKDl5TGhiPYWx1u8zGXZplalQZP_XtkF7hs4yU1PLdzNqI_QVhQrM3-qNhBNRkrfjzBwyTLzrD8VmhuxcNeP6r7FN6TLlR0zh_UTmXWqcLsBu0W00)
