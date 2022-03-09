@@ -33,10 +33,17 @@ let transfer_manager;
 let bids;
 let royalties;
 let nft;
+let nft_1;
+let nft_2;
+let nft_3;
 let fa12_ft_0;
 let fa12_ft_1;
 let fa12_ft_2;
+let fa12_ft_3;
+let fa12_ft_4;
+let fa12_ft_5;
 let fa2_ft;
+let fa2_ft_floor;
 
 const initial_fa2_ft_amount = 100000000;
 const initial_fa12_ft_amount = 100000000;
@@ -109,6 +116,48 @@ describe('Contract deployments', async () => {
         );
     });
 
+    it('Fungible token 3 (FA1.2) contract deployment should succeed', async () => {
+        [fa12_ft_3, _] = await deploy(
+            '../test-contracts/test-fa12-ft.arl',
+            {
+                parameters: {
+                    initialholder: alice.pkh,
+                    totalsupply: initial_fa12_ft_amount
+                },
+                as: alice.pkh,
+                named: "fa12_ft_3"
+            }
+        );
+    });
+
+    it('Fungible token 4 (FA1.2) contract deployment should succeed', async () => {
+        [fa12_ft_4, _] = await deploy(
+            '../test-contracts/test-fa12-ft.arl',
+            {
+                parameters: {
+                    initialholder: alice.pkh,
+                    totalsupply: initial_fa12_ft_amount
+                },
+                as: alice.pkh,
+                named: "fa12_ft_4"
+            }
+        );
+    });
+
+    it('Fungible token 5 (FA1.2) contract deployment should succeed', async () => {
+        [fa12_ft_5, _] = await deploy(
+            '../test-contracts/test-fa12-ft.arl',
+            {
+                parameters: {
+                    initialholder: alice.pkh,
+                    totalsupply: initial_fa12_ft_amount
+                },
+                as: alice.pkh,
+                named: "fa12_ft_5"
+            }
+        );
+    });
+
     it('Fungible token (FA2) contract deployment should succeed', async () => {
         [fa2_ft, _] = await deploy(
             '../test-contracts/test-fa2-ft.arl',
@@ -117,6 +166,20 @@ describe('Contract deployments', async () => {
                     owner: alice.pkh
                 },
                 as: alice.pkh,
+                named: "fa2_ft"
+            }
+        );
+    });
+
+    it('Fungible token (FA2 Floor bids) contract deployment should succeed', async () => {
+        [fa2_ft_floor, _] = await deploy(
+            '../test-contracts/test-fa2-ft.arl',
+            {
+                parameters: {
+                    owner: alice.pkh
+                },
+                as: alice.pkh,
+                named: "fa2_ft_floor"
             }
         );
     });
@@ -129,6 +192,46 @@ describe('Contract deployments', async () => {
                     owner: alice.pkh
                 },
                 as: alice.pkh,
+                named: "nft"
+            }
+        );
+    });
+
+    it('Non Fungible token 0 (FA2) contract deployment should succeed', async () => {
+        [nft_1, _] = await deploy(
+            '../test-contracts/test-nft.arl',
+            {
+                parameters: {
+                    owner: alice.pkh
+                },
+                as: alice.pkh,
+                named: "nft_0"
+            }
+        );
+    });
+
+    it('Non Fungible token 1 (FA2) contract deployment should succeed', async () => {
+        [nft_2, _] = await deploy(
+            '../test-contracts/test-nft.arl',
+            {
+                parameters: {
+                    owner: alice.pkh
+                },
+                as: alice.pkh,
+                named: "nft_1"
+            }
+        );
+    });
+
+    it('Non Fungible token (FA2) contract deployment should succeed', async () => {
+        [nft_3, _] = await deploy(
+            '../test-contracts/test-nft.arl',
+            {
+                parameters: {
+                    owner: alice.pkh
+                },
+                as: alice.pkh,
+                named: "nft_2"
             }
         );
     });
@@ -141,6 +244,7 @@ describe('Contract deployments', async () => {
                     owner: alice.pkh
                 },
                 as: alice.pkh,
+                named: "royalties"
             }
         );
     });
@@ -153,6 +257,7 @@ describe('Contract deployments', async () => {
                     owner: alice.pkh
                 },
                 as: alice.pkh,
+                named: "bids_storage"
             }
         );
     });
@@ -167,6 +272,7 @@ describe('Contract deployments', async () => {
                     default_fee_receiver: carl.pkh,
                 },
                 as: alice.pkh,
+                named: "transfer_manager"
             }
         );
     });
@@ -182,6 +288,7 @@ describe('Contract deployments', async () => {
                     bids_storage: royalties.address,
                 },
                 as: alice.pkh,
+                named: "bids"
             }
         );
     });
@@ -449,6 +556,69 @@ describe('Tokens setup', async () => {
                 },
                 as: bob.pkh,
             });
+            await fa12_ft_3.approve({
+                arg: {
+                    spender: alice.pkh,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_3.approve({
+                arg: {
+                    spender: transfer_manager.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_3.approve({
+                arg: {
+                    spender: transfer_manager.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: bob.pkh,
+            });
+            await fa12_ft_4.approve({
+                arg: {
+                    spender: alice.pkh,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_4.approve({
+                arg: {
+                    spender: transfer_manager.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_4.approve({
+                arg: {
+                    spender: transfer_manager.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: bob.pkh,
+            });
+            await fa12_ft_5.approve({
+                arg: {
+                    spender: alice.pkh,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_5.approve({
+                arg: {
+                    spender: transfer_manager.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_5.approve({
+                arg: {
+                    spender: transfer_manager.address,
+                    value: initial_fa12_ft_amount,
+                },
+                as: bob.pkh,
+            });
             await fa12_ft_0.transfer({
                 arg: {
                     from: alice.pkh,
@@ -467,6 +637,31 @@ describe('Tokens setup', async () => {
             });
 
             await fa12_ft_2.transfer({
+                arg: {
+                    from: alice.pkh,
+                    to: bob.pkh,
+                    value: initial_fa12_ft_amount / 2,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_3.transfer({
+                arg: {
+                    from: alice.pkh,
+                    to: bob.pkh,
+                    value: initial_fa12_ft_amount / 2,
+                },
+                as: alice.pkh,
+            });
+            await fa12_ft_4.transfer({
+                arg: {
+                    from: alice.pkh,
+                    to: bob.pkh,
+                    value: initial_fa12_ft_amount / 2,
+                },
+                as: alice.pkh,
+            });
+
+            await fa12_ft_5.transfer({
                 arg: {
                     from: alice.pkh,
                     to: bob.pkh,
@@ -639,6 +834,168 @@ describe('Tokens setup', async () => {
                 },
                 as: alice.pkh,
             });
+
+
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_0,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_0, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_1,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_1, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_2,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_2, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_3,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_3, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_4,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_4, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_5,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_5, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_6,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_6, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_7,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_7, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_8,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_8, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.mint({
+                arg: {
+                    itokenid: token_id_9,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_fa2_ft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await fa2_ft_floor.transfer({
+                arg: {
+                    txs: [[alice.pkh, [[bob.pkh, token_id_9, initial_fa2_ft_amount / 2]]]],
+                },
+                as: alice.pkh,
+            });
         });
     });
 
@@ -759,128 +1116,377 @@ describe('Tokens setup', async () => {
                 },
                 as: alice.pkh,
             });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_0,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_1,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_2,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_3,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_4,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_5,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_6,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_7,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_8,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_1.mint({
+                arg: {
+                    itokenid: token_id_9,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_0,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_1,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_2,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_3,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_4,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_5,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_6,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_7,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_8,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_2.mint({
+                arg: {
+                    itokenid: token_id_9,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_0,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_1,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_2,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_3,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_4,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_5,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_6,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_7,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_8,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [
+                        [carl.pkh, payout_value],
+                        [daniel.pkh, payout_value]
+                    ],
+                },
+                as: alice.pkh,
+            });
+            await nft_3.mint({
+                arg: {
+                    itokenid: token_id_9,
+                    iowner: alice.pkh,
+                    itokenMetadata: [{ key: '', value: '0x' }],
+                    iamount: initial_nft_amount,
+                    iroyalties: [],
+                },
+                as: alice.pkh,
+            });
         });
     });
 
     it('Add transfer manager contract as operator for NFT and FT', async () => {
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
+        await nft.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: alice.pkh,
         });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
+        await nft_1.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: alice.pkh,
         });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
+        await nft_2.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: alice.pkh,
         });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
+        await nft_3.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: alice.pkh,
         });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
+        await fa2_ft.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: bob.pkh,
         });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
+        await fa2_ft_floor.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: bob.pkh,
         });
     });
@@ -1668,6 +2274,783 @@ describe('Put bid tests', async () => {
     });
 });
 
+describe('Put floor bid tests', async () => {
+    describe('Put floor bids in Fungible FA2', async () => {
+        it('Put floor bid with Fungible FA2 should succeed (no royalties, no bid payouts, no bid origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bob.pkh);
+            const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            const post_tx_bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bob.pkh);
+            const post_tx_custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids_storage.address);
+
+            const expected_result = JSON.parse(`
+                {
+                    "prim": "Pair",
+                    "args": [
+                        [],
+                        [], {
+                            "int": "${bid_amount}"
+                        }, {
+                            "int": "${qty}"
+                        }, {
+                            "prim": "None"
+                        }, {
+                            "prim": "None"
+                        }
+                    ]
+                }
+            `);
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+        });
+
+        it('Put floor bid with Fungible FA2 should succeed (single royalties, single payouts, single origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_1.toString());
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bob.pkh);
+            const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+
+            const post_tx_bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bob.pkh);
+            const post_tx_custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids_storage.address);
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+        });
+
+        it('Put floor bid with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_2.toString());
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bob.pkh);
+            const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_3.address}"
+                    (Pair "${bob.pkh}"
+                        (Pair ${parseInt(FA2)}
+                            (Pair 0x${bid_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${bid_amount}
+                                            (Pair ${qty}
+                                                (Pair None None)
+                                            ))))))))`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+
+            const post_tx_bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bob.pkh);
+            const post_tx_custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bids_storage.address);
+
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+        });
+    });
+
+    describe('Put floor bid with bids in XTZ', async () => {
+        it('Put floor bid with XTZ should succeed (no royalties, no payouts, no origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkXTZAsset();
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const custody_ft_balance = await getBalance(bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}"
+                (Pair "${bob.pkh}"
+                    (Pair ${parseInt(XTZ)}
+                        (Pair 0x${bid_asset}
+                            (Pair {}
+                                (Pair {}
+                                    (Pair ${bid_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        ))))))))`,
+                amount: `${total_bid_amount}utz`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+
+            const post_tx_bob_ft_balance = await getBalance(bob.pkh);
+            const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                   [
+
+                   ],
+                   [
+
+                   ],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+        });
+
+        it('Put floor bid with XTZ should succeed (single royalties, single payouts, single origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkXTZAsset();
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
+
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const custody_ft_balance = await getBalance(bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_2.address}"
+                (Pair "${bob.pkh}"
+                    (Pair ${parseInt(XTZ)}
+                        (Pair 0x${bid_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${bid_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        )))))))))`,
+                amount: `${total_bid_amount}utz`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+
+            const post_tx_bob_ft_balance = await getBalance(bob.pkh);
+            const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+        });
+
+        it('Put floor bid with XTZ should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkXTZAsset();
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
+
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const custody_ft_balance = await getBalance(bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_3.address}"
+                (Pair "${bob.pkh}"
+                    (Pair ${parseInt(XTZ)}
+                        (Pair 0x${bid_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${bid_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        ))))))))`,
+                amount: `${total_bid_amount}utz`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+
+            const post_tx_bob_ft_balance = await getBalance(bob.pkh);
+            const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+        });
+    });
+
+    describe('Put floor bid with bids in FA12', async () => {
+        it('Put floor bid with FA12 should succeed (no royalties, no bid payouts, no bid origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkFA12Asset(fa12_ft_3.address);
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_3, bob.pkh);
+            const custody_ft_balance = await getFA12Balance(fa12_ft_3, bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+
+            const post_tx_bob_ft_balance = await getFA12Balance(fa12_ft_3, bob.pkh);
+            const post_tx_custody_ft_balance = await getFA12Balance(fa12_ft_3, bids_storage.address);
+
+            const expected_result = JSON.parse(`
+                {
+                    "prim": "Pair",
+                    "args": [
+                        [],
+                        [], {
+                            "int": "${bid_amount}"
+                        }, {
+                            "int": "${qty}"
+                        }, {
+                            "prim": "None"
+                        }, {
+                            "prim": "None"
+                        }
+                    ]
+                }
+            `);
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+        });
+
+        it('Put floor bid with FA12 should succeed (single royalties, single payouts, single origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkFA12Asset(fa12_ft_4.address);
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_4, bob.pkh);
+            const custody_ft_balance = await getFA12Balance(fa12_ft_4, bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+
+            const post_tx_bob_ft_balance = await getFA12Balance(fa12_ft_4, bob.pkh);
+            const post_tx_custody_ft_balance = await getFA12Balance(fa12_ft_4, bids_storage.address);
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+        });
+
+        it('Put floor bid with FA12 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
+            const storage = await bids_storage.getStorage();
+            const bid_asset = mkFA12Asset(fa12_ft_5.address);
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+            assert(bid == null);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_5, bob.pkh);
+            const custody_ft_balance = await getFA12Balance(fa12_ft_5, bids_storage.address);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_3.address}"
+                    (Pair "${bob.pkh}"
+                        (Pair ${parseInt(FA12)}
+                            (Pair 0x${bid_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${bid_amount}
+                                            (Pair ${qty}
+                                                (Pair None None)
+                                            ))))))))`,
+                as: bob.pkh,
+            });
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+
+            const post_tx_bob_ft_balance = await getFA12Balance(fa12_ft_5, bob.pkh);
+            const post_tx_custody_ft_balance = await getFA12Balance(fa12_ft_5, bids_storage.address);
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${bid_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+        });
+    });
+
+    describe('Common args test', async () => {
+
+        it('Put floor bid for another user should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_pfb1")');
+        });
+
+        it('Put floor bid with wrong buy asset payload (FA2) should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    as: bob.pkh,
+                });
+            }, '"CANT_UNPACK_FA2_ASSET"');
+        });
+
+        it('Put floor bid with wrong buy asset payload (FA12) should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    as: bob.pkh,
+                });
+            }, '"CANT_UNPACK_FA12_ASSET"');
+        });
+
+        it('Put floor bid with wrong buy asset payload (XTZ) should fail', async () => {
+            await expectToThrow(async () => {
+                    const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                    await bids.put_floor_bid({
+                        argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                        as: bob.pkh,
+                        amount: `${bid_amount}utz`,
+                    });
+            }, '"WRONG_XTZ_PAYLOAD"');
+        });
+
+        it('Put floor bid with amount = 0 duration should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                await bids.put_floor_bid({
+                        argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair 0 (Pair None None)))))))))`,
+                        as: bob.pkh,
+                    });
+            }, '(Pair "InvalidCondition" "r_pfb0")');
+        });
+
+        it('Put floor bid with wrong amount of XTZ should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                    as: bob.pkh,
+                });
+            }, '"BID_AMOUNT_MISMATCH"');
+        });
+
+        it('Put floor bid as non owner of the asset (FA2) should fail', async () => {
+            try {
+                await expectToThrow(async () => {
+                    const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
+                    await bids.put_floor_bid({
+                        argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                        as: carl.pkh,
+                    });
+                }, '(Pair "AssetNotFound" "ledger")');
+            } catch (error) {
+                assert(error.toString().includes("NO_ENTRY_FOR_USER"))
+            }
+        });
+
+        it('Put floor bid as non owner of the asset (FA12) should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                    as: carl.pkh,
+                });
+            }, '(Pair "AssetNotFound" "ledger")');
+        });
+
+        it('Put floor bid with bid that already exists should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                const total_sale_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                    as: bob.pkh,
+                    amount: `${total_sale_amount}utz`
+                });
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                    as: bob.pkh,
+                    amount: `${total_sale_amount}utz`
+                });
+            }, '(Pair "InvalidCondition" "r_pfb2")');
+        });
+    });
+});
+
 describe('Accept bid tests', async () => {
     describe('Accept FA2 bid tests', async () => {
 
@@ -2316,6 +3699,654 @@ describe('Accept bid tests', async () => {
     });
 });
 
+describe('Accept floor bid tests', async () => {
+    describe('Accept FA2 floor bid tests', async () => {
+
+        it('Accept FA2 floor bid (no royalties, no origin fees, no payouts,) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
+
+            const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids_storage.address);
+            const bids_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids.address);
+            const alice_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, alice.pkh);
+            const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bob.pkh);
+            const carl_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, carl.pkh);
+            const daniel_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_1, token_id_0, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_1, token_id_0, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_1, token_id_0, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(bids_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(carl_ft_balance == 0);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 0);
+            assert(alice_nft_balance == initial_nft_amount);
+            assert(bob_nft_balance == 0);
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+
+            const post_custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids_storage.address);
+            const post_bids_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids.address);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, alice.pkh);
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bob.pkh);
+            const post_carl_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, carl.pkh);
+            const post_daniel_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_1, token_id_0, bids_storage.address);
+            const post_alice_nft_balance = await getFA2Balance(nft_1, token_id_0, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_1, token_id_0, bob.pkh);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const rest = bid_amount - protocol_fees;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_bids_ft_balance == bids_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+        });
+
+        it('Accept FA2 floor bid (single royalties, single origin fees, single payouts) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_1.toString());
+
+            const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids_storage.address);
+            const bids_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids.address);
+            const alice_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, alice.pkh);
+            const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bob.pkh);
+            const carl_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, carl.pkh);
+            const daniel_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_2, token_id_1, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_2, token_id_1, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_2, token_id_1, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(bids_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 0);
+            assert(alice_nft_balance == initial_nft_amount);
+            assert(bob_nft_balance == 0);
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_2.address}" (Pair ${token_id_1} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+            const post_custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids_storage.address);
+            const post_bids_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids.address);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, alice.pkh);
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bob.pkh);
+            const post_carl_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, carl.pkh);
+            const post_daniel_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_2, token_id_1, bids_storage.address);
+            const post_alice_nft_balance = await getFA2Balance(nft_2, token_id_1, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_2, token_id_1, bob.pkh);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const royalties = bid_amount * (payout_value / 10000);
+            const fee_value = bid_amount * (payout_value / 10000);
+            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_bids_ft_balance == bids_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+
+        });
+
+        it('Accept FA2 floor bid (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_2.toString());
+
+            const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bids_storage.address);
+            const bids_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bids.address);
+            const alice_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, alice.pkh);
+            const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bob.pkh);
+            const carl_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, carl.pkh);
+            const daniel_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_3, token_id_2, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_3, token_id_2, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_3, token_id_2, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(bids_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 0);
+            assert(alice_nft_balance == initial_nft_amount);
+            assert(bob_nft_balance == 0);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_3.address}" (Pair ${token_id_2} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+            const post_custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bids_storage.address);
+            const post_bids_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bids.address);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, alice.pkh);
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bob.pkh);
+            const post_carl_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, carl.pkh);
+            const post_daniel_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_3, token_id_2, bids_storage.address);
+            const post_alice_nft_balance = await getFA2Balance(nft_3, token_id_2, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_3, token_id_2, bob.pkh);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const royalties = bid_amount * (payout_value / 10000);
+            const fee_value = bid_amount * (payout_value / 10000);
+            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_bids_ft_balance == bids_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties);
+            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+        });
+    });
+
+    describe('Accept XTZ floor Bid tests', async () => {
+
+        it('Accept XTZ floor Bid (no royalties, no origin fees, no payouts,) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkXTZAsset();
+
+            const custody_ft_balance = await getBalance(bids_storage.address);
+            const bids_ft_balance = await getBalance(bids.address);
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const carl_ft_balance = await getBalance(carl.pkh);
+            const daniel_ft_balance = await getBalance(daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_1, token_id_3, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_1, token_id_3, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_1, token_id_3, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_3} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+            const post_custody_ft_balance = await getBalance(bids_storage.address);
+            const post_bids_ft_balance = await getBalance(bids.address);
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_carl_ft_balance = await getBalance(carl.pkh);
+            const post_daniel_ft_balance = await getBalance(daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_1, token_id_3, bids_storage.address);
+            const post_alice_nft_balance = await getFA2Balance(nft_1, token_id_3, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_1, token_id_3, bob.pkh);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const rest = bid_amount - protocol_fees;
+
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+        });
+
+        it('Accept XTZ floor Bid (single royalties, single origin fees, single payouts) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkXTZAsset();
+
+            const custody_ft_balance = await getBalance(bids_storage.address);
+            const bids_ft_balance = await getBalance(bids.address);
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const carl_ft_balance = await getBalance(carl.pkh);
+            const daniel_ft_balance = await getBalance(daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_2, token_id_4, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_2, token_id_4, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_2, token_id_4, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_2.address}" (Pair ${token_id_4} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+            const post_custody_ft_balance = await getBalance(bids_storage.address);
+            const post_bids_ft_balance = await getBalance(bids.address);
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_carl_ft_balance = await getBalance(carl.pkh);
+            const post_daniel_ft_balance = await getBalance(daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_2, token_id_4, bids_storage.address);
+            const post_alice_nft_balance = await getFA2Balance(nft_2, token_id_4, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_2, token_id_4, bob.pkh);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const royalties = bid_amount * (payout_value / 10000);
+            const fee_value = bid_amount * (payout_value / 10000);
+            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value)));
+            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+        });
+
+        it('Accept XTZ floor Bid (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkXTZAsset();
+
+            const custody_ft_balance = await getBalance(bids_storage.address);
+            const bids_ft_balance = await getBalance(bids.address);
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const carl_ft_balance = await getBalance(carl.pkh);
+            const daniel_ft_balance = await getBalance(daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_3, token_id_5, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_3, token_id_5, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_3, token_id_5, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_3.address}" (Pair ${token_id_5} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+            const post_custody_ft_balance = await getBalance(bids_storage.address);
+            const post_bids_ft_balance = await getBalance(bids.address);
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_carl_ft_balance = await getBalance(carl.pkh);
+            const post_daniel_ft_balance = await getBalance(daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_3, token_id_5, bids_storage.address);
+            const post_alice_nft_balance = await getFA2Balance(nft_3, token_id_5, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_3, token_id_5, bob.pkh);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const royalties = bid_amount * (payout_value / 10000);
+            const fee_value = bid_amount * (payout_value / 10000);
+            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2 + royalties)));
+            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+        });
+    });
+
+    describe('Accept FA12 floor Bid tests', async () => {
+
+        it('Accept FA12 floor Bid (no royalties, no origin fees, no payouts,) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkFA12Asset(fa12_ft_3.address);
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_3, bids_storage.address);
+            const bids_ft_balance = await getFA12Balance(fa12_ft_3, bids.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_3, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_3, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_3, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_3, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_1, token_id_6, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_1, token_id_6, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_1, token_id_6, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(bids_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 0);
+            assert(alice_nft_balance == initial_nft_amount);
+            assert(bob_nft_balance == 0);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_6} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_3, bids_storage.address);
+            const post_bids_ft_balance = await getFA12Balance(fa12_ft_3, bids.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_3, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_3, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_3, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_3, daniel.pkh);
+            const post_alice_nft_balance = await getFA2Balance(nft_1, token_id_6, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_1, token_id_6, bob.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_1, token_id_6, bids_storage.address);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const rest = bid_amount - protocol_fees;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_bids_ft_balance == bids_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+
+        });
+
+        it('Accept FA12 floor Bid (single royalties, single origin fees, single payouts) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkFA12Asset(fa12_ft_4.address);
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_4, bids_storage.address);
+            const bids_ft_balance = await getFA12Balance(fa12_ft_4, bids.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_4, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_4, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_4, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_4, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_2, token_id_7, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_2, token_id_7, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_2, token_id_7, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(bids_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(carl_ft_balance == 0);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 0);
+            assert(alice_nft_balance == initial_nft_amount);
+            assert(bob_nft_balance == 0);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_2.address}" (Pair ${token_id_7} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_4, bids_storage.address);
+            const post_bids_ft_balance = await getFA12Balance(fa12_ft_4, bids.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_4, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_4, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_4, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_4, daniel.pkh);
+            const post_alice_nft_balance = await getFA2Balance(nft_2, token_id_7, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_2, token_id_7, bob.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_2, token_id_7, bids_storage.address);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const royalties = bid_amount * (payout_value / 10000);
+            const fee_value = bid_amount * (payout_value / 10000);
+            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_bids_ft_balance == bids_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+        });
+
+        it('Accept FA12 floor Bid (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
+            const storage = await bids_storage.getStorage();
+
+            const bid_asset = mkFA12Asset(fa12_ft_5.address);
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_5, bids_storage.address);
+            const bids_ft_balance = await getFA12Balance(fa12_ft_5, bids.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_5, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_5, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_5, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_5, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft_3, token_id_8, bids_storage.address);
+            const alice_nft_balance = await getFA2Balance(nft_3, token_id_8, alice.pkh);
+            const bob_nft_balance = await getFA2Balance(nft_3, token_id_8, bob.pkh);
+
+            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
+
+            var bid_record = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(bid_record != null);
+
+            assert(custody_ft_balance == total_bid_amount);
+            assert(bids_ft_balance == 0);
+            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
+            assert(bob_ft_balance == initial_fa2_ft_amount / 2 - total_bid_amount);
+            assert(carl_ft_balance == 0);
+            assert(daniel_ft_balance == 0);
+            assert(custody_nft_balance == 0);
+            assert(alice_nft_balance == initial_nft_amount);
+            assert(bob_nft_balance == 0);
+
+            await bids.accept_floor_bid({
+                argMichelson: `(Pair "${nft_3.address}" (Pair ${token_id_8} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                as: alice.pkh,
+            });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_5, bids_storage.address);
+            const post_bids_ft_balance = await getFA12Balance(fa12_ft_5, bids.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_5, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_5, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_5, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_5, daniel.pkh);
+            const post_alice_nft_balance = await getFA2Balance(nft_3, token_id_8, alice.pkh);
+            const post_bob_nft_balance = await getFA2Balance(nft_3, token_id_8, bob.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft_3, token_id_8, bids_storage.address);
+
+            const protocol_fees = bid_amount * (fee / 10000);
+            const royalties = bid_amount * (payout_value / 10000);
+            const fee_value = bid_amount * (payout_value / 10000);
+            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_bids_ft_balance == bids_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties);
+            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance == alice_nft_balance - 1);
+            assert(post_bob_nft_balance == bob_nft_balance + 1);
+
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_bid == null);
+        });
+
+    });
+
+    describe('Common Accept floor bid tests', async () => {
+        it('Accept a non existing floor bid should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_5.address);
+
+                await bids.accept_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair 999999 (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                    as: alice.pkh,
+                });
+            }, '"MISSING_BID"');
+        });
+
+        it('Accept someone else floor bid should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_5.address);
+
+                await bids.accept_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair 999999 (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} "${alice.pkh}")))))`,
+                    as: bob.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_afb0")');
+        });
+    });
+});
+
 describe('Cancel bid tests', async () => {
     it('Cancel a non existing bid should fail', async () => {
         await expectToThrow(async () => {
@@ -2328,7 +4359,7 @@ describe('Cancel bid tests', async () => {
         }, '"MISSING_BID"');
     });
 
-    it('Accept someone else bid should fail', async () => {
+    it('Cancel someone else bid should fail', async () => {
         await expectToThrow(async () => {
             const bid_asset = mkFA12Asset(fa12_ft_2.address);
             await bids.put_bid({
@@ -2356,6 +4387,51 @@ describe('Cancel bid tests', async () => {
             parseInt(storage.bids),
             exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`),
             exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
+        );
+        assert(post_tx_bid == null);
+    });
+});
+
+describe('Cancel floor bid tests', async () => {
+    it('Cancel a non existing floor bid should fail', async () => {
+        await expectToThrow(async () => {
+            const bid_asset = mkFA12Asset(fa12_ft_2.address);
+
+            await bids.cancel_floor_bid({
+                argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`,
+                as: bob.pkh,
+            });
+        }, '"MISSING_BID"');
+    });
+
+    it('Cancel someone else floor bid should fail', async () => {
+        await expectToThrow(async () => {
+            const bid_asset = mkFA12Asset(fa12_ft_5.address);
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                as: bob.pkh,
+            });
+            await bids.cancel_floor_bid({
+                argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`,
+                as: alice.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r_cfb0")');
+    });
+
+
+    it('Cancel a valid floor bid should succeed', async () => {
+        const bid_asset = mkFA12Asset(fa12_ft_5.address);
+
+        await bids.cancel_floor_bid({
+            argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`,
+            as: bob.pkh,
+        });
+        const storage = await bids_storage.getStorage();
+
+        var post_tx_bid = await getValueFromBigMap(
+            parseInt(storage.floor_bids),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`),
+            exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
         );
         assert(post_tx_bid == null);
     });
