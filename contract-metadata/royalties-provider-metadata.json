@@ -4,8 +4,8 @@
     "version": "1.0.0",
     "authors": [ "Florian PAUTOT <florian.pautot@gmail.com>" ],
     "license": {
-      "name": "ISC",
-      "details": "ISC License"
+      "name": "MIT",
+      "details": "MIT License"
     },
     "homepage": "https://github.com/rarible/tezos-protocol-contracts/tree/main/royalties-provider",
     "interfaces": [
