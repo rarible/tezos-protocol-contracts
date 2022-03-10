@@ -1,0 +1,38 @@
+@startuml
+class Transfer_Manager {
+    {method} manage_transfers
+    {method} process_transfers
+}
+
+class Royalties_Provider {
+    {field} royalties
+    {method} get_royalties
+    {method} set_royalties
+}
+
+class Sales {
+    {field} protocol_fee
+
+    {method} sell
+    {method} buy
+    {method} cancel_sale
+}
+
+class Sales_Storage {
+    {field} sales_contract
+    {field} transfer_manager
+    {field} sales
+
+    {method} set_sale
+    {method} remove_sale
+    {method}{view} sale_exists
+    {method}{view} get_sale
+}
+
+Sales --> Sales_Storage : set_sale
+Sales --> Sales_Storage : remove_sale
+Sales --> Transfer_Manager : manage_transfers
+
+Transfer_Manager --> Royalties_Provider: get_royalties
+
+@enduml

@@ -1,20 +1,26 @@
-# On-chain Sales contract
+# Royalties provider contract
+
+## Presentation
+The Royalties provider contract implements a standard way to provide on chain royalties for NFT trades.
+
+There are 2 ways to define royalties:
+* At mint time in the NFT contract, if it implements the get royalties view (for more information on this implementation, you can check the [Rarible token contracts](../tokens/contracts/))
+* By the admin of the contract who can set arbitrary royalties for the whole contract, or for a specific token id
+
+For the Rarible Protocol, Royalties are fetched from the royalties provider when a trade is made (if the Rarible royalties standard is implemented).
 
 ## Features
-* List an NFT for sale (fixed price)
-  * Listing possible in XTZ, FA2, or FA12 fungible tokens
-* Purchase an NFT
-  * Purchase possible in XTZ, FA2, or FA12 fungible tokens
-* Cancel an existing sale
+* Set royalties
+* Get royalties
 
 ## Architecture
-![sales-architecture](http://plantuml.com/plantuml/png/TL91RiCm3Bld5Vb0Fv33q0yC6DRT3SrHCWEADKXgjYBetnV4pLhRg8yYHSe4ZseWTfweyGIgxOT0r075lKA44QLTcdPzouJsnVsrdRQninjDS_HRsAFg0tnjRiBlV06oWEhUXEVGtwM7WBJkoax89KSqzmJI3FftEW6X5kBhOSQUoGs8JQb2b4y-pvTyu25w9AT0MDYuax70Y8MTRfZdQ0BUCiZsW5EIKkzLzrbopgQ24yzO0yiSy2S9EVmDQbh3ATJzDockm-6b-55tTtvEIMUKhAf4NTsRfYHjctLBkg81HupzMjS_)
+![royalties-architecture](http://plantuml.com/plantuml/png/TP112eCm44NtEKKke0VeehZghgKKzs7GqGQYAJDJIn7ltY22EcsppF_l9Vo21KYUNJ1L06PR4lJS8BapzD0YsT7OTCOEvHxhoNRpjPEbnllqGR52vaqycKLyYsy8uf7TbUBWwrNTU0o9fQMWb2sA-nFnDbfVkfnAfSxptEpGSV3uqkuaC3z-cMN7MNbGTRtKNFpcDLPWNwUvFm00)
 
 ## Interactions
-![sales-interactions](http://plantuml.com/plantuml/png/hPH1gzim3CVl_XJYdTw3xP0USnZT1ZtkqXp6Ba5DbHBcsCPs2ltsIsI79QbVCRI51blwwoTPCjuxZzOFlHJOU6tXI5AI1NJWU1NDFuPRi9wcXH1c3EgQpg3oy7P4IUwDOwPLmWd74O8N-Y-gNR2inPL5vLgoqACQdPRrFXhhQ5o7_3fKh5AjNpiEttSGVItkwdjtiV0NB10NgmS3eMIl_v82Htum0W1YF-3hjobL2OCvewTQ6xBejNtVLld1GIWzS263kdGdIL05AaeI47xSKkPocTbeaew0Jv49Bm8TZR7wIfzHrLbC_xaL9ALOSNXw9RZPmNjsBCSw2NmzcPQqyHObOUF-8SjIFrRCkBLkUuOImgAU7OxrQzbYYBFZlRMwB-E8lu3NN5F-49CfU9w9B4pc937XnvEKbgYsr51tVPvbzGsbxyXjY7ctBPspU4qRYbVseNYg4R-hFxn9NUOPEOdkiImAf8StESbXDNEs-iVdvGQdcLjv_aHMxSv7vqyfCOByD8dWv0Ft4rL34bgfjGtztJpsSQeDw_W9odsgECr-_0oz_0S0)
+![royalties-interactions](http://plantuml.com/plantuml/png/RP2nheCm34LtVyKL4mpl1nYUcDgf7LfsPD608a50ZXdwzmqHf8hKZNjzZh7IU6NHRPw8Urq4D-lK2DXZZbz4j0R0zdPbfoXQOUU7GCpiU3HIxAWUPNUKkNA_j95oW-Q3n_BcIQtnSInd8XfbsLOyZI8X1E0u2N__23jHnrmchoBZNgTy3R9aSdvaNFCbQen6knHBDsWLhLJjU6Znasp2dyCRVW00)
 
 ## Set up
-The Sales contracts are coded in [Archetype](https://docs.archetype-lang.org/).
+The Royalties contracts are coded in [Archetype](https://docs.archetype-lang.org/).
 To be able to run the tests, you need to install the [Completium CLI](https://completium.com/docs/cli):
 ```bash
 > npm i @completium/completium-cli -g
@@ -39,7 +45,7 @@ You can finally run the tests:
 > npm test
 ```
 ### Deployment
-To deploy the Sales smart contracts, please refer to the [scripts](../scripts/README.md) folder.
+To deploy the Royalties smart contracts, please refer to the [scripts](../scripts/README.md) folder.
 * Testnet deployed version:
   * https://better-call.dev/hangzhou2net/KT1DGVfBwtw6WDQ9mQELzUAHYC6XXat7hJB3/operations
 

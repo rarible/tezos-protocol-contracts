@@ -1,0 +1,23 @@
+@startuml
+class Transfer_Manager {
+    {method} manage_transfers
+    {method} process_transfers
+}
+
+class Royalties_Provider {
+    {field} royalties
+    {method} get_royalties
+    {method} set_royalties
+}
+
+class NFT {
+    {field} ...
+
+    {method}{view} get_royalties
+}
+
+
+Royalties_Provider --> NFT : get_royalties
+Transfer_Manager --> Royalties_Provider: get_royalties
+
+@enduml

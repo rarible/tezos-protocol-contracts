@@ -1,0 +1,56 @@
+@startuml
+class Transfer_Manager {
+    {method} manage_transfers
+    {method} process_transfers
+}
+
+class Royalties_Provider {
+    {field} royalties
+    {method} get_royalties
+    {method} set_royalties
+}
+
+class Bids {
+    {field} protocol_fee
+
+    {method} put_bid
+    {method} put_floor_bid
+    {method} accept_bid
+    {method} accept_floor_bid
+    {method} cancel_bid
+    {method} cancel_floor_bid
+}
+
+class Bids_Storage {
+    {field} bids_contract
+    {field} transfer_manager
+    {field} bids
+    {field} floor_bids
+
+    {method} set_bid
+    {method} set_floor_bid
+    {method} remove_bid
+    {method} remove_floor_bid
+    {method} process_transfers
+    {method}{view} bid_exists
+    {method}{view} floor_bid_exists
+    {method}{view} get_bid
+    {method}{view} get_floor_bid
+}
+
+Bids --> Bids_Storage : set_bid
+Bids --> Bids_Storage : set_floor_bid
+
+
+Bids --> Bids_Storage : remove_bid
+Bids --> Bids_Storage : remove_floor_bid
+
+Bids --> Bids_Storage : process_transfers
+
+Bids --> Transfer_Manager : process_transfers
+Bids --> Transfer_Manager : manage_transfers
+
+Transfer_Manager --> Bids_Storage: process_transfers
+Transfer_Manager --> Royalties_Provider: get_royalties
+
+@enduml

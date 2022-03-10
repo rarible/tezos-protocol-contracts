@@ -1,0 +1,109 @@
+@startuml
+actor Seller as seller
+actor Buyer as buyer
+actor "Previous Buyer" as previous_buyer
+
+participant "Auction" as auction
+participant "Auction Storage" as auction_storage
+participant "Transfer manager" as transfer_manager
+participant "NFT" as nft
+participant "FA2 FT" as fa2_ft
+participant "FA12 FT" as fa12_ft
+
+group Start auction
+seller -> nft: update_operator(transfer_manager)
+seller -> auction: start_auction
+auction -> auction_storage: set_auction
+auction -> transfer_manager: process_transfers
+transfer_manager -> nft: transfer(from: seller, to: auction_storage)
+end
+
+group Bid token setup
+    alt FA2 Fungible Token bid
+        buyer -> fa2_ft: update_operator(transfer_manager)
+    else FA12 Fungible Token bid
+        buyer -> fa12_ft: approve(transfer_manager)
+    end
+end
+
+group Put bid
+    alt no existing bid
+        buyer -> auction: put_bid
+        auction -> auction_storage: update_auction
+        auction -> transfer_manager: process_transfers
+        alt FA2 Fungible Token bid
+            transfer_manager -> fa2_ft: transfer(from: buyer, to: auction_storage)
+        else FA12 Fungible Token bid
+            transfer_manager -> fa12_ft: transfer(from: buyer, to: auction_storage)
+        else XTZ
+            buyer -> auction: transfer XTZ(from: buyer, to: auction)
+            auction -> auction_storage: transfer XTZ(from: auction, to: auction_storage)
+        end
+    else existing bid
+        buyer -> auction: put_bid
+        auction -> auction_storage: update_auction
+        auction -> auction_storage: process_transfers
+        alt FA2 Fungible Token bid
+            auction_storage -> fa2_ft: transfer(from: auction_storage, to: previous_buyer)
+        else FA12 Fungible Token bid
+            auction_storage -> fa12_ft: transfer(from: auction_storage, to: previous_buyer)
+        else XTZ
+            auction_storage -> previous_buyer: transfer XTZ(from: auction_storage, to: previous_buyer)
+        end
+        auction -> transfer_manager: process_transfers
+        alt FA2 Fungible Token bid
+            transfer_manager -> fa2_ft: transfer(from: buyer, to: auction_storage)
+        else FA12 Fungible Token bid
+            transfer_manager -> fa12_ft: transfer(from: buyer, to: auction_storage)
+        else XTZ
+            buyer -> auction: transfer XTZ(from: buyer, to: auction)
+            auction -> auction_storage: transfer XTZ(from: buyer, to: auction_storage)
+        end
+    else buyout bid
+        buyer -> auction: put_bid
+        auction -> auction_storage: remove_auction
+        auction -> transfer_manager: manage_transfers
+        transfer_manager -> nft: transfer(from: auction_storage, to: buyer)
+        alt FA2 Fungible Token bid
+            transfer_manager -> fa2_ft: transfer(from: buyer, to: seller)
+            transfer_manager -> fa2_ft: transfer(from: buyer, to: fee_receiver)
+            transfer_manager -> fa2_ft: transfer(from: buyer, to: royalties_receiver)
+        else FA12 Fungible Token bid
+            transfer_manager -> fa12_ft: transfer(from: buyer, to: seller)
+            transfer_manager -> fa12_ft: transfer(from: buyer, to: fee_receiver)
+            transfer_manager -> fa12_ft: transfer(from: buyer, to: royalties_receiver)
+        else XTZ
+            auction -> transfer_manager: transfer XTZ(from: auction, to: transfer_manager)
+            transfer_manager -> seller: transfer XTZ(from: transfer_manager, to: seller)
+            transfer_manager -> fee_receiver: transfer XTZ(from: transfer_manager, to: fee_receiver)
+            transfer_manager -> royalties_receiver: transfer XTZ(from: transfer_manager, to: royalties_receiver)
+        end
+    end
+end
+
+group Finish auction
+    auction -> auction_storage: remove_auction
+    auction -> transfer_manager: manage_transfers
+    transfer_manager -> nft: transfer(from: auction_storage, to: buyer)
+    alt FA2 Fungible Token bid
+        transfer_manager -> fa2_ft: transfer(from: buyer, to: seller)
+        transfer_manager -> fa2_ft: transfer(from: buyer, to: fee_receiver)
+        transfer_manager -> fa2_ft: transfer(from: buyer, to: royalties_receiver)
+    else FA12 Fungible Token bid
+        transfer_manager -> fa12_ft: transfer(from: buyer, to: seller)
+        transfer_manager -> fa12_ft: transfer(from: buyer, to: fee_receiver)
+        transfer_manager -> fa12_ft: transfer(from: buyer, to: royalties_receiver)
+    else XTZ
+        auction -> transfer_manager: transfer XTZ(from: auction, to: transfer_manager)
+        transfer_manager -> seller: transfer XTZ(from: transfer_manager, to: seller)
+        transfer_manager -> fee_receiver: transfer XTZ(from: transfer_manager, to: fee_receiver)
+        transfer_manager -> royalties_receiver: transfer XTZ(from: transfer_manager, to: royalties_receiver)
+    end
+end
+
+group Cancel auction
+    auction -> auction_storage: remove_auction
+    auction -> auction_storage: process_transfers
+    auction_storage -> nft: transfer(from: auction_storage, to: seller)
+end
+@enduml

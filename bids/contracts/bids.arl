@@ -113,7 +113,7 @@ entry put_bid(
     require {
         r_pb0: pb_bid.bid_amount > 0;
         r_pb1: pb_bidder = caller;
-        r_pb2: bid_exists(pb_asset_contract, pb_asset_token_id, pb_bidder, pb_bid_type, pb_bid_asset) = false
+        r_pb2: pb_bid.bid_asset_qty > 0;
     }
     effect {
       var current_bid = get_bid(pb_asset_contract, pb_asset_token_id, pb_bidder, pb_bid_type, pb_bid_asset);
@@ -123,33 +123,30 @@ entry put_bid(
       var total_amount = process_total_amount(pb_bid.bid_amount, protocol_fee, pb_bid.bid_origin_fees);
       var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
-        if(opt_get(current_bid).bid_amount >= pb_bid.bid_amount) then (
-          fail("BID_AMOUNT_TOO_LOW")
-        ) else (
-          all_operations.prepend({
+          var current_bid_data = opt_get(current_bid);
+          var previous_total_amount = process_total_amount(current_bid_data.bid_amount, protocol_fee, current_bid_data.bid_origin_fees);
+          transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pb_bid_type;
             ptp_asset = pb_bid_asset;
-            ptp_amount = total_amount;
+            ptp_amount = previous_total_amount;
             ptp_origin = bids_storage;
             ptp_destination = pb_bidder
-          });
-        )
+          }]);
       );
 
       if(not is_xtz) then (
-         all_operations.prepend({
+        transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pb_bid_type;
             ptp_asset = pb_bid_asset;
             ptp_amount = total_amount;
             ptp_origin = pb_bidder;
             ptp_destination = bids_storage
-        });
+        }]);
       ) else (
         dorequire(transferred = (total_amount * 1utz), BID_AMOUNT_MISMATCH);
       );
 
 
-      transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>(all_operations);
       transfer transferred to bids_storage call set_bid<address * nat * address * asset_type * bytes * bid>(
         (
           pb_asset_contract,
@@ -172,7 +169,7 @@ entry put_floor_bid(
     require {
         r_pfb0: pfb_bid.bid_amount > 0;
         r_pfb1: pfb_bidder = caller;
-        r_pfb2: floor_bid_exists(pfb_asset_contract, pfb_bidder, pfb_bid_type, pfb_bid_asset) = false
+        r_pfb2: pfb_bid.bid_asset_qty > 0;
     }
     effect {
       var current_bid = get_floor_bid(pfb_asset_contract, pfb_bidder, pfb_bid_type, pfb_bid_asset);
@@ -182,33 +179,29 @@ entry put_floor_bid(
       var total_amount = process_total_amount(pfb_bid.bid_amount, protocol_fee, pfb_bid.bid_origin_fees);
       var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
-        if(opt_get(current_bid).bid_amount >= pfb_bid.bid_amount) then (
-          fail("BID_AMOUNT_TOO_LOW")
-        ) else (
-          all_operations.prepend({
+          var current_bid_data = opt_get(current_bid);
+          var previous_total_amount = process_total_amount(current_bid_data.bid_amount, protocol_fee, current_bid_data.bid_origin_fees);
+          transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pfb_bid_type;
             ptp_asset = pfb_bid_asset;
-            ptp_amount = total_amount;
+            ptp_amount = previous_total_amount;
             ptp_origin = bids_storage;
             ptp_destination = pfb_bidder
-          });
-        )
+          }]);
       );
 
       if(not is_xtz) then (
-         all_operations.prepend({
+        transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pfb_bid_type;
             ptp_asset = pfb_bid_asset;
             ptp_amount = total_amount;
             ptp_origin = pfb_bidder;
             ptp_destination = bids_storage
-        });
+        }]);
       ) else (
         dorequire(transferred = (total_amount * 1utz), BID_AMOUNT_MISMATCH);
       );
 
-
-      transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>(all_operations);
       transfer transferred to bids_storage call set_floor_bid<address * address * asset_type * bytes * bid>(
         (
           pfb_asset_contract,

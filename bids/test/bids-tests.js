@@ -2214,17 +2214,27 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair 0 (Pair None None))))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None None))))))))))`,
                         as: bob.pkh,
                     });
             }, '(Pair "InvalidCondition" "r_pb0")');
+        });
+
+        it('Put bid with asset qty = 0 duration should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                await bids.put_bid({
+                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
+                        as: bob.pkh,
+                    });
+            }, '(Pair "InvalidCondition" "r_pb2")');
         });
 
         it('Put bid with wrong amount of XTZ should fail', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
             }, '"BID_AMOUNT_MISMATCH"');
@@ -2235,7 +2245,7 @@ describe('Put bid tests', async () => {
                 await expectToThrow(async () => {
                     const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
                     await bids.put_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
                         as: carl.pkh,
                     });
                 }, '(Pair "AssetNotFound" "ledger")');
@@ -2248,28 +2258,112 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
         });
 
-        it('Put bid with bid that already exists should fail', async () => {
-            await expectToThrow(async () => {
+        it('Put bid with bid that already exists should update it and succeed', async () => {
                 const bid_asset = mkXTZAsset();
-                const total_sale_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+                const total_bid_amount = Math.ceil(parseInt(bid_amount/10) * (1 + fee / 10000));
+                const storage = await bids_storage.getStorage();
+
+                const carl_ft_balance = await getBalance(carl.pkh);
+                const custody_ft_balance = await getBalance(bids_storage.address);
+
+                var bid = await getValueFromBigMap(
+                    parseInt(storage.bids),
+                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
+                    exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+                );
+                assert(bid == null);
 
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
-                    as: bob.pkh,
-                    amount: `${total_sale_amount}utz`
+                    argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount/10} (Pair ${qty} (Pair None None))))))))))`,
+                    as: carl.pkh,
+                    amount: `${total_bid_amount}utz`
                 });
+
+                var post_tx_bid = await getValueFromBigMap(
+                    parseInt(storage.bids),
+                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
+                    exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+                );
+
+                const post_tx_carl_ft_balance = await getBalance(carl.pkh);
+                const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+
+                const expected_result = JSON.parse(`{
+                    "prim":"Pair",
+                    "args":[
+                       [
+
+                       ],
+                       [
+
+                       ],
+                       {
+                          "int": "${bid_amount/10}"
+                       },
+                       {
+                          "int": "${qty}"
+                       },
+                       {
+                          "prim":"None"
+                       },
+                       {
+                          "prim":"None"
+                       }
+                    ]
+                 }`);
+                assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+                assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(total_bid_amount))));
+                assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+
+                const new_total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
-                    as: bob.pkh,
-                    amount: `${total_sale_amount}utz`
+                    argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
+                    as: carl.pkh,
+                    amount: `${new_total_bid_amount}utz`
                 });
-            }, '(Pair "InvalidCondition" "r_pb2")');
+
+                var new_post_tx_bid = await getValueFromBigMap(
+                    parseInt(storage.bids),
+                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
+                    exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+                );
+
+                const new_post_tx_carl_ft_balance = await getBalance(carl.pkh);
+                const new_post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+
+                const new_expected_result = JSON.parse(`{
+                    "prim":"Pair",
+                    "args":[
+                       [
+
+                       ],
+                       [
+
+                       ],
+                       {
+                          "int": "${bid_amount}"
+                       },
+                       {
+                          "int": "${qty}"
+                       },
+                       {
+                          "prim":"None"
+                       },
+                       {
+                          "prim":"None"
+                       }
+                    ]
+                 }`);
+                assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
+                assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(new_total_bid_amount))));
+                assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(new_total_bid_amount))));
         });
     });
 });
@@ -2991,17 +3085,27 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair 0 (Pair None None)))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None None)))))))))`,
                         as: bob.pkh,
                     });
             }, '(Pair "InvalidCondition" "r_pfb0")');
+        });
+
+        it('Put bid with asset qty = 0 duration should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                await bids.put_floor_bid({
+                        argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                        as: bob.pkh,
+                    });
+            }, '(Pair "InvalidCondition" "r_pfb2")');
         });
 
         it('Put floor bid with wrong amount of XTZ should fail', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
             }, '"BID_AMOUNT_MISMATCH"');
@@ -3012,7 +3116,7 @@ describe('Put floor bid tests', async () => {
                 await expectToThrow(async () => {
                     const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
                     await bids.put_floor_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
                         as: carl.pkh,
                     });
                 }, '(Pair "AssetNotFound" "ledger")');
@@ -3025,28 +3129,112 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
         });
 
-        it('Put floor bid with bid that already exists should fail', async () => {
-            await expectToThrow(async () => {
+        it('Put floor bid with bid that already exists should update it and succeed', async () => {
                 const bid_asset = mkXTZAsset();
-                const total_sale_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+                const total_bid_amount = Math.ceil(parseInt(bid_amount/10) * (1 + fee / 10000));
+                const storage = await bids_storage.getStorage();
+
+                const carl_ft_balance = await getBalance(carl.pkh);
+                const custody_ft_balance = await getBalance(bids_storage.address);
+
+                var bid = await getValueFromBigMap(
+                    parseInt(storage.floor_bids),
+                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                    exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+                );
+                assert(bid == null);
 
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
-                    as: bob.pkh,
-                    amount: `${total_sale_amount}utz`
+                    argMichelson: `(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount/10} (Pair ${qty} (Pair None None)))))))))`,
+                    as: carl.pkh,
+                    amount: `${total_bid_amount}utz`
                 });
+
+                var post_tx_bid = await getValueFromBigMap(
+                    parseInt(storage.floor_bids),
+                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                    exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+                );
+
+                const post_tx_carl_ft_balance = await getBalance(carl.pkh);
+                const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+
+                const expected_result = JSON.parse(`{
+                    "prim":"Pair",
+                    "args":[
+                       [
+
+                       ],
+                       [
+
+                       ],
+                       {
+                          "int": "${bid_amount/10}"
+                       },
+                       {
+                          "int": "${qty}"
+                       },
+                       {
+                          "prim":"None"
+                       },
+                       {
+                          "prim":"None"
+                       }
+                    ]
+                 }`);
+                assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+                assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(total_bid_amount))));
+                assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+
+                const new_total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
-                    as: bob.pkh,
-                    amount: `${total_sale_amount}utz`
+                    argMichelson: `(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    as: carl.pkh,
+                    amount: `${new_total_bid_amount}utz`
                 });
-            }, '(Pair "InvalidCondition" "r_pfb2")');
+
+                var new_post_tx_bid = await getValueFromBigMap(
+                    parseInt(storage.floor_bids),
+                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                    exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+                );
+
+                const new_post_tx_carl_ft_balance = await getBalance(carl.pkh);
+                const new_post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+
+                const new_expected_result = JSON.parse(`{
+                    "prim":"Pair",
+                    "args":[
+                       [
+
+                       ],
+                       [
+
+                       ],
+                       {
+                          "int": "${bid_amount}"
+                       },
+                       {
+                          "int": "${qty}"
+                       },
+                       {
+                          "prim":"None"
+                       },
+                       {
+                          "prim":"None"
+                       }
+                    ]
+                 }`);
+                assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
+                assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(new_total_bid_amount))));
+                assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(new_total_bid_amount))));
         });
     });
 });
