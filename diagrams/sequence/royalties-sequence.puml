@@ -1,0 +1,16 @@
+@startuml
+actor Minter as minter
+
+
+participant "Transfer manager" as transfer_manager
+participant "NFT" as nft
+participant "Royalties" as royalties
+
+group Set Royalties
+    minter -> NFT : mint(royalties)
+end
+
+group Get royalties
+    transfer_manager -> royalties: get_royalties(nft)
+    royalties -> nft : get_royalties(nft)
+@enduml
