@@ -1,0 +1,52 @@
+@startuml
+actor Seller as seller
+actor Buyer as buyer
+
+participant "Sales" as sales
+participant "Sales Storage" as sales_storage
+participant "Transfer manager" as transfer_manager
+participant "NFT" as nft
+participant "FA2 FT" as fa2_ft
+participant "FA12 FT" as fa12_ft
+
+group Sales token setup
+    seller -> nft: update_operator(transfer_manager)
+    alt FA2 Fungible Token sale
+        buyer -> fa2_ft: update_operator(transfer_manager)
+    else FA12 Fungible Token sale
+        buyer -> fa12_ft: approve(transfer_manager)
+    end
+end
+
+group Sell
+    buyer -> sales: sell
+    sales -> sales_storage: set_sale
+end
+
+group Buy
+    buyer -> sales: buy
+    sales -> sales_storage: remove_sale
+    sales -> transfer_manager: manage_transfers
+    transfer_manager -> nft: transfer(from: seller, to: buyer)
+    alt FA2 Fungible Token sale
+        transfer_manager -> fa2_ft: transfer(from: buyer, to: seller)
+        transfer_manager -> fa2_ft: transfer(from: buyer, to: fee_receiver)
+        transfer_manager -> fa2_ft: transfer(from: buyer, to: royalties_receiver)
+    else FA12 Fungible Token sale
+        transfer_manager -> fa12_ft: transfer(from: buyer, to: seller)
+        transfer_manager -> fa12_ft: transfer(from: buyer, to: fee_receiver)
+        transfer_manager -> fa12_ft: transfer(from: buyer, to: royalties_receiver)
+    else XTZ
+        buyer -> sales: transfer XTZ(from: buyer, to: sales)
+        sales -> transfer_manager: transfer XTZ(from: sales, to: transfer_manager)
+        transfer_manager -> seller: transfer XTZ(from: transfer_manager, to: seller)
+        transfer_manager -> fee_receiver: transfer XTZ(from: transfer_manager, to: fee_receiver)
+        transfer_manager -> royalties_receiver: transfer XTZ(from: transfer_manager, to: royalties_receiver)
+    end
+end
+
+group Cancel floor sales
+    seller -> sales: cancel_sale
+    sales -> sales_storage: remove_sale
+end
+@enduml
