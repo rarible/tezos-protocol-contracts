@@ -2214,7 +2214,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair 0 (Pair None None))))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None None))))))))))`,
                         as: bob.pkh,
                     });
             }, '(Pair "InvalidCondition" "r_pb0")');
@@ -2234,7 +2234,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
             }, '"BID_AMOUNT_MISMATCH"');
@@ -2245,7 +2245,7 @@ describe('Put bid tests', async () => {
                 await expectToThrow(async () => {
                     const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
                     await bids.put_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
                         as: carl.pkh,
                     });
                 }, '(Pair "AssetNotFound" "ledger")');
@@ -2258,7 +2258,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))))`,
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
@@ -3085,7 +3085,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair 0 (Pair None None)))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None None)))))))))`,
                         as: bob.pkh,
                     });
             }, '(Pair "InvalidCondition" "r_pfb0")');
@@ -3105,7 +3105,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
             }, '"BID_AMOUNT_MISMATCH"');
@@ -3116,7 +3116,7 @@ describe('Put floor bid tests', async () => {
                 await expectToThrow(async () => {
                     const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
                     await bids.put_floor_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
                         as: carl.pkh,
                     });
                 }, '(Pair "AssetNotFound" "ledger")');
@@ -3129,7 +3129,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair "${carl.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
