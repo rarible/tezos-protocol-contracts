@@ -266,9 +266,9 @@ entry manage_transfers(
         });
 
       if(ft_origin = mt_rarible_custody) then (
-        rarible_custody_operations := merge_operations(rarible_custody_operations, [ft_operations]);
+        rarible_custody_operations.concat(ft_operations);
       ) else (
-        transfer_manager_operations := merge_operations(transfer_manager_operations, [ft_operations]);
+        transfer_manager_operations.concat(ft_operations);
       );
 
       for pt_transfer in transfer_manager_operations do
