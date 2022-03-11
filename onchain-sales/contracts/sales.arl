@@ -11,13 +11,16 @@ constant MISSING_SALE: string = "MISSING_SALE"
 constant AMOUNT_MISMATCH: string = "AMOUNT_MISMATCH"
 constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
 constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
+constant CANT_UNPACK_BUNDLE: string = "CANT_UNPACK_BUNDLE"
 constant WRONG_XTZ_PAYLOAD: string = "WRONG_XTZ_PAYLOAD"
+constant MAX_BUNDLE_SIZE: string = "MAX_BUNDLE_SIZE"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
 //----------------------------------------------------------------------------
 
 variable owner_candidate : option<address> = none
+variable max_bundle_items : nat = 10
 
 entry declare_ownership(candidate : address) {
   called by owner
@@ -66,6 +69,13 @@ entry set_sales_storage(sss_contract : address) {
   }
 }
 
+entry set_max_bundle_items(smbi_number : nat) {
+  called by owner
+  effect {
+    max_bundle_items := smbi_number;
+  }
+}
+
 //----------------------------------------------------------------------------
 // Types
 //----------------------------------------------------------------------------
@@ -73,7 +83,6 @@ enum asset_type =
 | XTZ
 | FA12
 | FA2
-
 
 record FA2_asset {
   fa2_asset_contract : address;
@@ -106,6 +115,20 @@ record part {
 record fees {
   origin_fees : list<part>;
   payouts: list<part>;
+}
+
+record bundle_item {
+  bundle_item_contract : address;
+  bundle_item_id   : nat;
+  bundle_item_qty: nat;
+}
+
+record bundle_sale {
+  bundle_sale_payouts : list<part>;
+  bundle_sale_origin_fees : list<part>;
+  bundle_sale_amount : nat;
+  bundle_sale_data_type  : option<bytes>;
+  bundle_sale_data       : option<bytes>;
 }
 
 record sale {
@@ -145,6 +168,32 @@ entry sell (
     }
 }
 
+entry sell_bundle (
+  sb_bundle: bytes,
+  sb_seller: address,
+  sb_sale_type: asset_type,
+  sb_sale_asset: bytes,
+  sb_sale : bundle_sale) {
+    require {
+        r_sb0: sb_sale.bundle_sale_amount > 0;
+        r_sb2: sb_seller = caller;
+        r_sb3: bundle_sale_exists(sb_bundle, sb_seller, sb_sale_type, sb_sale_asset) = false
+    }
+    effect {
+      var bundle = verify_and_unpack_bundle(sb_bundle);
+      dorequire(length(bundle) <= max_bundle_items, (MAX_BUNDLE_SIZE, max_bundle_items));
+      transfer 0tz to sales_storage call set_bundle_sale<bytes * address * asset_type * bytes * bundle_sale>(
+        (
+          sb_bundle,
+          sb_seller,
+          sb_sale_type,
+          sb_sale_asset,
+          sb_sale
+        )
+      );
+    }
+}
+
 
 entry buy(
   b_asset_contract: address,
@@ -167,11 +216,13 @@ entry buy(
         dorequire(transferred = (process_total_amount(current_sale.sale_amount, protocol_fee, current_sale.sale_origin_fees) * 1utz), AMOUNT_MISMATCH)
       );
 
-      transfer transferred to transfer_manager call manage_transfers<nat * address * nat * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
+      transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
-          current_sale.sale_asset_qty,
-          b_asset_contract,
-          b_asset_token_id,
+          [{
+            bundle_item_contract = b_asset_contract;
+            bundle_item_id = b_asset_token_id ;
+            bundle_item_qty = current_sale.sale_asset_qty
+          }],
           b_seller,
           b_buyer,
           current_sale.sale_amount,
@@ -229,6 +280,27 @@ function sale_exists(
     end
 }
 
+function bundle_sale_exists(
+  bse_bundle: bytes,
+  bse_seller: address,
+  bse_sale_type: asset_type,
+  bse_sale_asset: bytes) : bool {
+    return match callview<bool>(
+        sales_storage,
+        "bundle_sale_exists",
+        (
+            bse_bundle,
+            bse_seller,
+            bse_sale_type,
+            bse_sale_asset
+        )
+    )
+    with
+        | some(v) -> v
+        | none -> false
+    end
+}
+
 function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option<address> * option<nat>) {
     var buy_asset_contract: option<address> = none;
     var buy_asset_token_id: option<nat> = none;
@@ -259,21 +331,49 @@ function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes
       return ((buy_asset_contract, buy_asset_token_id))
 }
 
+function verify_and_unpack_bundle(vaub_data: bytes) : (list<bundle_item>) {
+    var bundle: list<bundle_item> = [];
+    match unpack<list<bundle_item>>(vaub_data) with
+    | some(unpacked_bundle) -> (
+        bundle := unpacked_bundle;
+    )
+    | none -> fail(CANT_UNPACK_BUNDLE)
+    end;
+    return (bundle)
+}
+
 function get_sale(
   gb_asset_contract: address,
   gb_asset_token_id: nat,
-  gb_bidder: address,
-  gb_bid_type: asset_type,
-  gb_bid_asset: bytes) : option<sale> {
+  gb_seller: address,
+  gb_sale_type: asset_type,
+  gb_sale_asset: bytes) : option<sale> {
     return opt_get(callview<option<sale>>(
         sales_storage,
         "get_sale",
         (
           gb_asset_contract,
           gb_asset_token_id,
-          gb_bidder,
-          gb_bid_type,
-          gb_bid_asset
+          gb_seller,
+          gb_sale_type,
+          gb_sale_asset
+        )
+    ))
+}
+
+function get_bundle_sale(
+  gbs_bundle: bytes,
+  gbs_seller: address,
+  gbs_sale_type: asset_type,
+  gbs_sale_asset: bytes) : option<sale> {
+    return opt_get(callview<option<sale>>(
+        sales_storage,
+        "get_bundle_sale",
+        (
+          gbs_bundle,
+          gbs_seller,
+          gbs_sale_type,
+          gbs_sale_asset
         )
     ))
 }
@@ -290,44 +390,5 @@ function process_total_amount(cta_amount: nat, cta_fees: nat, cta_order_origin_f
   return total
 }
 
-entry process_transfer(pt_transfer: process_transfer_param){
-  called by selfaddress
-  effect {
-    match pt_transfer.ptp_asset_type with
-    | FA2  -> (
-      match unpack<FA2_asset>(pt_transfer.ptp_asset) with
-      | some(buyAsset) -> (
-          transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
-            [
-                (
-                    pt_transfer.ptp_origin,
-                    [
-                        {
-                            destination_address = pt_transfer.ptp_destination;
-                            token_id = buyAsset.fa2_asset_token_id;
-                            token_amount = pt_transfer.ptp_amount
-                        }
-                    ]
-                )
-            ]
-          )
-        )
-      | none -> fail(CANT_UNPACK_FA2_ASSET)
-      end;
-    )
-    | FA12 -> (
-      match unpack<FA12_asset>(pt_transfer.ptp_asset) with
-        | some(buyAsset) -> (
-            transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
-        )
-        | none -> fail(CANT_UNPACK_FA12_ASSET)
-        end
-      )
-    | XTZ -> (
-          transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
-      )
-    end;
-  }
-}
 
 entry default() {}
