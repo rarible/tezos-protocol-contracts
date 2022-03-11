@@ -113,7 +113,7 @@ asset bundle_sales identified by bundle_sales_bunde bundle_sales_asset_seller bu
   bundle_sales_asset_seller: address;
   bundle_sales_type: asset_type;
   bundle_sales_asset : bytes;
-  bundle_sales_record: sale;
+  bundle_sales_record: bundle_sale;
 }
 
 entry set_sale(
@@ -145,7 +145,7 @@ entry set_bundle_sale(
   sbs_seller: address,
   sbs_sale_type: asset_type,
   sbs_sale_asset: bytes,
-  sbs_sale: sale) {
+  sbs_sale: bundle_sale) {
   called by require_some(sales_contract, MISSING_SALES_CONTRACT)
   effect {
     bundle_sales.addupdate(
@@ -219,7 +219,7 @@ view get_bundle_sale(
   gbs_bundle: bytes,
   gbs_seller: address,
   gbs_sale_type: asset_type,
-  gbs_sale_asset: bytes) : option<sale> {
+  gbs_sale_asset: bytes) : option<bundle_sale> {
   if(bundle_sales.contains((gbs_bundle, gbs_seller, gbs_sale_type, gbs_sale_asset))) then (
     return some(bundle_sales[(gbs_bundle, gbs_seller, gbs_sale_type, gbs_sale_asset)].bundle_sales_record);
    ) else (
