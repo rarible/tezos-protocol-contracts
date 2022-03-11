@@ -61,6 +61,50 @@ exports.mkXTZAsset = () => {
     return "";
 };
 
+exports.mkBundleItem = (assetContract, assetId, assetQty) => {
+    return {
+        prim: "Pair",
+        args: [
+            {
+                string: `${assetContract}`,
+            },
+            {
+                prim: "Pair",
+                args: [
+                    {
+                        int: `${assetId}`,
+                    },
+                    {
+                        int: `${assetQty}`,
+                    },
+                ],
+            }
+        ],
+    };
+};
+
+exports.mkPackedBundle = (bundle) => {
+    return packTyped(bundle, {
+        "prim": "list",
+        "args": [{
+            "prim": "pair",
+            "args": [{
+                "prim": "address",
+                "annots": ["%bundle_item_contract"]
+            }, {
+                "prim": "pair",
+                "args": [{
+                    "prim": "nat",
+                    "annots": ["%bundle_item_id"]
+                }, {
+                    "prim": "nat",
+                    "annots": ["%bundle_item_qty"]
+                }]
+            }]
+        }]
+    });
+};
+
 // Taquito & Mockup-compliant get big map value
 const getBigMapValue = async (id, key, keytyp) => {
     let res = await getValueFromBigMap(id, key, keytyp);
