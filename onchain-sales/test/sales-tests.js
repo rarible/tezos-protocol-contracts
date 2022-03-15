@@ -1592,25 +1592,6 @@ describe('Set sales tests', async () => {
             }, '(Pair "InvalidCondition" "r_s0")');
         });
 
-        it('Set sale as non owner of the NFT should fail', async () => {
-            await expectToThrow(async () => {
-                const sale_asset = mkXTZAsset();
-                await sales.sell({
-                    argMichelson: `(Pair "${nft.address}"
-                    (Pair 10
-                        (Pair ${parseInt(XTZ)}
-                            (Pair 0x${sale_asset}
-                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
-                    as: bob.pkh,
-                });
-            }, '(Pair "InvalidCondition" "r_s2")');
-        });
-
         it('Set sale buying with a sale that already exists should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkFA12Asset(fa12_ft_1.address);
@@ -1627,7 +1608,7 @@ describe('Set sales tests', async () => {
                                             ))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s3")');
+            }, '(Pair "InvalidCondition" "r_s2")');
         });
     });
 });
@@ -3045,8 +3026,7 @@ describe('Buy tests', async () => {
                 const tokenId = 1111;
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
-                    (Pair ${tokenId}
-                        (Pair "${alice.pkh}"
+                        (Pair ${tokenId}
                             (Pair ${parseInt(XTZ)}
                                 (Pair 0x${sale_asset}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
@@ -3054,7 +3034,7 @@ describe('Buy tests', async () => {
                                             (Pair ${sale_amount}
                                                 (Pair ${qty}
                                                     (Pair None None)
-                                                )))))))))`,
+                                                ))))))))`,
                     as: alice.pkh,
                 });
                 await sales.buy({
@@ -3824,34 +3804,10 @@ describe('Cancel sale tests', async () => {
         }, '(Pair "InvalidCondition" "r_cs0")');
     });
 
-    it('Cancel someone else sale should fail', async () => {
-        await expectToThrow(async () => {
-            const sale_asset = mkXTZAsset();
-            const tokenId = 2222;
-            await sales.sell({
-                argMichelson: `(Pair "${nft.address}"
-                (Pair ${tokenId}
-                    (Pair "${alice.pkh}"
-                        (Pair ${parseInt(XTZ)}
-                            (Pair 0x${sale_asset}
-                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))))`,
-                as: alice.pkh,
-            });
-            await sales.cancel_sale({
-                argMichelson: `(Pair "${nft.address}" (Pair ${tokenId} (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
-                as: bob.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_cs1")');
-    });
 
     it('Cancel own sale should succeed', async () => {
         const sale_asset = mkXTZAsset();
-        const tokenId = 2222;
+        const tokenId = 1111;
         const storage = await sales_storage.getStorage();
 
         const tx_sale = await getValueFromBigMap(
