@@ -244,9 +244,7 @@ entry buy_bundle(
   bb_sale_asset: bytes){
     effect {
       var current_sale = require_some(get_bundle_sale(bb_bundle, bb_seller, bb_sale_type, bb_sale_asset), MISSING_BUNDLE_SALE);
-      var unpack_result = verify_and_unpack_asset(bb_sale_type, bb_sale_asset);
-      var buy_asset_contract = unpack_result[0];
-      var buy_asset_token_id = unpack_result[1];
+
       var unpacked_bundle = verify_and_unpack_bundle(bb_bundle);
 
       if(bb_sale_type = XTZ) then (
