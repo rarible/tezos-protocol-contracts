@@ -240,7 +240,7 @@ entry put_bundle_bid(
   pbb_bid_asset: bytes,
   pbb_bid : bundle_bid) {
     require {
-        r_ppb0: pbb_bid.bundle_bid_amount > 0;
+        r_pbb0: pbb_bid.bundle_bid_amount > 0;
     }
     effect {
       var current_bid = get_bundle_bid(pbb_bundle, caller, pbb_bid_type, pbb_bid_asset);
