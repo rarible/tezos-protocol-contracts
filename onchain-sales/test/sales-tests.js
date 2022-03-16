@@ -3046,8 +3046,6 @@ describe('Buy tests', async () => {
     });
 });
 
-
-
 describe('Buy bundle tests', async () => {
     describe('Buy bundle with Fungible FA2 sales tests', async () => {
 
@@ -3788,9 +3786,6 @@ describe('Buy bundle tests', async () => {
         });
     });
 });
-
-
-
 
 describe('Cancel sale tests', async () => {
     it('Cancel a non existing sale should fail', async () => {
