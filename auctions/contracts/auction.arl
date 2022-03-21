@@ -124,6 +124,12 @@ record fees {
   payouts: list<part>;
 }
 
+record bundle_item {
+  bundle_item_contract : address;
+  bundle_item_id   : nat;
+  bundle_item_qty: nat;
+}
+
 record bid {
   bid_payouts : list<part>;
   bid_origin_fees : list<part>;
@@ -134,13 +140,10 @@ record bid {
 }
 
 record auction_record {
-  auction_sell_asset_contract : address;
-  auction_sell_asset_token_id : nat;
   auction_sell_asset_amount: nat;
   auction_buy_asset_type : asset_type;
   auction_buy_asset : bytes;
   auction_last_bid: option<bid>;
-  auction_seller: address;
   auction_start_time: date;
   auction_end_time: date;
   auction_minimal_price: nat;
@@ -153,12 +156,9 @@ record auction_record {
 }
 
 record auction_args {
-  auction_args_sell_asset_contract : address;
-  auction_args_sell_asset_token_id : nat;
   auction_args_sell_asset_amount: nat;
   auction_args_buy_asset_type : asset_type;
   auction_args_buy_asset : bytes;
-  auction_args_seller: address;
   auction_args_start_time: option<date>;
   auction_args_duration: duration;
   auction_args_minimal_price: nat;
@@ -175,6 +175,8 @@ record auction_args {
 //----------------------------------------------------------------------------
 
 entry start_auction(
+    sa_asset_contract : address,
+    sa_asset_token_id : nat,
     sa_auction: auction_args
 ) {
     require{
@@ -188,17 +190,11 @@ entry start_auction(
         r_sa4: sa_auction.auction_args_buy_out_price > sa_auction.auction_args_minimal_price;
         r_sa5: sa_auction.auction_args_minimal_price > 0;
         r_sa6: sa_auction.auction_args_minimal_step > 0;
-        r_sa7: sa_auction.auction_args_seller = caller;
-        r_sa8: sa_auction.auction_args_sell_asset_amount > 0;
+        r_sa7: sa_auction.auction_args_sell_asset_amount > 0;
+        r_sa8: auction_exists(sa_asset_contract, sa_asset_token_id, caller) = false;
+
     }
     effect {
-        dorequire(
-          auction_exists(
-            sa_auction.auction_args_sell_asset_contract,
-            sa_auction.auction_args_sell_asset_token_id,
-            sa_auction.auction_args_seller
-            ) = false, AUCTION_ALREADY_EXISTS);
-
         var processed_asset = verify_and_unpack_asset(sa_auction.auction_args_buy_asset_type, sa_auction.auction_args_buy_asset);
 
         var start_time: date = now;
@@ -213,13 +209,10 @@ entry start_auction(
         );
 
         var storage_auction: auction_record = {
-            auction_sell_asset_contract = sa_auction.auction_args_sell_asset_contract;
-            auction_sell_asset_token_id = sa_auction.auction_args_sell_asset_token_id;
             auction_sell_asset_amount = sa_auction.auction_args_sell_asset_amount;
             auction_buy_asset = sa_auction.auction_args_buy_asset;
             auction_buy_asset_type = sa_auction.auction_args_buy_asset_type;
             auction_last_bid = none;
-            auction_seller = sa_auction.auction_args_seller;
             auction_start_time = start_time;
             auction_end_time = end_time;
             auction_minimal_price = sa_auction.auction_args_minimal_price;
@@ -231,15 +224,17 @@ entry start_auction(
             auction_data = sa_auction.auction_args_data
         };
 
-        transfer 0tz to auction_storage call set_auction<auction_record>(storage_auction);
+        transfer 0tz to auction_storage call set_auction<address * nat * address * auction_record>(
+          (sa_asset_contract, sa_asset_token_id, caller, storage_auction)
+        );
         transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
           ptp_asset_type = FA2;
           ptp_asset = pack({
-            fa2_asset_contract = sa_auction.auction_args_sell_asset_contract;
-            fa2_asset_token_id = sa_auction.auction_args_sell_asset_token_id
+            fa2_asset_contract = sa_asset_contract;
+            fa2_asset_token_id = sa_asset_token_id
             });
           ptp_amount = sa_auction.auction_args_sell_asset_amount;
-          ptp_origin = sa_auction.auction_args_seller;
+          ptp_origin = caller;
           ptp_destination = auction_storage
         }]);
     }
@@ -290,27 +285,28 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
       );
 
       if(is_buyout = true) then (
-        var origin = auction.auction_seller;
-        transfer transferred to transfer_manager call manage_transfers<nat * address * nat * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
-         (
-            auction.auction_sell_asset_amount,
-            auction.auction_sell_asset_contract,
-            auction.auction_sell_asset_token_id,
-            auction_storage,
-            pb_bid.bid_bidder,
-            pb_bid.bid_amount,
-            auction.auction_buy_asset_type,
-            auction.auction_buy_asset,
-            pb_bid.bid_bidder,
-            auction.auction_seller,
-            auction_storage,
-            protocol_fee,
-            pb_bid.bid_origin_fees,
-            merge_parts(auction.auction_payouts, [pb_bid.bid_payouts; auction.auction_origin_fees])
-         )
+        var origin = pb_asset_seller;
+        transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
+        (
+          [{
+            bundle_item_contract = pb_asset_contract;
+            bundle_item_id = pb_asset_id ;
+            bundle_item_qty = auction.auction_sell_asset_amount
+          }],
+          auction_storage,
+          pb_bid.bid_bidder,
+          pb_bid.bid_amount,
+          auction.auction_buy_asset_type,
+          auction.auction_buy_asset,
+          caller,
+          pb_asset_seller,
+          auction_storage,
+          protocol_fee,
+          pb_bid.bid_origin_fees,
+          pb_bid.bid_payouts)
         );
 
-        transfer 0tz to auction_storage call remove_auction<address * nat * address>((auction.auction_sell_asset_contract, auction.auction_sell_asset_token_id, auction.auction_seller));
+        transfer 0tz to auction_storage call remove_auction<address * nat * address>((pb_asset_contract, pb_asset_id, pb_asset_seller));
       ) else (
         if(is_xtz = false) then (
           transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([
@@ -330,7 +326,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
           auction.auction_end_time := now + extension_duration;
         );
         auction.auction_last_bid := some(pb_bid);
-        transfer transferred to auction_storage call update_auction<auction_record>(auction)
+        transfer transferred to auction_storage call update_auction<address * nat * address * auction_record>((pb_asset_contract, pb_asset_id, pb_asset_seller, auction))
       );
     }
 }
@@ -344,18 +340,20 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat, fa_asset_sell
 
       var last_bid = require_some(auction.auction_last_bid, NO_BID_FOR_AUCTION);
 
-      transfer transferred to transfer_manager call manage_transfers<nat * address * nat * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
+      transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
-          auction.auction_sell_asset_amount,
-          auction.auction_sell_asset_contract,
-          auction.auction_sell_asset_token_id,
+          [{
+            bundle_item_contract = fa_asset_contract;
+            bundle_item_id = fa_asset_id ;
+            bundle_item_qty = auction.auction_sell_asset_amount
+          }],
           auction_storage,
           last_bid.bid_bidder,
           last_bid.bid_amount,
           auction.auction_buy_asset_type,
           auction.auction_buy_asset,
           auction_storage,
-          auction.auction_seller,
+          fa_asset_seller,
           auction_storage,
           protocol_fee,
           last_bid.bid_origin_fees,
@@ -363,28 +361,27 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat, fa_asset_sell
         )
       );
 
-      transfer 0tz to auction_storage call remove_auction<address * nat * address>((fa_asset_contract, fa_asset_id, auction.auction_seller))
+      transfer 0tz to auction_storage call remove_auction<address * nat * address>((fa_asset_contract, fa_asset_id, fa_asset_seller))
     }
 }
 
-entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat, ca_asset_seller: address){
+entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat){
     effect {
-      var auction = require_some(get_auction_record(ca_asset_contract, ca_asset_id, ca_asset_seller), MISSING_AUCTION);
+      var auction = require_some(get_auction_record(ca_asset_contract, ca_asset_id, caller), MISSING_AUCTION);
 
       dorequire(isnone(auction.auction_last_bid), AUCTION_WITH_BID_NON_CANCELLABLE);
-      dorequire(auction.auction_seller = caller, ONLY_SELLER_CAN_CANCEL_AUCTION);
 
       transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
         ptp_asset_type = FA2;
         ptp_asset = pack({
-            fa2_asset_contract = auction.auction_sell_asset_contract;
-            fa2_asset_token_id = auction.auction_sell_asset_token_id
+            fa2_asset_contract = ca_asset_contract;
+            fa2_asset_token_id = ca_asset_id
             });
         ptp_amount = auction.auction_sell_asset_amount;
         ptp_origin = auction_storage;
-        ptp_destination = auction.auction_seller
+        ptp_destination = caller
       }]);
-      transfer 0tz to auction_storage call remove_auction<address * nat * address>((ca_asset_contract, ca_asset_id, auction.auction_seller))
+      transfer 0tz to auction_storage call remove_auction<address * nat * address>((ca_asset_contract, ca_asset_id, caller))
     }
 }
 
