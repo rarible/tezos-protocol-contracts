@@ -7,18 +7,13 @@ const {
     exprMichelineToJson,
     setMockupNow,
     isMockup,
-    getBalance,
-    jsonMichelineToExpr
-} = require('@completium/completium-cli');
+    getBalance} = require('@completium/completium-cli');
 const {
     errors,
-    mkAuction,
     FA12,
     FA2,
     XTZ,
-    mkPart,
     mkFungibleFA2Asset,
-    mkBid,
     getFA2Balance,
     getFA12Balance,
     mkXTZAsset,
