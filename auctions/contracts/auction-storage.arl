@@ -98,13 +98,9 @@ record auction_record {
 }
 
 record bundle_auction_record {
-  bar_sell_asset_contract : address;
-  bar_sell_asset_token_id : nat;
-  bar_sell_asset_amount: nat;
   bar_buy_asset_type : asset_type;
   bar_buy_asset : bytes;
   bar_last_bid: option<bid>;
-  bar_seller: address;
   bar_start_time: date;
   bar_end_time: date;
   bar_minimal_price: nat;
@@ -116,17 +112,17 @@ record bundle_auction_record {
   bar_data       : option<bytes>;
 }
 
-asset auctions identified by auction_asset auction_asset_id auction_asset_owner to big_map {
+asset auctions identified by auction_asset auction_asset_id auction_asset_seller to big_map {
   auction_asset : address;
   auction_asset_id: nat;
-  auction_asset_owner: address;
+  auction_asset_seller: address;
   auction : auction_record;
 }
 
-asset bundle_auctions identified by ba_bundle ba_bundle_owner to big_map {
-  ba_bundle : address;
-  ba_bundle_owner: address;
-  ba : bundle_auction_record;
+asset bundle_auctions identified by bundle_auctions_bundle bundle_auctions_seller to big_map {
+  bundle_auctions_bundle : bytes;
+  bundle_auctions_seller: address;
+  bundle_auction : bundle_auction_record;
 }
 
 record process_transfer_param {
@@ -143,33 +139,48 @@ record transfer_param {
   token_amount: nat
 } as ((%to, (token_id, amount)))
 
-entry set_auction(sa_asset_contract: address, sa_asset_id: nat, sa_asset_owner: address, sa_auction : auction_record) {
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
-  effect {
-    auctions.add({auction_asset = sa_asset_contract; auction_asset_id = sa_asset_id; auction_asset_owner = sa_asset_owner; auction = sa_auction});
-  }
-}
-
-entry update_auction(ua_asset_contract: address, ua_asset_id: nat, ua_asset_owner: address, ua_auction: auction_record) {
+entry set_auction(sa_asset_contract: address, sa_asset_id: nat, sa_asset_seller: address, sa_auction : auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   effect {
     auctions.addupdate(
       (
-        ua_asset_contract,
-        ua_asset_id,
-        ua_asset_owner
+        sa_asset_contract,
+        sa_asset_id,
+        sa_asset_seller
       ),
       {
-        auction = ua_auction
+        auction = sa_auction
       }
     );
   }
 }
 
-entry remove_auction(ra_asset : address, ra_asset_id : nat, ra_asset_owner: address) {
+entry set_bundle_auction(sba_bundle: bytes, sba_seller: address, sba_auction : bundle_auction_record) {
   called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
   effect {
-    auctions.remove((ra_asset, ra_asset_id, ra_asset_owner));
+    bundle_auctions.addupdate(
+      (
+        sba_bundle,
+        sba_seller
+      ),
+      {
+        bundle_auction = sba_auction
+      }
+    );
+  }
+}
+
+entry remove_auction(ra_asset : address, ra_asset_id : nat, ra_asset_seller: address) {
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  effect {
+    auctions.remove((ra_asset, ra_asset_id, ra_asset_seller));
+  }
+}
+
+entry remove_bundle_auction(rba_bundle : bytes, rba_seller: address) {
+  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  effect {
+    bundle_auctions.remove((rba_bundle, rba_seller));
   }
 }
 
@@ -177,9 +188,21 @@ view auction_exists(ae_asset : address, ae_asset_id : nat, ae_asset_seller: addr
   return auctions.contains((ae_asset, ae_asset_id, ae_asset_seller))
 }
 
+view bundle_auction_exists(bae_bundle : bytes, bae_seller: address) : bool {
+  return bundle_auctions.contains((bae_bundle, bae_seller))
+}
+
 view get_auction(ga_asset : address, ga_asset_id : nat, ga_asset_seller: address) : option<auction_record> {
   if(auctions.contains((ga_asset, ga_asset_id, ga_asset_seller))) then (
     return some(auctions[(ga_asset, ga_asset_id, ga_asset_seller)].auction);
+   ) else (
+    return none;
+   )
+}
+
+view get_bundle_auction(gba_bundle : bytes, gba_seller: address) : option<bundle_auction_record> {
+  if(bundle_auctions.contains((gba_bundle, gba_seller))) then (
+    return some(bundle_auctions[(gba_bundle, gba_seller)].bundle_auction);
    ) else (
     return none;
    )
