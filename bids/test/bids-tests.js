@@ -225,7 +225,7 @@ describe('Contract deployments', async () => {
         );
     });
 
-    it('Non Fungible token (FA2) contract deployment should succeed', async () => {
+    it('Non Fungible token 2 (FA2) contract deployment should succeed', async () => {
         [nft_3, _] = await deploy(
             '../test-contracts/test-nft.arl',
             {
