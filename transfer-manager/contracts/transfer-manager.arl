@@ -98,6 +98,11 @@ record process_transfer_param {
   ptp_destination: address;
 }
 
+record bundle_item {
+  bundle_item_contract : address;
+  bundle_item_id   : nat;
+  bundle_item_qty: nat;
+}
 
 record part {
   part_account : address;
@@ -125,9 +130,7 @@ function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part
 }
 
 entry manage_transfers(
-  mt_nft_amount: nat,
-  mt_nft_asset_contract: address,
-  mt_nft_asset_token_id: nat,
+  mt_bundle: list<bundle_item>,
   mt_nft_origin: address,
   mt_nft_destination: address,
   mt_ft_amount: nat,
@@ -184,18 +187,39 @@ entry manage_transfers(
       var total_after_all_fees = rest_fee[0];
       var protocol_fees = rest_fee[1];
 
-      //Then process the amount of royalties, and the matching operations
-      var rest_royalties = process_royalties(
-        mt_ft_asset_type,
-        mt_ft_asset,
-        mt_nft_asset_contract,
-        mt_nft_asset_token_id,
-        mt_ft_amount,
-        ft_origin,
-        ft_operations
-      );
-      total_after_all_fees -= rest_royalties[0];
-      ft_operations := rest_royalties[1];
+      var share_per_nft = abs(floor(10000/length(mt_bundle)));
+      for bundle_nft in mt_bundle do
+        var price_per_nft = bp(mt_ft_amount, share_per_nft);
+        //Then process the amount of royalties, and the matching operations
+        var rest_royalties = process_royalties(
+          mt_ft_asset_type,
+          mt_ft_asset,
+          bundle_nft.bundle_item_contract,
+          bundle_nft.bundle_item_id,
+          price_per_nft,
+          ft_origin,
+          ft_operations
+        );
+        total_after_all_fees -= rest_royalties[0];
+        ft_operations := rest_royalties[1];
+
+        var nft_operation: process_transfer_param = {
+          ptp_asset_type = FA2;
+          ptp_asset = pack({
+            fa2_asset_contract = bundle_nft.bundle_item_contract;
+            fa2_asset_token_id = bundle_nft.bundle_item_id
+            });
+          ptp_amount = bundle_nft.bundle_item_qty;
+          ptp_origin = mt_nft_origin;
+          ptp_destination = mt_nft_destination
+        };
+
+        if(mt_nft_origin = mt_rarible_custody) then (
+          rarible_custody_operations.prepend(nft_operation);
+        ) else (
+          transfer_manager_operations.prepend(nft_operation);
+        );
+      done;
 
       //Then process the bid origin fees, and the matching operations
       var all_origin_fees = process_fees(
@@ -242,27 +266,9 @@ entry manage_transfers(
         });
 
       if(ft_origin = mt_rarible_custody) then (
-        rarible_custody_operations := ft_operations;
+        rarible_custody_operations.concat(ft_operations);
       ) else (
-        transfer_manager_operations := ft_operations;
-      );
-
-      var nft_operation: process_transfer_param = {
-          ptp_asset_type = FA2;
-          ptp_asset = pack({
-            fa2_asset_contract = mt_nft_asset_contract;
-            fa2_asset_token_id = mt_nft_asset_token_id
-            });
-          ptp_amount = mt_nft_amount;
-          ptp_origin = mt_nft_origin;
-          ptp_destination = mt_nft_destination
-      };
-
-      if(mt_nft_origin = mt_rarible_custody) then (
-        rarible_custody_operations.prepend(nft_operation);
-      ) else (
-        //transfer sell asset to buyer
-        transfer_manager_operations.prepend(nft_operation);
+        transfer_manager_operations.concat(ft_operations);
       );
 
       for pt_transfer in transfer_manager_operations do
@@ -361,16 +367,6 @@ function process_fees(
   return ((total_fees, pf_operations))
 }
 
-      // var rest_royalties = process_royalties(
-      //   mt_ft_asset_type,
-      //   mt_ft_asset,
-      //   mt_nft_asset_contract,
-      //   mt_nft_asset_token_id,
-      //   mt_ft_amount,
-      //   ft_origin,
-      //   ft_operations
-      // );
-
 function process_royalties(
     pr_buy_asset_type: asset_type,
     pr_buy_asset: bytes,
@@ -411,6 +407,16 @@ function process_payouts(
       );
     done;
     return ((sum_bps, pp_operations))
+}
+
+function merge_operations(mp_parts: list<process_transfer_param>, mp_parts_to_add: list<list<process_transfer_param>>) : list<process_transfer_param> {
+  for part_list in mp_parts_to_add do
+    for l_part in part_list do
+      mp_parts.prepend(l_part)
+    done;
+  done;
+
+  return mp_parts
 }
 
 entry process_transfers(pt_transfers: list<process_transfer_param>){

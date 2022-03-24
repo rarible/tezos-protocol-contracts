@@ -27,6 +27,12 @@ record part {
   part_value   : nat;
 }
 
+record bundle_item {
+  bundle_item_contract : address;
+  bundle_item_id   : nat;
+  bundle_item_qty   : nat;
+}
+
 record operator_param {
   opp_owner    : address;
   opp_operator : address;
@@ -86,6 +92,14 @@ record bid {
   bid_data       : option<bytes>;
 }
 
+record bundle_bid {
+  bundle_bid_payouts : list<part>;
+  bundle_bid_origin_fees : list<part>;
+  bundle_bid_amount : nat;
+  bundle_bid_data_type  : option<bytes>;
+  bundle_bid_data       : option<bytes>;
+}
+
 asset bids identified by bid_asset_contract bid_asset_token_id bid_asset_bidder bid_type bid_asset to big_map {
   bid_asset_contract : address;
   bid_asset_token_id: nat;
@@ -101,6 +115,14 @@ asset floor_bids identified by floor_bid_asset_contract floor_bid_asset_bidder f
   floor_bid_type: asset_type;
   floor_bid_asset : bytes;
   floor_bid_record: bid;
+}
+
+asset bundle_bids identified by bundle_bids_bunde bundle_bids_asset_seller bundle_bids_type bundle_bids_asset to big_map {
+  bundle_bids_bunde: bytes;
+  bundle_bids_asset_seller: address;
+  bundle_bids_type: asset_type;
+  bundle_bids_asset : bytes;
+  bundle_bids_record: bundle_bid;
 }
 
 record process_transfer_param {
@@ -163,6 +185,28 @@ entry set_floor_bid(
   }
 }
 
+entry set_bundle_bid(
+  sbb_bundle: bytes,
+  sbb_seller: address,
+  sbb_bid_type: asset_type,
+  sbb_bid_asset: bytes,
+  sbb_bid: bundle_bid) {
+  called by require_some(bids_contract, MISSING_BIDS_CONTRACT)
+  effect {
+    bundle_bids.addupdate(
+      (
+        sbb_bundle,
+        sbb_seller,
+        sbb_bid_type,
+        sbb_bid_asset
+      ),
+      {
+        bundle_bids_record = sbb_bid
+      }
+    );
+  }
+}
+
 entry remove_bid(
   rb_asset_contract: address,
   rb_asset_token_id: nat,
@@ -186,6 +230,17 @@ entry remove_floor_bid(
   }
 }
 
+entry remove_bundle_bid(
+  rbb_bundle: bytes,
+  rbb_seller: address,
+  rbb_sale_type: asset_type,
+  rbb_sale_asset: bytes) {
+  called by require_some(bids_contract, MISSING_BIDS_CONTRACT)
+  effect {
+    bundle_bids.remove((rbb_bundle, rbb_seller, rbb_sale_type, rbb_sale_asset));
+  }
+}
+
 view bid_exists(
   be_asset_contract: address,
   be_asset_token_id: nat,
@@ -201,6 +256,14 @@ view floor_bid_exists(
   be_bid_type: asset_type,
   be_bid_asset: bytes) : bool {
   return floor_bids.contains((be_asset_contract, be_bidder, be_bid_type, be_bid_asset))
+}
+
+view bundle_bid_exists(
+  bbe_bundle: bytes,
+  bbe_seller: address,
+  bbe_sale_type: asset_type,
+  bbe_sale_asset: bytes) : bool {
+  return bundle_bids.contains((bbe_bundle, bbe_seller, bbe_sale_type, bbe_sale_asset))
 }
 
 view get_bid(
@@ -223,6 +286,18 @@ view get_floor_bid(
   gb_bid_asset: bytes) : option<bid> {
   if(floor_bids.contains((gb_asset_contract, gb_bidder, gb_bid_type, gb_bid_asset))) then (
     return some(floor_bids[(gb_asset_contract, gb_bidder, gb_bid_type, gb_bid_asset)].floor_bid_record);
+   ) else (
+    return none;
+   )
+}
+
+view get_bundle_bid(
+  gbb_bundle: bytes,
+  gbb_seller: address,
+  gbb_bid_type: asset_type,
+  gbb_bid_asset: bytes) : option<bundle_bid> {
+  if(bundle_bids.contains((gbb_bundle, gbb_seller, gbb_bid_type, gbb_bid_asset))) then (
+    return some(bundle_bids[(gbb_bundle, gbb_seller, gbb_bid_type, gbb_bid_asset)].bundle_bids_record);
    ) else (
     return none;
    )

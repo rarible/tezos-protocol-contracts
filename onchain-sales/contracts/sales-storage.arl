@@ -26,6 +26,12 @@ record part {
   part_value   : nat;
 }
 
+record bundle_item {
+  bundle_item_contract : address;
+  bundle_item_id   : nat;
+  bundle_item_qty   : nat;
+}
+
 record operator_param {
   opp_owner    : address;
   opp_operator : address;
@@ -85,6 +91,14 @@ record sale {
   sale_data       : option<bytes>;
 }
 
+record bundle_sale {
+  bundle_sale_payouts : list<part>;
+  bundle_sale_origin_fees : list<part>;
+  bundle_sale_amount : nat;
+  bundle_sale_data_type  : option<bytes>;
+  bundle_sale_data       : option<bytes>;
+}
+
 asset sales identified by sale_asset_contract sale_asset_token_id sale_asset_seller sale_type sale_asset to big_map {
   sale_asset_contract : address;
   sale_asset_token_id: nat;
@@ -92,6 +106,14 @@ asset sales identified by sale_asset_contract sale_asset_token_id sale_asset_sel
   sale_type: asset_type;
   sale_asset : bytes;
   sale_record: sale;
+}
+
+asset bundle_sales identified by bundle_sales_bunde bundle_sales_asset_seller bundle_sales_type bundle_sales_asset to big_map {
+  bundle_sales_bunde: bytes;
+  bundle_sales_asset_seller: address;
+  bundle_sales_type: asset_type;
+  bundle_sales_asset : bytes;
+  bundle_sales_record: bundle_sale;
 }
 
 entry set_sale(
@@ -118,6 +140,28 @@ entry set_sale(
   }
 }
 
+entry set_bundle_sale(
+  sbs_bundle: bytes,
+  sbs_seller: address,
+  sbs_sale_type: asset_type,
+  sbs_sale_asset: bytes,
+  sbs_sale: bundle_sale) {
+  called by require_some(sales_contract, MISSING_SALES_CONTRACT)
+  effect {
+    bundle_sales.addupdate(
+      (
+        sbs_bundle,
+        sbs_seller,
+        sbs_sale_type,
+        sbs_sale_asset
+      ),
+      {
+        bundle_sales_record = sbs_sale
+      }
+    );
+  }
+}
+
 entry remove_sale(
   rs_asset_contract: address,
   rs_asset_token_id: nat,
@@ -130,6 +174,17 @@ entry remove_sale(
   }
 }
 
+entry remove_bundle_sale(
+  rbs_bundle: bytes,
+  rbs_seller: address,
+  rbs_sale_type: asset_type,
+  rbs_sale_asset: bytes) {
+  called by require_some(sales_contract, MISSING_SALES_CONTRACT)
+  effect {
+    bundle_sales.remove((rbs_bundle, rbs_seller, rbs_sale_type, rbs_sale_asset));
+  }
+}
+
 view sale_exists(
   se_asset_contract: address,
   se_asset_token_id: nat,
@@ -137,6 +192,14 @@ view sale_exists(
   se_sale_type: asset_type,
   se_sale_asset: bytes) : bool {
   return sales.contains((se_asset_contract, se_asset_token_id, se_seller, se_sale_type, se_sale_asset))
+}
+
+view bundle_sale_exists(
+  bse_bundle: bytes,
+  bse_seller: address,
+  bse_sale_type: asset_type,
+  bse_sale_asset: bytes) : bool {
+  return bundle_sales.contains((bse_bundle, bse_seller, bse_sale_type, bse_sale_asset))
 }
 
 view get_sale(
@@ -147,6 +210,18 @@ view get_sale(
   gs_sale_asset: bytes) : option<sale> {
   if(sales.contains((gs_asset_contract, gs_asset_token_id, gs_seller, gs_sale_type, gs_sale_asset))) then (
     return some(sales[(gs_asset_contract, gs_asset_token_id, gs_seller, gs_sale_type, gs_sale_asset)].sale_record);
+   ) else (
+    return none;
+   )
+}
+
+view get_bundle_sale(
+  gbs_bundle: bytes,
+  gbs_seller: address,
+  gbs_sale_type: asset_type,
+  gbs_sale_asset: bytes) : option<bundle_sale> {
+  if(bundle_sales.contains((gbs_bundle, gbs_seller, gbs_sale_type, gbs_sale_asset))) then (
+    return some(bundle_sales[(gbs_bundle, gbs_seller, gbs_sale_type, gbs_sale_asset)].bundle_sales_record);
    ) else (
     return none;
    )

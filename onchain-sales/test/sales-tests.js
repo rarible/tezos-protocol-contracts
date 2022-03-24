@@ -5,7 +5,7 @@ const {
     setQuiet,
     expectToThrow,
     exprMichelineToJson,
-    getBalance
+    getBalance,
 } = require('@completium/completium-cli');
 const {
     errors,
@@ -16,7 +16,9 @@ const {
     getFA2Balance,
     getFA12Balance,
     mkXTZAsset,
-    mkFA12Asset
+    mkFA12Asset,
+    mkBundleItem,
+    mkPackedBundle
 } = require('./utils');
 const assert = require('assert');
 const BigNumber = require('bignumber.js');
@@ -64,6 +66,14 @@ const daniel = getAccount(mockup_mode ? 'bootstrap1' : 'bootstrap1');
 
 //set endpointhead
 //setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
+
+const bundle_items = [
+    mkBundleItem("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", 0, 0),
+    mkBundleItem("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", 1, 1),
+    mkBundleItem("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", 2, 2)
+];
+
+const p = mkPackedBundle(bundle_items);
 
 describe('Contract deployments', async () => {
 
@@ -901,7 +911,7 @@ describe('Set sales tests', async () => {
             );
             assert(sale == null);
             await sales.sell({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair {} (Pair {} (Pair ${sale_amount} (Pair ${qty} (Pair None None))))))))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair {} (Pair {} (Pair ${sale_amount} (Pair ${qty} (Pair None None)))))))))`,
                 as: alice.pkh,
             });
 
@@ -947,7 +957,7 @@ describe('Set sales tests', async () => {
             );
             assert(sale == null);
             await sales.sell({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${sale_amount} (Pair ${qty} (Pair None None))))))))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${sale_amount} (Pair ${qty} (Pair None None)))))))))`,
                 as: alice.pkh,
             });
 
@@ -1007,15 +1017,14 @@ describe('Set sales tests', async () => {
             await sales.sell({
                 argMichelson: `(Pair "${nft.address}"
                     (Pair ${token_id_2}
-                        (Pair "${alice.pkh}"
-                            (Pair ${parseInt(FA2)}
-                                (Pair 0x${sale_asset}
+                        (Pair ${parseInt(FA2)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                            (Pair ${sale_amount}
-                                                (Pair ${qty}
-                                                    (Pair None None)
-                                                )))))))))`,
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None None)
+                                            ))))))))`,
                 as: alice.pkh,
             });
 
@@ -1093,15 +1102,14 @@ describe('Set sales tests', async () => {
             await sales.sell({
                 argMichelson: `(Pair "${nft.address}"
                 (Pair ${token_id_3}
-                    (Pair "${alice.pkh}"
-                        (Pair ${parseInt(XTZ)}
-                            (Pair 0x${sale_asset}
+                    (Pair ${parseInt(XTZ)}
+                        (Pair 0x${sale_asset}
+                            (Pair {}
                                 (Pair {}
-                                    (Pair {}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))))`,
+                                    (Pair ${sale_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        ))))))))`,
                 as: alice.pkh,
             });
 
@@ -1149,15 +1157,14 @@ describe('Set sales tests', async () => {
             await sales.sell({
                 argMichelson: `(Pair "${nft.address}"
                 (Pair ${token_id_4}
-                    (Pair "${alice.pkh}"
-                        (Pair ${parseInt(XTZ)}
-                            (Pair 0x${sale_asset}
-                                (Pair { Pair "${carl.pkh}" ${payout_value}}
-                                    (Pair { Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))))`,
+                    (Pair ${parseInt(XTZ)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${sale_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        ))))))))`,
                 as: alice.pkh,
             });
 
@@ -1215,15 +1222,14 @@ describe('Set sales tests', async () => {
             await sales.sell({
                 argMichelson: `(Pair "${nft.address}"
                 (Pair ${token_id_5}
-                    (Pair "${alice.pkh}"
-                        (Pair ${parseInt(XTZ)}
-                            (Pair 0x${sale_asset}
+                    (Pair ${parseInt(XTZ)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))))`,
+                                    (Pair ${sale_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        ))))))))`,
                 as: alice.pkh,
             });
 
@@ -1299,15 +1305,14 @@ describe('Set sales tests', async () => {
             await sales.sell({
                 argMichelson: `(Pair "${nft.address}"
                 (Pair ${token_id_6}
-                    (Pair "${alice.pkh}"
-                        (Pair ${parseInt(FA12)}
-                            (Pair 0x${sale_asset}
+                    (Pair ${parseInt(FA12)}
+                        (Pair 0x${sale_asset}
+                            (Pair {}
                                 (Pair {}
-                                    (Pair {}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))))`,
+                                    (Pair ${sale_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        ))))))))`,
                 as: alice.pkh,
             });
 
@@ -1355,15 +1360,14 @@ describe('Set sales tests', async () => {
             await sales.sell({
                 argMichelson: `(Pair "${nft.address}"
                 (Pair ${token_id_7}
-                    (Pair "${alice.pkh}"
-                        (Pair ${parseInt(FA12)}
-                            (Pair 0x${sale_asset}
-                                (Pair { Pair "${carl.pkh}" ${payout_value}}
-                                    (Pair { Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))))`,
+                    (Pair ${parseInt(FA12)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${sale_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        ))))))))`,
                 as: alice.pkh,
             });
 
@@ -1421,15 +1425,14 @@ describe('Set sales tests', async () => {
             await sales.sell({
                 argMichelson: `(Pair "${nft.address}"
                 (Pair ${token_id_8}
-                    (Pair "${alice.pkh}"
-                        (Pair ${parseInt(FA12)}
-                            (Pair 0x${sale_asset}
+                    (Pair ${parseInt(FA12)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))))`,
+                                    (Pair ${sale_amount}
+                                        (Pair ${qty}
+                                            (Pair None None)
+                                        ))))))))`,
                 as: alice.pkh,
             });
 
@@ -1501,15 +1504,14 @@ describe('Set sales tests', async () => {
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
                     (Pair ${token_id_8}
-                        (Pair "${alice.pkh}"
-                            (Pair ${parseInt(FA2)}
-                                (Pair 0x${sale_asset}
+                        (Pair ${parseInt(FA2)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                            (Pair ${sale_amount}
-                                                (Pair ${qty}
-                                                    (Pair None None)
-                                                )))))))))`,
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None None)
+                                            ))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -1520,15 +1522,14 @@ describe('Set sales tests', async () => {
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
                     (Pair ${token_id_8}
-                        (Pair "${alice.pkh}"
-                            (Pair ${parseInt(FA12)}
-                                (Pair 0x
+                        (Pair ${parseInt(FA12)}
+                            (Pair 0x
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                            (Pair ${sale_amount}
-                                                (Pair ${qty}
-                                                    (Pair None None)
-                                                )))))))))`,
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None None)
+                                            ))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -1540,15 +1541,14 @@ describe('Set sales tests', async () => {
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
                     (Pair ${token_id_8}
-                        (Pair "${alice.pkh}"
-                            (Pair ${parseInt(XTZ)}
-                                (Pair 0x${sale_asset}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                            (Pair ${sale_amount}
-                                                (Pair ${qty}
-                                                    (Pair None None)
-                                                )))))))))`,
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None None)
+                                            ))))))))`,
                     as: alice.pkh,
                 });
             }, '"WRONG_XTZ_PAYLOAD"');
@@ -1560,15 +1560,14 @@ describe('Set sales tests', async () => {
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
                     (Pair 10
-                        (Pair "${alice.pkh}"
-                            (Pair ${parseInt(XTZ)}
-                                (Pair 0x${sale_asset}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                            (Pair ${sale_amount}
-                                                (Pair 0
-                                                    (Pair None None)
-                                                )))))))))`,
+                                        (Pair ${sale_amount}
+                                            (Pair 0
+                                                (Pair None None)
+                                            ))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_s1")');
@@ -1580,38 +1579,17 @@ describe('Set sales tests', async () => {
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
                     (Pair 10
-                        (Pair "${alice.pkh}"
-                            (Pair ${parseInt(XTZ)}
-                                (Pair 0x${sale_asset}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                            (Pair 0
-                                                (Pair ${qty}
-                                                    (Pair None None)
-                                                )))))))))`,
+                                        (Pair 0
+                                            (Pair ${qty}
+                                                (Pair None None)
+                                            ))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_s0")');
-        });
-
-        it('Set sale as non owner of the NFT should fail', async () => {
-            await expectToThrow(async () => {
-                const sale_asset = mkXTZAsset();
-                await sales.sell({
-                    argMichelson: `(Pair "${nft.address}"
-                    (Pair 10
-                        (Pair "${alice.pkh}"
-                            (Pair ${parseInt(XTZ)}
-                                (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                            (Pair ${sale_amount}
-                                                (Pair ${qty}
-                                                    (Pair None None)
-                                                )))))))))`,
-                    as: bob.pkh,
-                });
-            }, '(Pair "InvalidCondition" "r_s2")');
         });
 
         it('Set sale buying with a sale that already exists should fail', async () => {
@@ -1620,18 +1598,785 @@ describe('Set sales tests', async () => {
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
                     (Pair ${token_id_7}
-                        (Pair "${alice.pkh}"
-                            (Pair ${parseInt(FA12)}
-                                (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}}
-                                        (Pair { Pair "${daniel.pkh}" ${payout_value}}
-                                            (Pair ${sale_amount}
-                                                (Pair ${qty}
-                                                    (Pair None None)
-                                                )))))))))`,
+                        (Pair ${parseInt(FA12)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                    (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None None)
+                                            ))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s3")');
+            }, '(Pair "InvalidCondition" "r_s2")');
+        });
+    });
+});
+
+describe('Set bundle sales tests', async () => {
+    describe('Set bundle sale in Fungible FA2', async () => {
+        it('Set bundle sale buying with Fungible FA2 should succeed (no royalties, no sale payouts, no sale origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_3, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair {} (Pair {} (Pair ${sale_amount} (Pair None None)))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                   [
+
+                   ],
+                   [
+
+                   ],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+
+        it('Set bundle sale buying with Fungible FA2 should succeed (single royalties, single sale payouts, single sale origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString());
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_1, 1),
+                mkBundleItem(nft.address, token_id_4, 1)
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${sale_amount} (Pair None None)))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+
+
+        it('Set bundle sale buying with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString());
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_2, 1),
+                mkBundleItem(nft.address, token_id_5, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+
+            await sales.sell_bundle({
+                argMichelson: `
+                (Pair 0x${bundle}
+                    (Pair ${parseInt(FA2)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${sale_amount}
+                                            (Pair None None)
+                                        ))))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+    });
+
+
+    describe('Set bundle sale in XTZ', async () => {
+        it('Set bundle sale buying with XTZ should succeed (no royalties, no payouts, no origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkXTZAsset();
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_3, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+            await sales.sell_bundle({
+                argMichelson: `
+                (Pair 0x${bundle}
+                    (Pair ${parseInt(XTZ)}
+                        (Pair 0x${sale_asset}
+                            (Pair {}
+                                (Pair {}
+                                    (Pair ${sale_amount}
+                                            (Pair None None)
+                                        ))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                   [
+
+                   ],
+                   [
+
+                   ],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+
+        it('Set bundle sale buying with XTZ should succeed (single royalties, single payouts, single origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkXTZAsset();
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_1, 1),
+                mkBundleItem(nft.address, token_id_4, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle}
+                (Pair ${parseInt(XTZ)}
+                    (Pair 0x${sale_asset}
+                        (Pair { Pair "${carl.pkh}" ${payout_value}}
+                            (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                (Pair ${sale_amount}
+                                        (Pair None None)
+                                    ))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+
+        it('Set bundle sale buying with XTZ should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkXTZAsset();
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_2, 1),
+                mkBundleItem(nft.address, token_id_5, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                                (Pair None None)
+                                            ))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+    });
+
+    describe('Set bundle sale with FA12', async () => {
+        it('Set bundle sale buying with FA12 should succeed (no royalties, no payouts, no origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkFA12Asset(fa12_ft_0.address);
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_3, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(FA12)}
+                            (Pair 0x${sale_asset}
+                                (Pair {}
+                                    (Pair {}
+                                        (Pair ${sale_amount}
+                                                (Pair None None)
+                                            ))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                   [
+
+                   ],
+                   [
+
+                   ],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+
+        it('Set bundle sale buying with FA12 should succeed (single royalties, single payouts, single origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkFA12Asset(fa12_ft_1.address);
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_1, 1),
+                mkBundleItem(nft.address, token_id_4, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle}
+                    (Pair ${parseInt(FA12)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${sale_amount}
+                                            (Pair None None)
+                                        ))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+
+        it('Set bundle sale buying with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
+            const storage = await sales_storage.getStorage();
+            const sale_asset = mkFA12Asset(fa12_ft_2.address);
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_2, 1),
+                mkBundleItem(nft.address, token_id_5, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale == null);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle}
+                    (Pair ${parseInt(FA12)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${sale_amount}
+                                            (Pair None None)
+                                        ))))))`,
+                as: alice.pkh,
+            });
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    },
+                    {
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+        });
+    });
+
+
+    describe('Common args test', async () => {
+
+        it('Set bundle sale with wrong buy asset payload (FA2) should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkFA12Asset(fa12_ft_2.address);
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(FA2)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                                (Pair None None)
+                                            ))))))`,
+                    as: alice.pkh,
+                });
+            }, '"CANT_UNPACK_FA2_ASSET"');
+        });
+
+        it('Set bundle sale with wrong buy asset payload (FA12) should fail', async () => {
+            await expectToThrow(async () => {
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                            (Pair ${parseInt(FA12)}
+                                (Pair 0x
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                            (Pair ${sale_amount}
+                                                    (Pair None None)
+                                                ))))))`,
+                    as: alice.pkh,
+                });
+            }, '"CANT_UNPACK_FA12_ASSET"');
+        });
+
+        it('Set bundle sale with wrong buy asset payload (XTZ) should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkFA12Asset(fa12_ft_2.address);
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                                (Pair None None)
+                                            ))))))`,
+                    as: alice.pkh,
+                });
+            }, '"WRONG_XTZ_PAYLOAD"');
+        });
+
+        it('Set bundle sale with wrong bundle payload should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                                (Pair None None)
+                                            ))))))`,
+                    as: alice.pkh,
+                });
+            }, '"CANT_UNPACK_BUNDLE"');
+        });
+
+        it('Set bundle sale with NFT amount = 0 duration should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 0),
+                    mkBundleItem(nft.address, token_id_3, 0),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                            (Pair ${sale_amount}
+                                                    (Pair None None)
+                                                ))))))`,
+                    as: alice.pkh,
+                });
+            }, '"INVALID_BUNDLE_ITEM_QTY"');
+        });
+
+        it('Set bundle sale with sale amount = 0 should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair 0
+                                                (Pair None None)
+                                            ))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sb0")');
+        });
+
+        it('Set bundle sale buying with a sale that already exists should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_4, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                            (Pair ${sale_amount}
+                                                    (Pair None None)
+                                                ))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sb1")');
         });
     });
 });
@@ -1674,7 +2419,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset}))))`,
                 as: bob.pkh,
             });
 
@@ -1743,7 +2488,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset}))))`,
                 as: bob.pkh,
             });
 
@@ -1815,7 +2560,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_2} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_2} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset}))))`,
                 as: bob.pkh,
             });
 
@@ -1880,7 +2625,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_3} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_3} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
                 amount: `${total_sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -1942,7 +2687,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_4} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_4} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
                 amount: `${total_sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -2007,7 +2752,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_5} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_5} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
                 amount: `${total_sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -2083,7 +2828,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_6} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_6} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset}))))`,
                 as: bob.pkh,
             });
 
@@ -2154,7 +2899,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_7} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_7} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset}))))`,
                 as: bob.pkh,
             });
 
@@ -2226,7 +2971,7 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_8} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_8} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset}))))`,
                 as: bob.pkh,
             });
 
@@ -2269,7 +3014,7 @@ describe('Buy tests', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkXTZAsset();
                 await sales.buy({
-                    argMichelson: `(Pair "${nft.address}" (Pair 1111 (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair 1111 (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset}))))`,
                     as: bob.pkh,
                 });
             }, '"MISSING_SALE"');
@@ -2281,8 +3026,7 @@ describe('Buy tests', async () => {
                 const tokenId = 1111;
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
-                    (Pair ${tokenId}
-                        (Pair "${alice.pkh}"
+                        (Pair ${tokenId}
                             (Pair ${parseInt(XTZ)}
                                 (Pair 0x${sale_asset}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
@@ -2290,12 +3034,753 @@ describe('Buy tests', async () => {
                                             (Pair ${sale_amount}
                                                 (Pair ${qty}
                                                     (Pair None None)
-                                                )))))))))`,
+                                                ))))))))`,
                     as: alice.pkh,
                 });
                 await sales.buy({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} "${bob.pkh}")))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
                     as: bob.pkh,
+                });
+            }, '"AMOUNT_MISMATCH"');
+        });
+    });
+});
+
+describe('Buy bundle tests', async () => {
+    describe('Buy bundle with Fungible FA2 sales tests', async () => {
+
+        it('Buy bundle with Fungible FA2 sales (no royalties, no origin fees, no payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, sales_storage.address);
+            const sales_ft_balance = await getFA2Balance(fa2_ft, token_id_0, sales.address);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+            const carl_ft_balance = await getFA2Balance(fa2_ft, token_id_0, carl.pkh);
+            const daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_0, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_0, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_0, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_3, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
+
+            const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_3, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`,
+                as: bob.pkh,
+            });
+
+            const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, sales_storage.address);
+            const post_sales_ft_balance = await getFA2Balance(fa2_ft, token_id_0, sales.address);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+            const post_carl_ft_balance = await getFA2Balance(fa2_ft, token_id_0, carl.pkh);
+            const post_daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_0, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_0, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_0, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_3, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const rest = sale_amount - protocol_fees;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_sales_ft_balance == sales_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_custody_nft_balance == post_custody_nft_balance && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_sale == null);
+        });
+
+        it('Buy bundle with Fungible FA2 sales (single royalties, single origin fees, single payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, sales_storage.address);
+            const sales_ft_balance = await getFA2Balance(fa2_ft, token_id_1, sales.address);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_1, alice.pkh);
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
+            const carl_ft_balance = await getFA2Balance(fa2_ft, token_id_1, carl.pkh);
+            const daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_1, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_1, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_1, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_4, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
+
+            const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString());
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_1, 1),
+                mkBundleItem(nft.address, token_id_4, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`,
+                as: bob.pkh,
+            });
+
+            const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, sales_storage.address);
+            const post_sales_ft_balance = await getFA2Balance(fa2_ft, token_id_1, sales.address);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_1, alice.pkh);
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
+            const post_carl_ft_balance = await getFA2Balance(fa2_ft, token_id_1, carl.pkh);
+            const post_daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_1, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_1, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_1, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_4, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
+
+            const nft_share = Math.abs(Math.floor(10000 / bundle_items.length));
+            const price_per_nft = Math.abs(Math.floor(sale_amount * nft_share / 10000));
+            const royalties_per_nft = price_per_nft * (payout_value / 10000);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const fee_value = sale_amount * (payout_value / 10000);
+            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_sales_ft_balance == 0);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties_per_nft * bundle_items.length);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_sale == null);
+
+        });
+
+        it('Buy bundle with Fungible FA2 sales (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_2, sales_storage.address);
+            const sales_ft_balance = await getFA2Balance(fa2_ft, token_id_2, sales.address);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_2, alice.pkh);
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
+            const carl_ft_balance = await getFA2Balance(fa2_ft, token_id_2, carl.pkh);
+            const daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_2, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_2, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_2, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_5, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
+
+            const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString());
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_2, 1),
+                mkBundleItem(nft.address, token_id_5, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`,
+                as: bob.pkh
+            });
+
+            const post_custody_ft_balance = await getFA2Balance(fa2_ft, token_id_2, sales_storage.address);
+            const post_sales_ft_balance = await getFA2Balance(fa2_ft, token_id_2, sales.address);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_2, alice.pkh);
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
+            const post_carl_ft_balance = await getFA2Balance(fa2_ft, token_id_2, carl.pkh);
+            const post_daniel_ft_balance = await getFA2Balance(fa2_ft, token_id_2, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_2, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_2, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_5, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
+
+            const nft_share = Math.abs(Math.floor(10000 / bundle_items.length));
+            const price_per_nft = Math.abs(Math.floor(sale_amount * nft_share / 10000));
+            const royalties_per_nft = price_per_nft * (payout_value / 10000);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const fee_value = sale_amount * (payout_value / 10000);
+            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length- 2 * fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_sales_ft_balance == 0);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_sale == null);
+        });
+    });
+
+    describe('Buy bundle with XTZ sales tests', async () => {
+
+        it('Buy bundle with XTZ sales (no royalties, no origin fees, no payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getBalance(sales_storage.address);
+            const sales_ft_balance = await getBalance(sales.address);
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const carl_ft_balance = await getBalance(carl.pkh);
+            const daniel_ft_balance = await getBalance(daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_3, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_0, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_3, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
+
+            const sale_asset = mkXTZAsset();
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_3, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
+                as: bob.pkh,
+                amount: `${total_sale_amount}utz`,
+            });
+
+
+            const post_custody_ft_balance = await getBalance(sales_storage.address);
+            const post_sales_ft_balance = await getBalance(sales.address);
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_carl_ft_balance = await getBalance(carl.pkh);
+            const post_daniel_ft_balance = await getBalance(daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_3, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_0, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_3, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const rest = sale_amount - protocol_fees;
+
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
+            assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - total_sale_amount));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_sale == null);
+        });
+
+        it('Buy bundle with XTZ sales (single royalties, single origin fees, single payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getBalance(sales_storage.address);
+            const sales_ft_balance = await getBalance(sales.address);
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const carl_ft_balance = await getBalance(carl.pkh);
+            const daniel_ft_balance = await getBalance(daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_4, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_1, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_4, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
+
+            const sale_asset = mkXTZAsset();
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_1, 1),
+                mkBundleItem(nft.address, token_id_4, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
+                as: bob.pkh,
+                amount: `${total_sale_amount}utz`
+            });
+
+            const post_custody_ft_balance = await getBalance(sales_storage.address);
+            const post_sales_ft_balance = await getBalance(sales.address);
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_carl_ft_balance = await getBalance(carl.pkh);
+            const post_daniel_ft_balance = await getBalance(daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_4, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_1, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_4, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
+
+            const nft_share = Math.abs(Math.floor(10000 / bundle_items.length));
+            const price_per_nft = Math.abs(Math.floor(sale_amount * nft_share / 10000));
+            const royalties_per_nft = price_per_nft * (payout_value / 10000);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const fee_value = sale_amount * (payout_value / 10000);
+            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
+            assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - total_sale_amount));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties_per_nft * bundle_items.length)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value)));
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == custody_nft_balance);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_sale == null);
+        });
+
+        it('Buy bundle with XTZ sales (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getBalance(sales_storage.address);
+            const sales_ft_balance = await getBalance(sales.address);
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+            const carl_ft_balance = await getBalance(carl.pkh);
+            const daniel_ft_balance = await getBalance(daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_5, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_2, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_5, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
+
+            const sale_asset = mkXTZAsset();
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_2, 1),
+                mkBundleItem(nft.address, token_id_5, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
+                as: bob.pkh,
+                amount: `${total_sale_amount}utz`
+            });
+
+            const post_custody_ft_balance = await getBalance(sales_storage.address);
+            const post_sales_ft_balance = await getBalance(sales.address);
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+            const post_carl_ft_balance = await getBalance(carl.pkh);
+            const post_daniel_ft_balance = await getBalance(daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_5, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_2, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_5, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
+
+            const nft_share = Math.abs(Math.floor(10000 / bundle_items.length));
+            const price_per_nft = Math.abs(Math.floor(sale_amount * nft_share / 10000));
+            const royalties_per_nft = price_per_nft * (payout_value / 10000);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const fee_value = sale_amount * (payout_value / 10000);
+            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 2 * fee_value;
+
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
+            assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - total_sale_amount));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 +  royalties_per_nft * bundle_items.length)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2 +  royalties_per_nft * bundle_items.length)));
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_sale == null);
+        });
+    });
+
+    describe('Buy bundle with FA12 sales tests', async () => {
+
+        it('Buy bundle with FA12 sales (no royalties, no origin fees, no payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_0, sales_storage.address);
+            const sales_ft_balance = await getFA12Balance(fa12_ft_0, sales.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_0, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_0, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_0, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_0, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_3, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
+
+            const sale_asset = mkFA12Asset(fa12_ft_0.address);
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_3, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`,
+                as: bob.pkh
+            });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_0, sales_storage.address);
+            const post_sales_ft_balance = await getFA12Balance(fa12_ft_0, sales.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_0, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_0, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_0, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_0, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_3, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const rest = sale_amount - protocol_fees;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_sales_ft_balance == sales_ft_balance);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_custody_nft_balance == post_custody_nft_balance && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_sale == null);
+
+        });
+
+        it('Buy bundle with FA12 sales (single royalties, single origin fees, single payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_1, sales_storage.address);
+            const sales_ft_balance = await getFA12Balance(fa12_ft_1, sales.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_1, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_1, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_7, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_1, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_4, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
+
+            const sale_asset = mkFA12Asset(fa12_ft_1.address);
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_1, 1),
+                mkBundleItem(nft.address, token_id_4, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`,
+                as: bob.pkh
+            });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_1, sales_storage.address);
+            const post_sales_ft_balance = await getFA12Balance(fa12_ft_1, sales.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_1, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_1, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_7, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_1, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_4, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
+
+            const nft_share = Math.abs(Math.floor(10000 / bundle_items.length));
+            const price_per_nft = Math.abs(Math.floor(sale_amount * nft_share / 10000));
+            const royalties_per_nft = price_per_nft * (payout_value / 10000);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const fee_value = sale_amount * (payout_value / 10000);
+            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_sales_ft_balance == 0);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties_per_nft * bundle_items.length);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(post_tx_sale == null);
+        });
+
+        it('Buy bundle with FA12 sales (multiple royalties, multiple origin fees, multiple payouts) should succeed', async () => {
+            const storage = await sales_storage.getStorage();
+
+            const custody_ft_balance = await getFA12Balance(fa12_ft_2, sales_storage.address);
+            const sales_ft_balance = await getFA12Balance(fa12_ft_2, sales.address);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
+            const bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            const carl_ft_balance = await getFA12Balance(fa12_ft_2, carl.pkh);
+            const daniel_ft_balance = await getFA12Balance(fa12_ft_2, daniel.pkh);
+            const custody_nft_balance = await getFA2Balance(nft, token_id_8, sales_storage.address);
+            const alice_nft_balance_0 = await getFA2Balance(nft, token_id_2, alice.pkh);
+            const alice_nft_balance_1 = await getFA2Balance(nft, token_id_5, alice.pkh);
+            const bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
+            const bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
+
+            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
+
+            const sale_asset = mkFA12Asset(fa12_ft_2.address);
+
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_2, 1),
+                mkBundleItem(nft.address, token_id_5, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            var sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+            assert(sale != null);
+
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`,
+                as: bob.pkh
+            });
+
+            const post_custody_ft_balance = await getFA12Balance(fa12_ft_2, sales_storage.address);
+            const post_sales_ft_balance = await getFA12Balance(fa12_ft_2, sales.address);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            const post_carl_ft_balance = await getFA12Balance(fa12_ft_2, carl.pkh);
+            const post_daniel_ft_balance = await getFA12Balance(fa12_ft_2, daniel.pkh);
+            const post_custody_nft_balance = await getFA2Balance(nft, token_id_8, sales_storage.address);
+            const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_2, alice.pkh);
+            const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_5, alice.pkh);
+            const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
+            const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
+
+
+            const nft_share = Math.abs(Math.floor(10000 / bundle_items.length));
+            const price_per_nft = Math.abs(Math.floor(sale_amount * nft_share / 10000));
+            const royalties_per_nft = price_per_nft * (payout_value / 10000);
+
+            const protocol_fees = sale_amount * (fee / 10000);
+            const fee_value = sale_amount * (payout_value / 10000);
+            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length- 2 * fee_value;
+
+            assert(post_custody_ft_balance == 0);
+            assert(post_sales_ft_balance == 0);
+            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+            assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+            assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+            assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.sales),
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_8} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
+            );
+            assert(post_tx_sale == null);
+        });
+    });
+
+    describe('Common bundle buy tests', async () => {
+        it('Buy a non existing bundle should fail', async () => {
+            await expectToThrow(async () => {
+                const bundle_items = [
+                    mkBundleItem(nft.address, 1111, 1),
+                    mkBundleItem(nft.address, 22443, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                const sale_asset = mkXTZAsset();
+                await sales.cancel_bundle_sale({
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} 0x${sale_asset}))`,
+                    as: alice.pkh
+                });
+            }, '(Pair "InvalidCondition" "r_cbs0")');
+        });
+
+        it('Buy bundle with XTZ and wrong amount should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, 1111, 1),
+                    mkBundleItem(nft.address, 22443, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                                (Pair None None)
+                                            ))))))`,
+                    as: alice.pkh,
+                });
+                await sales.buy_bundle({
+                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
+                    as: bob.pkh
                 });
             }, '"AMOUNT_MISMATCH"');
         });
@@ -2308,40 +3793,16 @@ describe('Cancel sale tests', async () => {
             const sale_asset = mkXTZAsset();
 
             await sales.cancel_sale({
-                argMichelson: `(Pair "${nft.address}" (Pair 2222 (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair 2222 (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
                 as: bob.pkh,
             });
         }, '(Pair "InvalidCondition" "r_cs0")');
     });
 
-    it('Cancel someone else sale should fail', async () => {
-        await expectToThrow(async () => {
-            const sale_asset = mkXTZAsset();
-            const tokenId = 2222;
-            await sales.sell({
-                argMichelson: `(Pair "${nft.address}"
-                (Pair ${tokenId}
-                    (Pair "${alice.pkh}"
-                        (Pair ${parseInt(XTZ)}
-                            (Pair 0x${sale_asset}
-                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))))`,
-                as: alice.pkh,
-            });
-            await sales.cancel_sale({
-                argMichelson: `(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
-                as: bob.pkh,
-            });
-        }, '(Pair "InvalidCondition" "r_cs1")');
-    });
 
     it('Cancel own sale should succeed', async () => {
         const sale_asset = mkXTZAsset();
-        const tokenId = 2222;
+        const tokenId = 1111;
         const storage = await sales_storage.getStorage();
 
         const tx_sale = await getValueFromBigMap(
@@ -2351,13 +3812,60 @@ describe('Cancel sale tests', async () => {
         );
         assert(tx_sale != null);
         await sales.cancel_sale({
-            argMichelson: `(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
+            argMichelson: `(Pair "${nft.address}" (Pair ${tokenId} (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
             as: alice.pkh,
         });
         const post_tx_sale = await getValueFromBigMap(
             parseInt(storage.sales),
             exprMichelineToJson(`(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
             exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
+        );
+        assert(post_tx_sale == null);
+    });
+
+});
+
+describe('Cancel bundle sale tests', async () => {
+    it('Cancel a non existing bundle sale should fail', async () => {
+        await expectToThrow(async () => {
+            const sale_asset = mkXTZAsset();
+            const bundle_items = [
+                mkBundleItem(nft.address, 9999999, 1),
+                mkBundleItem(nft.address, 3276090, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            await sales.cancel_bundle_sale({
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} 0x${sale_asset}))`,
+                as: bob.pkh,
+            });
+        }, '(Pair "InvalidCondition" "r_cbs0")');
+    });
+
+    it('Cancel own bundle sale should succeed', async () => {
+        const sale_asset = mkXTZAsset();
+        const bundle_items = [
+            mkBundleItem(nft.address, 1111, 1),
+            mkBundleItem(nft.address, 22443, 1),
+        ];
+
+        const bundle = mkPackedBundle(bundle_items);
+        const storage = await sales_storage.getStorage();
+
+        const tx_sale = await getValueFromBigMap(
+            parseInt(storage.bundle_sales),
+            exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+            exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+        );
+        assert(tx_sale != null);
+        await sales.cancel_bundle_sale({
+            argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} 0x${sale_asset}))`,
+            as: alice.pkh,
+        });
+        const post_tx_sale = await getValueFromBigMap(
+            parseInt(storage.bundle_sales),
+            exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+            exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
         );
         assert(post_tx_sale == null);
     });
