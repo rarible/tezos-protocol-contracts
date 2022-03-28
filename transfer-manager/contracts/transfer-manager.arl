@@ -180,12 +180,19 @@ entry manage_transfers(
       | XTZ -> ()
       end;
 
-      //First process the total amount of the order, and the protocol fees
-      var total = process_total_amount(mt_ft_amount, mt_protocol_fees, mt_origin_fees);
-      var rest_fee = process_protocol_fees(total, mt_ft_amount, mt_protocol_fees * 2);
+      var protocol_fees = bp(mt_ft_amount, mt_protocol_fees);
+      var total_after_all_fees: nat = abs(mt_ft_amount - protocol_fees);
 
-      var total_after_all_fees = rest_fee[0];
-      var protocol_fees = rest_fee[1];
+      //Then process the origin fees, and the matching operations
+      var all_origin_fees = process_fees(
+        mt_ft_asset,
+        mt_ft_asset_type,
+        mt_ft_amount,
+        mt_origin_fees,
+        ft_origin,
+        ft_operations);
+      total_after_all_fees -= all_origin_fees[0];
+      ft_operations := all_origin_fees[1];
 
       var share_per_nft = abs(floor(10000/length(mt_bundle)));
       for bundle_nft in mt_bundle do
@@ -221,24 +228,13 @@ entry manage_transfers(
         );
       done;
 
-      //Then process the bid origin fees, and the matching operations
-      var all_origin_fees = process_fees(
-        mt_ft_asset,
-        mt_ft_asset_type,
-        mt_ft_amount,
-        mt_origin_fees,
-        ft_origin,
-        ft_operations);
-      total_after_all_fees -= all_origin_fees[0];
-      ft_operations := all_origin_fees[1];
-
       //Finally process the auction and bid payouts, and the matching operations
-      var all_payouts =  process_payouts(
+      var all_payouts =  process_fees(
         mt_ft_asset,
         mt_ft_asset_type,
-        mt_ft_amount,
-        ft_origin,
+        total_after_all_fees,
         mt_payouts,
+        ft_origin,
         ft_operations);
 
       total_after_all_fees -= all_payouts[0];
@@ -318,30 +314,6 @@ function bp(bp_value : nat, bp_op_value : nat) : nat {
   return abs(floor(bp_value * bp_op_value / 10000))
 }
 
-function sub_fee(sf_value : nat, sf_fee : nat) : nat * nat {
-  return (if sf_value > sf_fee then (sub_nat (sf_value, sf_fee), sf_fee) else (0, sf_value))
-}
-
-function sub_fee_in_bp(sbib_value : nat, sbib_total : nat, sbib_fee_in_bp : nat) : nat * nat {
-  return sub_fee(sbib_value, bp(sbib_total, sbib_fee_in_bp))
-}
-
-function process_total_amount(cta_amount: nat, cta_fees: nat, cta_order_origin_fees: list<part>) : nat {
- var total = cta_amount + bp(cta_amount, cta_fees);
-  for item in cta_order_origin_fees do
-    total += bp(cta_amount, item.part_value)
-  done;
-  return total
-}
-
-function process_protocol_fees(
-    tpf_total_amount : nat,
-    tpf_amount : nat,
-    tpf_protocol_fees : nat,
-): nat * nat {
-    return sub_fee_in_bp(tpf_total_amount, tpf_amount, tpf_protocol_fees)
-}
-
 function process_fees(
     pf_asset: bytes,
     pf_asset_type: asset_type,
@@ -384,30 +356,7 @@ function process_royalties(
     return ((royalties, transactions))
 }
 
-function process_payouts(
-    pp_asset: bytes,
-    pp_asset_type: asset_type,
-    pp_amount: nat,
-    pp_from: address,
-    pp_payouts: list<part>,
-    pp_operations: list<process_transfer_param>
-): nat * list<process_transfer_param> {
-    var sum_bps: nat = 0;
-    for payout in pp_payouts do
-      var current_amount = bp(pp_amount, payout.part_value);
-      sum_bps += current_amount;
-      if(current_amount > 0) then (
-        pp_operations.prepend({
-          ptp_asset_type = pp_asset_type;
-          ptp_asset = pp_asset;
-          ptp_amount = current_amount;
-          ptp_origin = pp_from;
-          ptp_destination = payout.part_account
-        });
-      );
-    done;
-    return ((sum_bps, pp_operations))
-}
+
 
 function merge_operations(mp_parts: list<process_transfer_param>, mp_parts_to_add: list<list<process_transfer_param>>) : list<process_transfer_param> {
   for part_list in mp_parts_to_add do

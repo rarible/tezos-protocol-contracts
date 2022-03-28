@@ -16,6 +16,7 @@ constant CANT_UNPACK_BUNDLE: string = "CANT_UNPACK_BUNDLE"
 constant WRONG_XTZ_PAYLOAD: string = "WRONG_XTZ_PAYLOAD"
 constant MAX_BUNDLE_SIZE: string = "MAX_BUNDLE_SIZE"
 constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
+constant FEES_OVER_SELLER_LIMIT: string = "FEES_OVER_SELLER_LIMIT"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -23,6 +24,7 @@ constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
 
 variable owner_candidate : option<address> = none
 variable max_bundle_items : nat = 10
+variable max_fees_limit : nat = 10000
 
 entry declare_ownership(candidate : address) {
   called by owner
@@ -54,6 +56,13 @@ entry set_protocol_fee(spf : nat) {
   called by owner
   effect {
     protocol_fee := spf;
+  }
+}
+
+entry set_fees_limit(sfl : nat) {
+  called by owner
+  effect {
+    max_fees_limit := sfl;
   }
 }
 
@@ -126,20 +135,22 @@ record bundle_item {
 }
 
 record bundle_sale {
-  bundle_sale_payouts : list<part>;
   bundle_sale_origin_fees : list<part>;
+  bundle_sale_payouts : list<part>;
   bundle_sale_amount : nat;
   bundle_sale_data_type  : option<bytes>;
   bundle_sale_data       : option<bytes>;
+  bundle_sale_max_fees_base_boint: nat;
 }
 
 record sale {
-  sale_payouts : list<part>;
   sale_origin_fees : list<part>;
+  sale_payouts : list<part>;
   sale_amount : nat;
   sale_asset_qty: nat;
   sale_data_type  : option<bytes>;
   sale_data       : option<bytes>;
+  sale_max_fees_base_boint: nat;
 }
 
 entry sell (
@@ -151,7 +162,11 @@ entry sell (
     require {
         r_s0: s_sale.sale_amount > 0;
         r_s1: s_sale.sale_asset_qty > 0;
-        r_s2: sale_exists(s_asset_contract, s_asset_token_id, caller, s_sale_type, s_sale_asset) = false
+        r_s2: sale_exists(s_asset_contract, s_asset_token_id, caller, s_sale_type, s_sale_asset) = false;
+        r_s3: s_sale.sale_max_fees_base_boint > 0
+                and s_sale.sale_max_fees_base_boint <= max_fees_limit
+                and s_sale.sale_max_fees_base_boint > protocol_fee
+                and process_sum_fees(s_sale.sale_origin_fees) + protocol_fee <= s_sale.sale_max_fees_base_boint;
     }
     effect {
       var unpack_result = verify_and_unpack_asset(s_sale_type, s_sale_asset);
@@ -175,7 +190,12 @@ entry sell_bundle (
   sb_sale : bundle_sale) {
     require {
         r_sb0: sb_sale.bundle_sale_amount > 0;
-        r_sb1: bundle_sale_exists(sb_bundle, caller, sb_sale_type, sb_sale_asset) = false
+        r_sb1: bundle_sale_exists(sb_bundle, caller, sb_sale_type, sb_sale_asset) = false;
+        r_sb2: sb_sale.bundle_sale_max_fees_base_boint > 0
+              and sb_sale.bundle_sale_max_fees_base_boint <= max_fees_limit
+              and sb_sale.bundle_sale_max_fees_base_boint > protocol_fee
+              and process_sum_fees(sb_sale.bundle_sale_origin_fees) + protocol_fee <= sb_sale.bundle_sale_max_fees_base_boint;
+
     }
     effect {
       var unpack_result = verify_and_unpack_asset(sb_sale_type, sb_sale_asset);
@@ -199,16 +219,19 @@ entry buy(
   b_asset_token_id: nat,
   b_seller: address,
   b_sale_type: asset_type,
-  b_sale_asset: bytes){
+  b_sale_asset: bytes,
+  b_origin_fees: list<part>,
+  b_payouts: list<part>){
     effect {
       var current_sale = require_some(get_sale(b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset), MISSING_SALE);
+      dorequire(process_sum_fees(current_sale.sale_origin_fees) + process_sum_fees(b_origin_fees) + protocol_fee <= current_sale.sale_max_fees_base_boint, FEES_OVER_SELLER_LIMIT);
 
       var unpack_result = verify_and_unpack_asset(b_sale_type, b_sale_asset);
       var buy_asset_contract = unpack_result[0];
       var buy_asset_token_id = unpack_result[1];
 
       if(b_sale_type = XTZ) then (
-        dorequire(transferred = (process_total_amount(current_sale.sale_amount, protocol_fee, current_sale.sale_origin_fees) * 1utz), AMOUNT_MISMATCH)
+        dorequire(transferred = current_sale.sale_amount * 1utz, AMOUNT_MISMATCH)
       );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
@@ -227,8 +250,8 @@ entry buy(
           b_seller,
           sales_storage,
           protocol_fee,
-          current_sale.sale_origin_fees,
-          current_sale.sale_payouts
+          current_sale.sale_origin_fees.concat(b_origin_fees),
+          current_sale.sale_payouts.concat(b_payouts)
         )
       );
 
@@ -241,14 +264,18 @@ entry buy_bundle(
   bb_bundle: bytes,
   bb_seller: address,
   bb_sale_type: asset_type,
-  bb_sale_asset: bytes){
+  bb_sale_asset: bytes,
+  bb_origin_fees: list<part>,
+  bb_payouts: list<part>
+  ){
     effect {
       var current_sale = require_some(get_bundle_sale(bb_bundle, bb_seller, bb_sale_type, bb_sale_asset), MISSING_BUNDLE_SALE);
+      dorequire(process_sum_fees(current_sale.bundle_sale_origin_fees) + process_sum_fees(bb_origin_fees) + protocol_fee <= current_sale.bundle_sale_max_fees_base_boint, FEES_OVER_SELLER_LIMIT);
 
       var unpacked_bundle = verify_and_unpack_bundle(bb_bundle);
 
       if(bb_sale_type = XTZ) then (
-        dorequire(transferred = (process_total_amount(current_sale.bundle_sale_amount, protocol_fee, current_sale.bundle_sale_origin_fees) * 1utz), AMOUNT_MISMATCH)
+        dorequire(transferred = current_sale.bundle_sale_amount * 1utz, AMOUNT_MISMATCH)
       );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
@@ -263,8 +290,8 @@ entry buy_bundle(
           bb_seller,
           sales_storage,
           protocol_fee,
-          current_sale.bundle_sale_origin_fees,
-          current_sale.bundle_sale_payouts
+          current_sale.bundle_sale_origin_fees.concat(bb_origin_fees),
+          current_sale.bundle_sale_payouts.concat(bb_payouts)
         )
       );
 
@@ -426,10 +453,10 @@ function bp(bp_value : nat, bp_op_value : nat) : nat {
   return abs(floor(bp_value * bp_op_value / 10000))
 }
 
-function process_total_amount(cta_amount: nat, cta_fees: nat, cta_order_origin_fees: list<part>) : nat {
- var total = cta_amount + bp(cta_amount, cta_fees);
-  for item in cta_order_origin_fees do
-    total += bp(cta_amount, item.part_value)
+function process_sum_fees(psf_fees: list<part>): nat {
+  var total = 0;
+  for fee in psf_fees do
+    total := total + fee.part_value;
   done;
   return total
 }

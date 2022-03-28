@@ -56,6 +56,8 @@ const token_id_9 = 9;
 
 const fee = 250;
 const payout_value = 100;
+const max_fees = 10000;
+
 const sale_amount = "1000000";
 const qty = "1";
 // accounts
@@ -911,7 +913,17 @@ describe('Set sales tests', async () => {
             );
             assert(sale == null);
             await sales.sell({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair {} (Pair {} (Pair ${sale_amount} (Pair ${qty} (Pair None None)))))))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${sale_asset}
+                                    (Pair {}
+                                        (Pair {}
+                                            (Pair ${sale_amount}
+                                                (Pair ${qty}
+                                                    (Pair None
+                                                        (Pair None ${max_fees}))))))))))`,
                 as: alice.pkh,
             });
 
@@ -941,6 +953,9 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
+                   },
+                   {
+                       "int": "${max_fees}"
                    }
                 ]
              }`);
@@ -957,7 +972,17 @@ describe('Set sales tests', async () => {
             );
             assert(sale == null);
             await sales.sell({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${sale_amount} (Pair ${qty} (Pair None None)))))))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_1}
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                        (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                            (Pair ${sale_amount}
+                                                (Pair ${qty}
+                                                    (Pair None
+                                                        (Pair None ${max_fees}))))))))))`,
                 as: alice.pkh,
             });
 
@@ -997,7 +1022,10 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                    }
                 ]
              }`);
 
@@ -1023,8 +1051,9 @@ describe('Set sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))))`,
                 as: alice.pkh,
             });
 
@@ -1080,7 +1109,10 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                    }
                 ]
              }`);
 
@@ -1108,8 +1140,9 @@ describe('Set sales tests', async () => {
                                 (Pair {}
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))))`,
                 as: alice.pkh,
             });
 
@@ -1139,7 +1172,10 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1163,8 +1199,9 @@ describe('Set sales tests', async () => {
                                 (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))))`,
                 as: alice.pkh,
             });
 
@@ -1204,7 +1241,10 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1228,8 +1268,9 @@ describe('Set sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))))`,
                 as: alice.pkh,
             });
 
@@ -1285,7 +1326,10 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1311,8 +1355,9 @@ describe('Set sales tests', async () => {
                                 (Pair {}
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))))`,
                 as: alice.pkh,
             });
 
@@ -1342,7 +1387,10 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1366,8 +1414,9 @@ describe('Set sales tests', async () => {
                                 (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))))`,
                 as: alice.pkh,
             });
 
@@ -1407,7 +1456,10 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1431,8 +1483,9 @@ describe('Set sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))))`,
                 as: alice.pkh,
             });
 
@@ -1488,7 +1541,10 @@ describe('Set sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1510,8 +1566,9 @@ describe('Set sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -1528,8 +1585,9 @@ describe('Set sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -1547,8 +1605,9 @@ describe('Set sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))))`,
                     as: alice.pkh,
                 });
             }, '"WRONG_XTZ_PAYLOAD"');
@@ -1566,8 +1625,9 @@ describe('Set sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
                                             (Pair 0
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_s1")');
@@ -1585,8 +1645,9 @@ describe('Set sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair 0
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_s0")');
@@ -1604,8 +1665,9 @@ describe('Set sales tests', async () => {
                                     (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_s2")');
@@ -1631,7 +1693,14 @@ describe('Set bundle sales tests', async () => {
             );
             assert(sale == null);
             await sales.sell_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair {} (Pair {} (Pair ${sale_amount} (Pair None None)))))))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair ${parseInt(FA2)}
+                            (Pair 0x${sale_asset}
+                                (Pair {}
+                                    (Pair {}
+                                        (Pair ${sale_amount}
+                                            (Pair None (Pair None ${max_fees}))))))))`,
                 as: alice.pkh,
             });
 
@@ -1658,7 +1727,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1682,7 +1754,15 @@ describe('Set bundle sales tests', async () => {
             );
             assert(sale == null);
             await sales.sell_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${sale_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${sale_amount} (Pair None None)))))))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair ${parseInt(FA2)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                    (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair None
+                                                (Pair None ${max_fees}))))))))`,
                 as: alice.pkh,
             });
 
@@ -1719,7 +1799,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
 
@@ -1751,8 +1834,9 @@ describe('Set bundle sales tests', async () => {
                             (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))))`,
                 as: alice.pkh,
             });
 
@@ -1805,7 +1889,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
 
@@ -1838,8 +1925,8 @@ describe('Set bundle sales tests', async () => {
                             (Pair {}
                                 (Pair {}
                                     (Pair ${sale_amount}
-                                            (Pair None None)
-                                        ))))))`,
+                                            (Pair None (Pair None ${max_fees})
+                                        )))))))`,
                 as: alice.pkh,
             });
 
@@ -1866,7 +1953,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1894,8 +1984,9 @@ describe('Set bundle sales tests', async () => {
                         (Pair { Pair "${carl.pkh}" ${payout_value}}
                             (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                 (Pair ${sale_amount}
-                                        (Pair None None)
-                                    ))))))`,
+                                        (Pair None
+                                            (Pair None ${max_fees})
+                                    )))))))`,
                 as: alice.pkh,
             });
 
@@ -1932,7 +2023,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -1960,8 +2054,9 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
-                                                (Pair None None)
-                                            ))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))`,
                 as: alice.pkh,
             });
 
@@ -2014,7 +2109,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -2044,8 +2142,9 @@ describe('Set bundle sales tests', async () => {
                                 (Pair {}
                                     (Pair {}
                                         (Pair ${sale_amount}
-                                                (Pair None None)
-                                            ))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))`,
                 as: alice.pkh,
             });
 
@@ -2072,7 +2171,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -2100,8 +2202,9 @@ describe('Set bundle sales tests', async () => {
                             (Pair { Pair "${carl.pkh}" ${payout_value}}
                                 (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
-                                            (Pair None None)
-                                        ))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))`,
                 as: alice.pkh,
             });
 
@@ -2138,7 +2241,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -2166,8 +2272,9 @@ describe('Set bundle sales tests', async () => {
                             (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
-                                            (Pair None None)
-                                        ))))))`,
+                                            (Pair None
+                                                (Pair None ${max_fees})
+                                        )))))))`,
                 as: alice.pkh,
             });
 
@@ -2220,7 +2327,10 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
-                   }
+                   },
+                   {
+                    "int": "${max_fees}"
+                }
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
@@ -2245,8 +2355,9 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
-                                                (Pair None None)
-                                            ))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -2266,8 +2377,9 @@ describe('Set bundle sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${sale_amount}
-                                                    (Pair None None)
-                                                ))))))`,
+                                                    (Pair None
+                                                        (Pair None ${max_fees})
+                                                )))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -2288,8 +2400,9 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
-                                                (Pair None None)
-                                            ))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))`,
                     as: alice.pkh,
                 });
             }, '"WRONG_XTZ_PAYLOAD"');
@@ -2306,8 +2419,9 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
-                                                (Pair None None)
-                                            ))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_BUNDLE"');
@@ -2328,8 +2442,9 @@ describe('Set bundle sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${sale_amount}
-                                                    (Pair None None)
-                                                ))))))`,
+                                                    (Pair None
+                                                        (Pair None ${max_fees})
+                                                )))))))`,
                     as: alice.pkh,
                 });
             }, '"INVALID_BUNDLE_ITEM_QTY"');
@@ -2350,8 +2465,9 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair 0
-                                                (Pair None None)
-                                            ))))))`,
+                                                (Pair None
+                                                    (Pair None ${max_fees})
+                                            )))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb0")');
@@ -2372,8 +2488,9 @@ describe('Set bundle sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${sale_amount}
-                                                    (Pair None None)
-                                                ))))))`,
+                                                    (Pair None
+                                                        (Pair None ${max_fees})
+                                                )))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb1")');
@@ -2397,18 +2514,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_0, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
-
-            assert(custody_ft_balance == 0);
-            assert(sales_ft_balance == 0);
-            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
-            assert(bob_ft_balance == initial_fa2_ft_amount / 2);
-            assert(carl_ft_balance == 0);
-            assert(daniel_ft_balance == 0);
-            assert(custody_nft_balance == 0);
-            assert(alice_nft_balance == initial_nft_amount);
-            assert(bob_nft_balance == 0);
-
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
 
             var sale_record = await getValueFromBigMap(
@@ -2419,7 +2524,13 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset}))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair {} {}))))))`,
                 as: bob.pkh,
             });
 
@@ -2436,13 +2547,13 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const rest = sale_amount - protocol_fees;
 
-            assert(post_custody_ft_balance == 0);
+            assert(post_custody_ft_balance == 0 && custody_ft_balance == post_custody_ft_balance);
             assert(post_sales_ft_balance == sales_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
-            assert(post_custody_nft_balance == post_custody_nft_balance && post_custody_nft_balance == 0);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -2467,17 +2578,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_1, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_1, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
-
-            assert(custody_ft_balance == 0);
-            assert(sales_ft_balance == 0);
-            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
-            assert(bob_ft_balance == initial_fa2_ft_amount / 2);
-            assert(daniel_ft_balance == 0);
-            assert(custody_nft_balance == 0);
-            assert(alice_nft_balance == initial_nft_amount);
-            assert(bob_nft_balance == 0);
-
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString());
 
             var sale_record = await getValueFromBigMap(
@@ -2488,7 +2588,13 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset}))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_1}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: bob.pkh,
             });
 
@@ -2505,14 +2611,15 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties -  fee_value;
+            const rest = sale_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == 0);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
             assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -2539,17 +2646,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_2, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_2, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
-
-            assert(custody_ft_balance == 0);
-            assert(sales_ft_balance == 0);
-            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
-            assert(bob_ft_balance == initial_fa2_ft_amount / 2);
-            assert(daniel_ft_balance == 0);
-            assert(custody_nft_balance == 0);
-            assert(alice_nft_balance == initial_nft_amount);
-            assert(bob_nft_balance == 0);
-
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString());
 
             var sale_record = await getValueFromBigMap(
@@ -2560,7 +2656,13 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_2} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset}))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_2}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: bob.pkh,
             });
 
@@ -2577,14 +2679,15 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = sale_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == 0);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties + payout * 2);
             assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -2613,8 +2716,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_3, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_3, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
-
             const sale_asset = mkXTZAsset();
 
             var sale_record = await getValueFromBigMap(
@@ -2625,8 +2726,14 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_3} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
-                amount: `${total_sale_amount}utz`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_3}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair {} {}))))))`,
+                amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -2649,7 +2756,7 @@ describe('Buy tests', async () => {
             //Can't do this assert because bob balance will change because of gas fees
             //assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees)));
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -2675,8 +2782,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_4, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_4, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
-
             const sale_asset = mkXTZAsset();
 
             var sale_record = await getValueFromBigMap(
@@ -2687,8 +2792,14 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_4} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
-                amount: `${total_sale_amount}utz`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_4}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -2706,15 +2817,16 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties - fee_value;
+            const rest = sale_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
             assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
-            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest - payout * 2)));
             //Can't do this assert because bob balance will change because of gas fees
             //assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value)));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(payout * 2)));
             assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -2740,8 +2852,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_5, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_5, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
-
             const sale_asset = mkXTZAsset();
 
             var sale_record = await getValueFromBigMap(
@@ -2752,8 +2862,14 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_5} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
-                amount: `${total_sale_amount}utz`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_5}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -2770,15 +2886,16 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = sale_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
             assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
-            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest - 4 * payout)));
             //Can't do this assert because bob balance will change because of gas fees
             //assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2 + royalties)));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties + payout * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 + royalties + payout * 2)));
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -2807,17 +2924,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_6, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_6, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
-
-            assert(custody_ft_balance == 0);
-            assert(sales_ft_balance == 0);
-            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
-            assert(bob_ft_balance == initial_fa2_ft_amount / 2);
-            assert(daniel_ft_balance == 0);
-            assert(custody_nft_balance == 0);
-            assert(alice_nft_balance == initial_nft_amount);
-            assert(bob_nft_balance == 0);
-
             const sale_asset = mkFA12Asset(fa12_ft_0.address);
 
             var sale_record = await getValueFromBigMap(
@@ -2828,7 +2934,13 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_6} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset}))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_6}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair {} {}))))))`,
                 as: bob.pkh,
             });
 
@@ -2848,9 +2960,9 @@ describe('Buy tests', async () => {
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == 0);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -2877,18 +2989,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_7, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_7, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
-
-            assert(custody_ft_balance == 0);
-            assert(sales_ft_balance == 0);
-            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
-            assert(bob_ft_balance == initial_fa2_ft_amount / 2);
-            assert(carl_ft_balance == 0);
-            assert(daniel_ft_balance == 0);
-            assert(custody_nft_balance == 0);
-            assert(alice_nft_balance == initial_nft_amount);
-            assert(bob_nft_balance == 0);
-
             const sale_asset = mkFA12Asset(fa12_ft_1.address);
 
             var sale_record = await getValueFromBigMap(
@@ -2899,7 +2999,13 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_7} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset}))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_7}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: bob.pkh,
             });
 
@@ -2916,15 +3022,16 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties - fee_value;
+            const rest = sale_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
-            assert(post_sales_ft_balance == sales_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
-            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
+            assert(post_sales_ft_balance == 0);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -2949,18 +3056,6 @@ describe('Buy tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_8, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_8, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
-
-            assert(custody_ft_balance == 0);
-            assert(sales_ft_balance == 0);
-            assert(alice_ft_balance == initial_fa2_ft_amount / 2);
-            assert(bob_ft_balance == initial_fa2_ft_amount / 2);
-            assert(carl_ft_balance == 0);
-            assert(daniel_ft_balance == 0);
-            assert(custody_nft_balance == 0);
-            assert(alice_nft_balance == initial_nft_amount);
-            assert(bob_nft_balance == 0);
-
             const sale_asset = mkFA12Asset(fa12_ft_2.address);
 
             var sale_record = await getValueFromBigMap(
@@ -2971,7 +3066,13 @@ describe('Buy tests', async () => {
             assert(sale_record != null);
 
             await sales.buy({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_8} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset}))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_8}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: bob.pkh,
             });
 
@@ -2988,15 +3089,16 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = sale_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == 0);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties);
-            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -3014,7 +3116,12 @@ describe('Buy tests', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkXTZAsset();
                 await sales.buy({
-                    argMichelson: `(Pair "${nft.address}" (Pair 1111 (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset}))))`,
+                    argMichelson: `
+                        (Pair "${nft.address}"
+                            (Pair 1111
+                                (Pair "${alice.pkh}"
+                                    (Pair ${parseInt(FA12)}
+                                        (Pair 0x${sale_asset} (Pair {} {}))))))`,
                     as: bob.pkh,
                 });
             }, '"MISSING_SALE"');
@@ -3033,12 +3140,18 @@ describe('Buy tests', async () => {
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${sale_amount}
                                                 (Pair ${qty}
-                                                    (Pair None None)
-                                                ))))))))`,
+                                                    (Pair None
+                                                        (Pair None ${max_fees})
+                                                )))))))))`,
                     as: alice.pkh,
                 });
                 await sales.buy({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${tokenId} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset}))))`,
+                    argMichelson: `
+                        (Pair "${nft.address}"
+                            (Pair ${tokenId}
+                                    (Pair "${alice.pkh}"
+                                        (Pair ${parseInt(XTZ)}
+                                            (Pair 0x${sale_asset} (Pair {} {}))))))`,
                     as: bob.pkh,
                 });
             }, '"AMOUNT_MISMATCH"');
@@ -3064,8 +3177,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
-
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
 
             const bundle_items = [
@@ -3082,7 +3193,12 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${sale_asset}
+                                    (Pair {} {})))))`,
                 as: bob.pkh,
             });
 
@@ -3104,9 +3220,9 @@ describe('Buy bundle tests', async () => {
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == sales_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_custody_nft_balance == post_custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3136,8 +3252,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
-
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_1.toString());
 
             const bundle_items = [
@@ -3154,7 +3268,12 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: bob.pkh,
             });
 
@@ -3176,14 +3295,15 @@ describe('Buy bundle tests', async () => {
 
             const protocol_fees = sale_amount * (fee / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == 0);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties_per_nft * bundle_items.length);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
             assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3214,8 +3334,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
-
             const sale_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_2.toString());
 
             const bundle_items = [
@@ -3232,7 +3350,13 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA2)} 0x${sale_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                )))))`,
                 as: bob.pkh
             });
 
@@ -3254,14 +3378,15 @@ describe('Buy bundle tests', async () => {
 
             const protocol_fees = sale_amount * (fee / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length- 2 * fee_value;
+            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == 0);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2);
             assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3294,8 +3419,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
-
             const sale_asset = mkXTZAsset();
 
             const bundle_items = [
@@ -3312,9 +3435,14 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair {} {})))))`,
                 as: bob.pkh,
-                amount: `${total_sale_amount}utz`,
+                amount: `${sale_amount}utz`,
             });
 
 
@@ -3336,9 +3464,9 @@ describe('Buy bundle tests', async () => {
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
             assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
             assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
-            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - total_sale_amount));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - sale_amount));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees)));
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3368,8 +3496,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
-
             const sale_asset = mkXTZAsset();
 
             const bundle_items = [
@@ -3386,9 +3512,14 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: bob.pkh,
-                amount: `${total_sale_amount}utz`
+                amount: `${sale_amount}utz`,
             });
 
             const post_custody_ft_balance = await getBalance(sales_storage.address);
@@ -3409,14 +3540,15 @@ describe('Buy bundle tests', async () => {
 
             const protocol_fees = sale_amount * (fee / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
             assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
-            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
-            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - total_sale_amount));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties_per_nft * bundle_items.length)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value)));
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest - payout * 2)));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - sale_amount));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties_per_nft * bundle_items.length)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(payout * 2)));
             assert(post_custody_nft_balance == 0 && post_custody_nft_balance == custody_nft_balance);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3446,8 +3578,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
-
             const sale_asset = mkXTZAsset();
 
             const bundle_items = [
@@ -3464,9 +3594,14 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: bob.pkh,
-                amount: `${total_sale_amount}utz`
+                amount: `${sale_amount}utz`,
             });
 
             const post_custody_ft_balance = await getBalance(sales_storage.address);
@@ -3487,14 +3622,15 @@ describe('Buy bundle tests', async () => {
 
             const protocol_fees = sale_amount * (fee / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 2 * fee_value;
+            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
             assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
-            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
-            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - total_sale_amount));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 +  royalties_per_nft * bundle_items.length)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2 +  royalties_per_nft * bundle_items.length)));
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest - 4 * payout)));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - sale_amount));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 +  royalties_per_nft * bundle_items.length + payout * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 +  royalties_per_nft * bundle_items.length + payout * 2)));
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3527,8 +3663,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000));
-
             const sale_asset = mkFA12Asset(fa12_ft_0.address);
 
             const bundle_items = [
@@ -3545,8 +3679,13 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`,
-                as: bob.pkh
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(FA12)}
+                                (Pair 0x${sale_asset}
+                                    (Pair {} {})))))`,
+                as: bob.pkh,
             });
 
             const post_custody_ft_balance = await getFA12Balance(fa12_ft_0, sales_storage.address);
@@ -3567,9 +3706,9 @@ describe('Buy bundle tests', async () => {
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == sales_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_custody_nft_balance == post_custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3600,8 +3739,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_1, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_4, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000)));
-
             const sale_asset = mkFA12Asset(fa12_ft_1.address);
 
             const bundle_items = [
@@ -3618,8 +3755,13 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`,
-                as: bob.pkh
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(FA12)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
+                as: bob.pkh,
             });
 
             const post_custody_ft_balance = await getFA12Balance(fa12_ft_1, sales_storage.address);
@@ -3640,14 +3782,15 @@ describe('Buy bundle tests', async () => {
 
             const protocol_fees = sale_amount * (fee / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+            const rest = sale_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == 0);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties_per_nft * bundle_items.length);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
             assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3677,8 +3820,6 @@ describe('Buy bundle tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
 
-            const total_sale_amount = Math.ceil(parseInt(sale_amount) * (1 + fee / 10000) + (parseInt(sale_amount) * (payout_value / 10000) * 2));
-
             const sale_asset = mkFA12Asset(fa12_ft_2.address);
 
             const bundle_items = [
@@ -3695,7 +3836,13 @@ describe('Buy bundle tests', async () => {
             assert(sale != null);
 
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(FA12)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                )))))`,
                 as: bob.pkh
             });
 
@@ -3711,21 +3858,21 @@ describe('Buy bundle tests', async () => {
             const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_2, bob.pkh);
             const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_5, bob.pkh);
 
-
             const nft_share = Math.abs(Math.floor(10000 / bundle_items.length));
             const price_per_nft = Math.abs(Math.floor(sale_amount * nft_share / 10000));
             const royalties_per_nft = price_per_nft * (payout_value / 10000);
 
             const protocol_fees = sale_amount * (fee / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length- 2 * fee_value;
+            const rest = sale_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
             assert(post_sales_ft_balance == 0);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
-            assert(post_bob_ft_balance == bob_ft_balance - total_sale_amount);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
+            assert(post_bob_ft_balance == bob_ft_balance - sale_amount);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2);
             assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3774,12 +3921,12 @@ describe('Buy bundle tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
-                                                (Pair None None)
-                                            ))))))`,
+                                                (Pair None (Pair None ${max_fees})
+                                            )))))))`,
                     as: alice.pkh,
                 });
                 await sales.buy_bundle({
-                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
                     as: bob.pkh
                 });
             }, '"AMOUNT_MISMATCH"');
