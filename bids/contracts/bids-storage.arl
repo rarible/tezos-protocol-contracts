@@ -84,8 +84,8 @@ variable bids_contract : option<address> = none
 variable transfer_manager : option<address> = none
 
 record bid {
-  bid_payouts : list<part>;
   bid_origin_fees : list<part>;
+  bid_payouts : list<part>;
   bid_amount : nat;
   bid_asset_qty: nat;
   bid_data_type  : option<bytes>;
@@ -93,8 +93,8 @@ record bid {
 }
 
 record bundle_bid {
-  bundle_bid_payouts : list<part>;
   bundle_bid_origin_fees : list<part>;
+  bundle_bid_payouts : list<part>;
   bundle_bid_amount : nat;
   bundle_bid_data_type  : option<bytes>;
   bundle_bid_data       : option<bytes>;

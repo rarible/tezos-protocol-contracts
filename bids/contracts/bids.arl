@@ -105,8 +105,8 @@ record fees {
 }
 
 record bid {
-  bid_payouts : list<part>;
   bid_origin_fees : list<part>;
+  bid_payouts : list<part>;
   bid_amount : nat;
   bid_asset_qty: nat;
   bid_data_type  : option<bytes>;
@@ -120,8 +120,8 @@ record bundle_item {
 }
 
 record bundle_bid {
-  bundle_bid_payouts : list<part>;
   bundle_bid_origin_fees : list<part>;
+  bundle_bid_payouts : list<part>;
   bundle_bid_amount : nat;
   bundle_bid_data_type  : option<bytes>;
   bundle_bid_data       : option<bytes>;
@@ -142,15 +142,13 @@ entry put_bid(
       var is_xtz = (pb_bid_type = XTZ);
       var unpack_result = verify_and_unpack_asset(pb_bid_type, pb_bid_asset);
 
-      var total_amount = process_total_amount(pb_bid.bid_amount, protocol_fee, pb_bid.bid_origin_fees);
       var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
           var current_bid_data = opt_get(current_bid);
-          var previous_total_amount = process_total_amount(current_bid_data.bid_amount, protocol_fee, current_bid_data.bid_origin_fees);
           transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pb_bid_type;
             ptp_asset = pb_bid_asset;
-            ptp_amount = previous_total_amount;
+            ptp_amount = current_bid_data.bid_amount;
             ptp_origin = bids_storage;
             ptp_destination = caller
           }]);
@@ -160,12 +158,12 @@ entry put_bid(
         transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pb_bid_type;
             ptp_asset = pb_bid_asset;
-            ptp_amount = total_amount;
+            ptp_amount = pb_bid.bid_amount;
             ptp_origin = caller;
             ptp_destination = bids_storage
         }]);
       ) else (
-        dorequire(transferred = (total_amount * 1utz), BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pb_bid.bid_amount * 1utz), BID_AMOUNT_MISMATCH);
       );
 
 
@@ -196,15 +194,13 @@ entry put_floor_bid(
       var is_xtz = (pfb_bid_type = XTZ);
       var unpack_result = verify_and_unpack_asset(pfb_bid_type, pfb_bid_asset);
 
-      var total_amount = process_total_amount(pfb_bid.bid_amount, protocol_fee, pfb_bid.bid_origin_fees);
       var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
           var current_bid_data = opt_get(current_bid);
-          var previous_total_amount = process_total_amount(current_bid_data.bid_amount, protocol_fee, current_bid_data.bid_origin_fees);
           transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pfb_bid_type;
             ptp_asset = pfb_bid_asset;
-            ptp_amount = previous_total_amount;
+            ptp_amount = current_bid_data.bid_amount;
             ptp_origin = bids_storage;
             ptp_destination = caller
           }]);
@@ -214,12 +210,12 @@ entry put_floor_bid(
         transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pfb_bid_type;
             ptp_asset = pfb_bid_asset;
-            ptp_amount = total_amount;
+            ptp_amount = pfb_bid.bid_amount;
             ptp_origin = caller;
             ptp_destination = bids_storage
         }]);
       ) else (
-        dorequire(transferred = (total_amount * 1utz), BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pfb_bid.bid_amount * 1utz), BID_AMOUNT_MISMATCH);
       );
 
       transfer transferred to bids_storage call set_floor_bid<address * address * asset_type * bytes * bid>(
@@ -249,15 +245,13 @@ entry put_bundle_bid(
       var bundle = verify_and_unpack_bundle(pbb_bundle);
       dorequire(length(bundle) <= max_bundle_items, (MAX_BUNDLE_SIZE, max_bundle_items));
 
-      var total_amount = process_total_amount(pbb_bid.bundle_bid_amount, protocol_fee, pbb_bid.bundle_bid_origin_fees);
       var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
           var current_bid_data = opt_get(current_bid);
-          var previous_total_amount = process_total_amount(current_bid_data.bundle_bid_amount, protocol_fee, current_bid_data.bundle_bid_origin_fees);
           transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pbb_bid_type;
             ptp_asset = pbb_bid_asset;
-            ptp_amount = previous_total_amount;
+            ptp_amount = current_bid_data.bundle_bid_amount;
             ptp_origin = bids_storage;
             ptp_destination = caller
           }]);
@@ -267,12 +261,12 @@ entry put_bundle_bid(
         transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pbb_bid_type;
             ptp_asset = pbb_bid_asset;
-            ptp_amount = total_amount;
+            ptp_amount = pbb_bid.bundle_bid_amount;
             ptp_origin = caller;
             ptp_destination = bids_storage
         }]);
       ) else (
-        dorequire(transferred = (total_amount * 1utz), BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pbb_bid.bundle_bid_amount * 1utz), BID_AMOUNT_MISMATCH);
       );
 
       transfer transferred to bids_storage call set_bundle_bid<bytes * address * asset_type * bytes * bundle_bid>(
@@ -292,7 +286,9 @@ entry accept_bid(
   ab_asset_token_id: nat,
   ab_bidder: address,
   ab_bid_type: asset_type,
-  ab_bid_asset: bytes){
+  ab_bid_asset: bytes,
+  ab_origin_fees: list<part>,
+  ab_payouts: list<part>) {
     effect {
       var current_bid = require_some(get_bid(ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset), MISSING_BID);
 
@@ -312,9 +308,10 @@ entry accept_bid(
           caller,
           bids_storage,
           protocol_fee,
-          current_bid.bid_origin_fees,
-          current_bid.bid_payouts)
-        );
+          current_bid.bid_origin_fees.concat(ab_origin_fees),
+          current_bid.bid_payouts.concat(ab_payouts)
+        )
+      );
 
 
       transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset))
@@ -326,7 +323,9 @@ entry accept_floor_bid(
   afb_asset_token_id: nat,
   afb_bidder: address,
   afb_bid_type: asset_type,
-  afb_bid_asset: bytes){
+  afb_bid_asset: bytes,
+  afb_origin_fees: list<part>,
+  afb_payouts: list<part>){
     effect {
       var current_bid = require_some(get_floor_bid(afb_asset_contract, afb_bidder, afb_bid_type, afb_bid_asset), MISSING_BID);
 
@@ -346,9 +345,10 @@ entry accept_floor_bid(
           caller,
           bids_storage,
           protocol_fee,
-          current_bid.bid_origin_fees,
-          current_bid.bid_payouts)
-        );
+          current_bid.bid_origin_fees.concat(afb_origin_fees),
+          current_bid.bid_payouts.concat(afb_payouts)
+        )
+      );
 
 
       transfer 0tz to bids_storage call remove_floor_bid<address * address * asset_type * bytes>((afb_asset_contract, afb_bidder, afb_bid_type, afb_bid_asset))
@@ -359,7 +359,9 @@ entry accept_bundle_bid(
   abb_bundle: bytes,
   abb_bidder: address,
   abb_bid_type: asset_type,
-  abb_bid_asset: bytes){
+  abb_bid_asset: bytes,
+  abb_origin_fees: list<part>,
+  abb_payouts: list<part>){
     effect {
       var current_bid = require_some(get_bundle_bid(abb_bundle, abb_bidder, abb_bid_type, abb_bid_asset), MISSING_BID);
       var unpacked_bundle = verify_and_unpack_bundle(abb_bundle);
@@ -376,9 +378,10 @@ entry accept_bundle_bid(
           caller,
           bids_storage,
           protocol_fee,
-          current_bid.bundle_bid_origin_fees,
-          current_bid.bundle_bid_payouts)
-        );
+          current_bid.bundle_bid_origin_fees.concat(abb_origin_fees),
+          current_bid.bundle_bid_payouts.concat(abb_payouts)
+        )
+      );
 
 
       transfer 0tz to bids_storage call remove_bundle_bid<bytes * address * asset_type * bytes>((abb_bundle, abb_bidder, abb_bid_type, abb_bid_asset))
