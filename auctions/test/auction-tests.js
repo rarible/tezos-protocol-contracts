@@ -5206,7 +5206,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
-            assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5269,7 +5269,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
-            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5326,7 +5326,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties + payout * 2);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties + payout * 2);
-            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5388,7 +5388,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance.isLessThan(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
             assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees)));
-            assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5451,7 +5451,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance.isLessThan(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
             assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(payout * 2)));
-            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5514,7 +5514,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance.isLessThan(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties + payout * 2)));
             assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 + royalties + payout * 2)));
-            assert(post_custody_nft_balance == custody_nft_balance);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5570,7 +5570,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
-            assert(post_custody_nft_balance == custody_nft_balance - 1 && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5624,7 +5624,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
-            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5676,7 +5676,7 @@ describe('Finish auction tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties + payout * 2);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties + payout * 2);
-            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance - 1);
             assert(post_alice_nft_balance == alice_nft_balance);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
