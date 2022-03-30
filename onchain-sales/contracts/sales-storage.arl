@@ -89,6 +89,7 @@ record sale {
   sale_asset_qty: nat;
   sale_data_type  : option<bytes>;
   sale_data       : option<bytes>;
+  sale_max_fees_base_boint: nat;
 }
 
 record bundle_sale {
@@ -97,6 +98,8 @@ record bundle_sale {
   bundle_sale_amount : nat;
   bundle_sale_data_type  : option<bytes>;
   bundle_sale_data       : option<bytes>;
+  bundle_sale_max_fees_base_boint: nat;
+
 }
 
 asset sales identified by sale_asset_contract sale_asset_token_id sale_asset_seller sale_type sale_asset to big_map {

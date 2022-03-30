@@ -25,6 +25,7 @@ constant WRONG_BUY_ASSET_PAYLOAD: string = "WRONG_BUY_ASSET_PAYLOAD"
 constant CANT_UNPACK_BUNDLE: string = "CANT_UNPACK_BUNDLE"
 constant MAX_BUNDLE_SIZE: string = "MAX_BUNDLE_SIZE"
 constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
+constant FEES_OVER_SELLER_LIMIT: string = "FEES_OVER_SELLER_LIMIT"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -32,6 +33,7 @@ constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
 
 variable owner_candidate : option<address> = none
 variable max_bundle_items : nat = 10
+variable max_fees_limit : nat = 10000
 
 entry declare_ownership(candidate : address) {
   called by owner
@@ -93,6 +95,13 @@ entry set_max_bundle_items(smbi_number : nat) {
   }
 }
 
+entry set_fees_limit(sfl : nat) {
+  called by owner
+  effect {
+    max_fees_limit := sfl;
+  }
+}
+
 //----------------------------------------------------------------------------
 // Types
 //----------------------------------------------------------------------------
@@ -142,8 +151,8 @@ record bundle_item {
 }
 
 record bid {
-  bid_payouts : list<part>;
   bid_origin_fees : list<part>;
+  bid_payouts : list<part>;
   bid_amount : nat;
   bid_bidder: address;
   bid_data_type  : option<bytes>;
@@ -160,8 +169,9 @@ record auction_record {
   auction_minimal_price: nat;
   auction_buy_out_price: nat;
   auction_minimal_step: nat;
-  auction_payouts : list<part>;
+  auction_max_seller_fees: nat;
   auction_origin_fees : list<part>;
+  auction_payouts : list<part>;
   auction_data_type  : option<bytes>;
   auction_data       : option<bytes>;
 }
@@ -175,8 +185,9 @@ record bundle_auction_record {
   bar_minimal_price: nat;
   bar_buy_out_price: nat;
   bar_minimal_step: nat;
-  bar_payouts : list<part>;
+  bar_max_seller_fees: nat;
   bar_origin_fees : list<part>;
+  bar_payouts : list<part>;
   bar_data_type  : option<bytes>;
   bar_data       : option<bytes>;
 }
@@ -190,8 +201,9 @@ record auction_args {
   auction_args_minimal_price: nat;
   auction_args_buy_out_price: nat;
   auction_args_minimal_step: nat;
-  auction_args_payouts : list<part>;
+  auction_args_max_seller_fees: nat;
   auction_args_origin_fees : list<part>;
+  auction_args_payouts : list<part>;
   auction_args_data_type  : option<bytes>;
   auction_args_data       : option<bytes>;
 }
@@ -204,8 +216,9 @@ record bundle_auction_args {
   bundle_auction_args_minimal_price: nat;
   bundle_auction_args_buy_out_price: nat;
   bundle_auction_args_minimal_step: nat;
-  bundle_auction_args_payouts : list<part>;
+  bundle_auction_max_seller_fees: nat;
   bundle_auction_args_origin_fees : list<part>;
+  bundle_auction_args_payouts : list<part>;
   bundle_auction_args_data_type  : option<bytes>;
   bundle_auction_args_data       : option<bytes>;
 }
@@ -232,7 +245,10 @@ entry start_auction(
         r_sa6: sa_auction.auction_args_minimal_step > 0;
         r_sa7: sa_auction.auction_args_sell_asset_amount > 0;
         r_sa8: auction_exists(sa_asset_contract, sa_asset_token_id, caller) = false;
-
+        r_sa9: sa_auction.auction_args_max_seller_fees > 0
+                and sa_auction.auction_args_max_seller_fees <= max_fees_limit
+                and sa_auction.auction_args_max_seller_fees > protocol_fee
+                and process_sum_fees(sa_auction.auction_args_origin_fees) + protocol_fee <= sa_auction.auction_args_max_seller_fees;
     }
     effect {
         var processed_asset = verify_and_unpack_asset(sa_auction.auction_args_buy_asset_type, sa_auction.auction_args_buy_asset);
@@ -258,6 +274,7 @@ entry start_auction(
             auction_minimal_price = sa_auction.auction_args_minimal_price;
             auction_buy_out_price = sa_auction.auction_args_buy_out_price;
             auction_minimal_step = sa_auction.auction_args_minimal_step;
+            auction_max_seller_fees = sa_auction.auction_args_max_seller_fees;
             auction_payouts = sa_auction.auction_args_payouts;
             auction_origin_fees = sa_auction.auction_args_origin_fees;
             auction_data_type = sa_auction.auction_args_data_type;
@@ -296,7 +313,10 @@ entry start_bundle_auction(
         r_sba5: sba_bundle_auction.bundle_auction_args_minimal_price > 0;
         r_sba6: sba_bundle_auction.bundle_auction_args_minimal_step > 0;
         r_sba7: bundle_auction_exists(sba_bundle, caller) = false;
-
+        r_sba8: sba_bundle_auction.bundle_auction_max_seller_fees > 0
+                and sba_bundle_auction.bundle_auction_max_seller_fees <= max_fees_limit
+                and sba_bundle_auction.bundle_auction_max_seller_fees > protocol_fee
+                and process_sum_fees(sba_bundle_auction.bundle_auction_args_origin_fees) + protocol_fee <= sba_bundle_auction.bundle_auction_max_seller_fees;
     }
     effect {
         var processed_asset = verify_and_unpack_asset(sba_bundle_auction.bundle_auction_args_buy_asset_type, sba_bundle_auction.bundle_auction_args_buy_asset);
@@ -323,6 +343,7 @@ entry start_bundle_auction(
             bar_minimal_price = sba_bundle_auction.bundle_auction_args_minimal_price;
             bar_buy_out_price = sba_bundle_auction.bundle_auction_args_buy_out_price;
             bar_minimal_step = sba_bundle_auction.bundle_auction_args_minimal_step;
+            bar_max_seller_fees = sba_bundle_auction.bundle_auction_max_seller_fees;
             bar_payouts = sba_bundle_auction.bundle_auction_args_payouts;
             bar_origin_fees = sba_bundle_auction.bundle_auction_args_origin_fees;
             bar_data_type = sba_bundle_auction.bundle_auction_args_data_type;
@@ -359,19 +380,19 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
       var is_xtz = (auction.auction_buy_asset_type = XTZ);
       var previous_bid = auction.auction_last_bid;
       var is_buyout = auction.auction_buy_out_price > 0 and pb_bid.bid_amount >= auction.auction_buy_out_price;
-      var total_amount = process_total_amount(pb_bid.bid_amount, protocol_fee, pb_bid.bid_origin_fees);
       var buy_asset_contract: option<address> = none;
       var buy_asset_token_id: option<nat> = none;
 
       dorequire(auction.auction_start_time < now, AUCTION_NOT_IN_PROGRESS);
       dorequire(auction.auction_end_time > now, AUCTION_FINISHED);
+      dorequire(process_sum_fees(auction.auction_origin_fees) + process_sum_fees(pb_bid.bid_origin_fees) + protocol_fee <= auction.auction_max_seller_fees, FEES_OVER_SELLER_LIMIT);
 
       var processed_asset = verify_and_unpack_asset(auction.auction_buy_asset_type, auction.auction_buy_asset);
       buy_asset_contract := processed_asset[0];
       buy_asset_token_id := processed_asset[1];
 
       if(is_xtz) then (
-        dorequire(transferred = (total_amount * 1utz), AUCTION_BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pb_bid.bid_amount * 1utz), AUCTION_BID_AMOUNT_MISMATCH);
       );
 
       if(isnone(previous_bid)) then (
@@ -382,11 +403,10 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
         dorequire(last_bid.bid_amount < pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(auction.auction_minimal_step <= pb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(last_bid.bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
-        var last_bid_total_amount = process_total_amount(last_bid.bid_amount, protocol_fee, last_bid.bid_origin_fees);
         transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = auction.auction_buy_asset_type;
             ptp_asset = auction.auction_buy_asset;
-            ptp_amount = last_bid_total_amount;
+            ptp_amount = last_bid.bid_amount;
             ptp_origin = auction_storage;
             ptp_destination = last_bid.bid_bidder
           }]
@@ -411,8 +431,8 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
           pb_asset_seller,
           auction_storage,
           protocol_fee,
-          pb_bid.bid_origin_fees,
-          pb_bid.bid_payouts)
+          auction.auction_origin_fees.concat(pb_bid.bid_origin_fees),
+          auction.auction_payouts.concat(pb_bid.bid_payouts))
         );
 
         transfer 0tz to auction_storage call remove_auction<address * nat * address>((pb_asset_contract, pb_asset_id, pb_asset_seller));
@@ -422,7 +442,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
             {
               ptp_asset_type = auction.auction_buy_asset_type;
               ptp_asset = auction.auction_buy_asset;
-              ptp_amount = total_amount;
+              ptp_amount = pb_bid.bid_amount;
               ptp_origin = pb_bid.bid_bidder;
               ptp_destination = auction_storage
             }
@@ -450,20 +470,20 @@ entry put_bundle_bid(pbb_bundle: bytes, pbb_asset_seller: address, pbb_bid: bid)
       var is_xtz = (auction.bar_buy_asset_type = XTZ);
       var previous_bid = auction.bar_last_bid;
       var is_buyout = auction.bar_buy_out_price > 0 and pbb_bid.bid_amount >= auction.bar_buy_out_price;
-      var total_amount = process_total_amount(pbb_bid.bid_amount, protocol_fee, pbb_bid.bid_origin_fees);
       var buy_asset_contract: option<address> = none;
       var buy_asset_token_id: option<nat> = none;
       var bundle = verify_and_unpack_bundle(pbb_bundle);
 
       dorequire(auction.bar_start_time < now, AUCTION_NOT_IN_PROGRESS);
       dorequire(auction.bar_end_time > now, AUCTION_FINISHED);
+      dorequire(process_sum_fees(auction.bar_origin_fees) + process_sum_fees(pbb_bid.bid_origin_fees) + protocol_fee <= auction.bar_max_seller_fees, FEES_OVER_SELLER_LIMIT);
 
       var processed_asset = verify_and_unpack_asset(auction.bar_buy_asset_type, auction.bar_buy_asset);
       buy_asset_contract := processed_asset[0];
       buy_asset_token_id := processed_asset[1];
 
       if(is_xtz) then (
-        dorequire(transferred = (total_amount * 1utz), AUCTION_BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pbb_bid.bid_amount * 1utz), AUCTION_BID_AMOUNT_MISMATCH);
       );
 
       if(isnone(previous_bid)) then (
@@ -474,11 +494,10 @@ entry put_bundle_bid(pbb_bundle: bytes, pbb_asset_seller: address, pbb_bid: bid)
         dorequire(last_bid.bid_amount < pbb_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(auction.bar_minimal_step <= pbb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
         dorequire(last_bid.bid_bidder <> pbb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
-        var last_bid_total_amount = process_total_amount(last_bid.bid_amount, protocol_fee, last_bid.bid_origin_fees);
         transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = auction.bar_buy_asset_type;
             ptp_asset = auction.bar_buy_asset;
-            ptp_amount = last_bid_total_amount;
+            ptp_amount = last_bid.bid_amount;
             ptp_origin = auction_storage;
             ptp_destination = last_bid.bid_bidder
           }]
@@ -499,8 +518,8 @@ entry put_bundle_bid(pbb_bundle: bytes, pbb_asset_seller: address, pbb_bid: bid)
           pbb_asset_seller,
           auction_storage,
           protocol_fee,
-          pbb_bid.bid_origin_fees,
-          pbb_bid.bid_payouts)
+          auction.bar_origin_fees.concat(pbb_bid.bid_origin_fees),
+          auction.bar_payouts.concat(pbb_bid.bid_payouts))
         );
 
         transfer 0tz to auction_storage call remove_bundle_auction<bytes * address>((pbb_bundle, pbb_asset_seller));
@@ -510,7 +529,7 @@ entry put_bundle_bid(pbb_bundle: bytes, pbb_asset_seller: address, pbb_bid: bid)
             {
               ptp_asset_type = auction.bar_buy_asset_type;
               ptp_asset = auction.bar_buy_asset;
-              ptp_amount = total_amount;
+              ptp_amount = pbb_bid.bid_amount;
               ptp_origin = pbb_bid.bid_bidder;
               ptp_destination = auction_storage
             }
@@ -553,8 +572,8 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat, fa_asset_sell
           fa_asset_seller,
           auction_storage,
           protocol_fee,
-          last_bid.bid_origin_fees,
-          merge_parts(auction.auction_payouts, [last_bid.bid_payouts; auction.auction_origin_fees])
+          auction.auction_origin_fees.concat(last_bid.bid_origin_fees),
+          auction.auction_payouts.concat(last_bid.bid_payouts)
         )
       );
 
@@ -583,8 +602,8 @@ entry finish_bundle_auction(fba_bundle: bytes, fba_seller: address){
           fba_seller,
           auction_storage,
           protocol_fee,
-          last_bid.bid_origin_fees,
-          merge_parts(auction.bar_payouts, [last_bid.bid_payouts; auction.bar_origin_fees])
+          auction.bar_origin_fees.concat(last_bid.bid_origin_fees),
+          auction.bar_payouts.concat(last_bid.bid_payouts)
         )
       );
 
@@ -694,14 +713,6 @@ function bp(bp_value : nat, bp_op_value : nat) : nat {
   return abs(floor(bp_value * bp_op_value / 10000))
 }
 
-function process_total_amount(cta_amount: nat, cta_fees: nat, cta_order_origin_fees: list<part>) : nat {
- var total = cta_amount + bp(cta_amount, cta_fees);
-  for item in cta_order_origin_fees do
-    total += bp(cta_amount, item.part_value)
-  done;
-  return total
-}
-
 function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option<address> * option<nat>) {
     var buy_asset_contract: option<address> = none;
     var buy_asset_token_id: option<nat> = none;
@@ -746,14 +757,12 @@ function verify_and_unpack_bundle(vaub_data: bytes) : (list<bundle_item>) {
     return (bundle)
 }
 
-function merge_parts(mp_parts: list<part>, mp_parts_to_add: list<list<part>>) : list<part> {
-  for part_list in mp_parts_to_add do
-    for l_part in part_list do
-      mp_parts.prepend(l_part)
-    done;
+function process_sum_fees(psf_fees: list<part>): nat {
+  var total = 0;
+  for fee in psf_fees do
+    total := total + fee.part_value;
   done;
-
-  return mp_parts
+  return total
 }
 
 entry default() {}

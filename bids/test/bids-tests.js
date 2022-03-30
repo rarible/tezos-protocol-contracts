@@ -63,7 +63,7 @@ const token_id_9 = 9;
 
 const fee = 250;
 const payout_value = 100;
-const bid_amount = "1000000";
+const bid_amount = 1000000;
 const qty = "1";
 // accounts
 const alice = getAccount(mockup_mode ? 'alice' : 'alice');
@@ -1506,13 +1506,20 @@ describe('Put bid tests', async () => {
             );
             assert(bid == null);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bids_storage.address);
 
             await bids.put_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${bid_asset}
+                                    (Pair {}
+                                        (Pair {}
+                                            (Pair ${bid_amount}
+                                                (Pair ${qty}
+                                                    (Pair None None)))))))))`,
                 as: bob.pkh,
             });
 
@@ -1542,8 +1549,8 @@ describe('Put bid tests', async () => {
                 }
             `);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put bid with Fungible FA2 should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -1555,8 +1562,6 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bids_storage.address);
@@ -1610,8 +1615,8 @@ describe('Put bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put bid with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -1623,8 +1628,6 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
 
             const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bids_storage.address);
@@ -1704,8 +1707,8 @@ describe('Put bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
     });
 
@@ -1719,8 +1722,6 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
@@ -1736,7 +1737,7 @@ describe('Put bid tests', async () => {
                                             (Pair ${qty}
                                                 (Pair None None)
                                             ))))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -1773,8 +1774,8 @@ describe('Put bid tests', async () => {
                 ]
              }`);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
 
         it('Put bid with XTZ should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -1786,8 +1787,6 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
@@ -1803,7 +1802,7 @@ describe('Put bid tests', async () => {
                                             (Pair ${qty}
                                                 (Pair None None)
                                             ))))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -1851,8 +1850,8 @@ describe('Put bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
 
         it('Put bid with XTZ should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -1864,8 +1863,6 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
 
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
@@ -1881,7 +1878,7 @@ describe('Put bid tests', async () => {
                                         (Pair ${qty}
                                             (Pair None None)
                                         ))))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -1945,8 +1942,8 @@ describe('Put bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
     });
 
@@ -1960,8 +1957,6 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_0, bids_storage.address);
@@ -1998,8 +1993,8 @@ describe('Put bid tests', async () => {
                 }
             `);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put bid with FA12 should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -2011,8 +2006,6 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_1, bids_storage.address);
@@ -2066,8 +2059,8 @@ describe('Put bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put bid with FA12 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -2079,8 +2072,6 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_2, bids_storage.address);
@@ -2159,8 +2150,8 @@ describe('Put bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
     });
 
@@ -2253,7 +2244,6 @@ describe('Put bid tests', async () => {
 
         it('Put bid with bid that already exists should update it and succeed', async () => {
                 const bid_asset = mkXTZAsset();
-                const total_bid_amount = Math.ceil(parseInt(bid_amount/10) * (1 + fee / 10000));
                 const storage = await bids_storage.getStorage();
 
                 const carl_ft_balance = await getBalance(carl.pkh);
@@ -2269,7 +2259,7 @@ describe('Put bid tests', async () => {
                 await bids.put_bid({
                     argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount/10} (Pair ${qty} (Pair None None)))))))))`,
                     as: carl.pkh,
-                    amount: `${total_bid_amount}utz`
+                    amount: `${bid_amount/10}utz`
                 });
 
                 var post_tx_bid = await getValueFromBigMap(
@@ -2305,15 +2295,13 @@ describe('Put bid tests', async () => {
                     ]
                  }`);
                 assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-                assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(total_bid_amount))));
-                assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
-
-                const new_total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+                assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount/10))));
+                assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount/10))));
 
                 await bids.put_bid({
                     argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
                     as: carl.pkh,
-                    amount: `${new_total_bid_amount}utz`
+                    amount: `${bid_amount}utz`
                 });
 
                 var new_post_tx_bid = await getValueFromBigMap(
@@ -2349,8 +2337,8 @@ describe('Put bid tests', async () => {
                     ]
                  }`);
                 assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
-                assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(new_total_bid_amount))));
-                assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(new_total_bid_amount))));
+                assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount))));
+                assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
     });
 });
@@ -2366,8 +2354,6 @@ describe('Put floor bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
             const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids_storage.address);
@@ -2403,8 +2389,8 @@ describe('Put floor bid tests', async () => {
                 }
             `);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put floor bid with Fungible FA2 should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -2416,8 +2402,6 @@ describe('Put floor bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair address (pair int bytes)))`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids_storage.address);
@@ -2471,8 +2455,8 @@ describe('Put floor bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put floor bid with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -2484,8 +2468,6 @@ describe('Put floor bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
 
             const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bids_storage.address);
@@ -2564,8 +2546,8 @@ describe('Put floor bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
     });
 
@@ -2580,8 +2562,6 @@ describe('Put floor bid tests', async () => {
             );
             assert(bid == null);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
 
@@ -2595,7 +2575,7 @@ describe('Put floor bid tests', async () => {
                                         (Pair ${qty}
                                             (Pair None None)
                                         )))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -2632,8 +2612,8 @@ describe('Put floor bid tests', async () => {
                 ]
              }`);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
 
         it('Put floor bid with XTZ should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -2645,8 +2625,6 @@ describe('Put floor bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
@@ -2661,7 +2639,7 @@ describe('Put floor bid tests', async () => {
                                         (Pair ${qty}
                                             (Pair None None)
                                         ))))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -2709,8 +2687,8 @@ describe('Put floor bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
 
         it('Put floor bid with XTZ should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -2722,8 +2700,6 @@ describe('Put floor bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
 
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
@@ -2738,7 +2714,7 @@ describe('Put floor bid tests', async () => {
                                         (Pair ${qty}
                                             (Pair None None)
                                         )))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -2802,8 +2778,8 @@ describe('Put floor bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
     });
 
@@ -2817,8 +2793,6 @@ describe('Put floor bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_3, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_3, bids_storage.address);
@@ -2855,8 +2829,8 @@ describe('Put floor bid tests', async () => {
                 }
             `);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put floor bid with FA12 should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -2868,8 +2842,6 @@ describe('Put floor bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_4, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_4, bids_storage.address);
@@ -2923,8 +2895,8 @@ describe('Put floor bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put floor bid with FA12 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -2936,8 +2908,6 @@ describe('Put floor bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_5, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_5, bids_storage.address);
@@ -3015,8 +2985,8 @@ describe('Put floor bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
     });
 
@@ -3109,7 +3079,6 @@ describe('Put floor bid tests', async () => {
 
         it('Put floor bid with bid that already exists should update it and succeed', async () => {
                 const bid_asset = mkXTZAsset();
-                const total_bid_amount = Math.ceil(parseInt(bid_amount/10) * (1 + fee / 10000));
                 const storage = await bids_storage.getStorage();
 
                 const carl_ft_balance = await getBalance(carl.pkh);
@@ -3125,7 +3094,7 @@ describe('Put floor bid tests', async () => {
                 await bids.put_floor_bid({
                     argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount/10} (Pair ${qty} (Pair None None))))))))`,
                     as: carl.pkh,
-                    amount: `${total_bid_amount}utz`
+                    amount: `${bid_amount/10}utz`
                 });
 
                 var post_tx_bid = await getValueFromBigMap(
@@ -3161,15 +3130,13 @@ describe('Put floor bid tests', async () => {
                     ]
                  }`);
                 assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-                assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(total_bid_amount))));
-                assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
-
-                const new_total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+                assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount/10))));
+                assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount/10))));
 
                 await bids.put_floor_bid({
                     argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
                     as: carl.pkh,
-                    amount: `${new_total_bid_amount}utz`
+                    amount: `${bid_amount}utz`
                 });
 
                 var new_post_tx_bid = await getValueFromBigMap(
@@ -3205,8 +3172,8 @@ describe('Put floor bid tests', async () => {
                     ]
                  }`);
                 assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
-                assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(new_total_bid_amount))));
-                assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(new_total_bid_amount))));
+                assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount))));
+                assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
     });
 });
@@ -3228,8 +3195,6 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
             const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids_storage.address);
@@ -3264,8 +3229,8 @@ describe('Put bundle bid tests', async () => {
                 }
             `);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put bundle bid with Fungible FA2 should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -3283,8 +3248,6 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids_storage.address);
@@ -3343,8 +3306,8 @@ describe('Put bundle bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put bundle bid with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -3362,8 +3325,6 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
 
             const bob_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bob.pkh);
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_2, bids_storage.address);
@@ -3439,8 +3400,8 @@ describe('Put bundle bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
     });
 
@@ -3461,14 +3422,12 @@ describe('Put bundle bid tests', async () => {
             );
             assert(bid == null);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
 
             await bids.put_bundle_bid({
                 argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -3502,8 +3461,8 @@ describe('Put bundle bid tests', async () => {
                 ]
              }`);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
 
         it('Put bundle bid with XTZ should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -3522,8 +3481,6 @@ describe('Put bundle bid tests', async () => {
             );
             assert(bid == null);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
 
@@ -3537,7 +3494,7 @@ describe('Put bundle bid tests', async () => {
                                         (Pair ${bid_amount}
                                             (Pair None None)
                     ))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -3582,8 +3539,8 @@ describe('Put bundle bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
 
         it('Put bundle bid with XTZ should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -3602,8 +3559,6 @@ describe('Put bundle bid tests', async () => {
             );
             assert(bid == null);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             const bob_ft_balance = await getBalance(bob.pkh);
             const custody_ft_balance = await getBalance(bids_storage.address);
 
@@ -3617,7 +3572,7 @@ describe('Put bundle bid tests', async () => {
                                         (Pair ${bid_amount}
                                             (Pair None None)
                     ))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
 
@@ -3678,8 +3633,8 @@ describe('Put bundle bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
+            assert(post_tx_bob_ft_balance.isLessThan(bob_ft_balance.minus(BigNumber(bid_amount))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
     });
 
@@ -3699,8 +3654,6 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_3, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_3, bids_storage.address);
@@ -3735,8 +3688,8 @@ describe('Put bundle bid tests', async () => {
                 }
             `);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put bundle bid with FA12 should succeed (single royalties, single payouts, single origin fees)', async () => {
@@ -3754,8 +3707,6 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_4, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_4, bids_storage.address);
@@ -3814,8 +3765,8 @@ describe('Put bundle bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
 
         it('Put bundle bid with FA12 should succeed (multiple royalties, multiple payouts, multiple origin fees)', async () => {
@@ -3833,8 +3784,6 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
             );
             assert(bid == null);
-
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_5, bob.pkh);
             const custody_ft_balance = await getFA12Balance(fa12_ft_5, bids_storage.address);
@@ -3909,8 +3858,8 @@ describe('Put bundle bid tests', async () => {
              }`);
 
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_bob_ft_balance == bob_ft_balance - total_bid_amount);
-            assert(post_tx_custody_ft_balance == custody_ft_balance + total_bid_amount);
+            assert(post_tx_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(post_tx_custody_ft_balance == custody_ft_balance + bid_amount);
         });
     });
 
@@ -4050,7 +3999,6 @@ describe('Put bundle bid tests', async () => {
 
         it('Put bundle bid with bid that already exists should update it and succeed', async () => {
             const bid_asset = mkXTZAsset();
-            const total_bid_amount = Math.ceil(parseInt(bid_amount / 10) * (1 + fee / 10000));
             const storage = await bids_storage.getStorage();
 
             const carl_ft_balance = await getBalance(carl.pkh);
@@ -4071,7 +4019,7 @@ describe('Put bundle bid tests', async () => {
 
             await bids.put_bundle_bid({
                 argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount / 10} (Pair None None)))))))`,
-                amount: `${total_bid_amount}utz`,
+                amount: `${bid_amount/10}utz`,
                 as: carl.pkh,
             });
 
@@ -4106,14 +4054,12 @@ describe('Put bundle bid tests', async () => {
                     ]
                  }`);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(total_bid_amount))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(total_bid_amount))));
-
-            const new_total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
+            assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount/10))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount/10))));
 
             await bids.put_bundle_bid({
                 argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
-                amount: `${new_total_bid_amount}utz`,
+                amount: `${bid_amount}utz`,
                 as: carl.pkh,
             });
 
@@ -4147,8 +4093,8 @@ describe('Put bundle bid tests', async () => {
                     ]
                  }`);
             assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
-            assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(new_total_bid_amount))));
-            assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(new_total_bid_amount))));
+            assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount))));
+            assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
     });
 });
@@ -4171,8 +4117,6 @@ describe('Accept bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_0, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bids),
                 exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`),
@@ -4181,7 +4125,12 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${bid_asset} (Pair {} {}))))))`,
                 as: alice.pkh,
             });
 
@@ -4199,12 +4148,12 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -4232,8 +4181,6 @@ describe('Accept bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_1, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_1, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bids),
                 exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`),
@@ -4242,7 +4189,13 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_1}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair {Pair "${carl.pkh}" ${payout_value}} {Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: alice.pkh,
             });
 
@@ -4259,15 +4212,16 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4305,7 +4259,14 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_2} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_2}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                    )))))`,
                 as: alice.pkh,
             });
 
@@ -4322,15 +4283,16 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4360,8 +4322,6 @@ describe('Accept bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_3, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_3, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bids),
                 exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_3} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
@@ -4370,7 +4330,12 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_3} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_3}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${bid_asset} (Pair {} {}))))))`,
                 as: alice.pkh,
             });
 
@@ -4387,12 +4352,12 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
             assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees)));
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -4420,8 +4385,6 @@ describe('Accept bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_4, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_4, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bids),
                 exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_4} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
@@ -4430,7 +4393,13 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_4} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_4}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair {Pair "${carl.pkh}" ${payout_value}} {Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: alice.pkh,
             });
 
@@ -4447,15 +4416,16 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
-            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest - payout * 2)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value)));
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(payout * 2)));
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4482,8 +4452,6 @@ describe('Accept bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_5, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_5, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bids),
                 exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_5} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
@@ -4492,7 +4460,14 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_5} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_5}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                    )))))`,
                 as: alice.pkh,
             });
 
@@ -4509,15 +4484,16 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
             assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2 + royalties)));
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties + payout * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 + royalties + payout * 2)));
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4547,7 +4523,6 @@ describe('Accept bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_6, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_6, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
 
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bids),
@@ -4557,7 +4532,13 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_6} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_6}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair {} {}))))))`,
                 as: alice.pkh,
             });
 
@@ -4574,12 +4555,12 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -4608,8 +4589,6 @@ describe('Accept bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_7, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_7, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bids),
                 exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_7} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`),
@@ -4618,7 +4597,13 @@ describe('Accept bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_7} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_7}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: alice.pkh,
             });
 
@@ -4635,15 +4620,16 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4670,17 +4656,20 @@ describe('Accept bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft, token_id_8, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft, token_id_8, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bids),
                 exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_8} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`),
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))`)
             );
             assert(bid_record != null);
-
             await bids.accept_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_8} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_8}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: alice.pkh,
             });
 
@@ -4697,15 +4686,16 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4725,7 +4715,13 @@ describe('Accept bid tests', async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_2.address);
 
                 await bids.accept_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair 999999 (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`,
+                    argMichelson: `
+                        (Pair "${nft.address}"
+                            (Pair 999999
+                                (Pair "${bob.pkh}"
+                                    (Pair ${parseInt(FA12)}
+                                        (Pair 0x${bid_asset}
+                                            (Pair {} {}))))))`,
                     as: alice.pkh,
                 });
             }, '"MISSING_BID"');
@@ -4751,8 +4747,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_1, token_id_0, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_1, token_id_0, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
@@ -4761,7 +4755,13 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_0} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_1.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair {} {}))))))`,
                 as: alice.pkh,
             });
 
@@ -4779,12 +4779,12 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -4812,8 +4812,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_2, token_id_1, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_2, token_id_1, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
@@ -4822,7 +4820,13 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_2.address}" (Pair ${token_id_1} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_2.address}"
+                        (Pair ${token_id_1}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: alice.pkh,
             });
 
@@ -4839,15 +4843,16 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4875,8 +4880,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_3, token_id_2, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_3, token_id_2, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset}))))`),
@@ -4885,7 +4888,14 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_3.address}" (Pair ${token_id_2} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_3.address}"
+                        (Pair ${token_id_2}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                    )))))`,
                 as: alice.pkh,
             });
 
@@ -4902,15 +4912,16 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4940,8 +4951,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_1, token_id_3, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_1, token_id_3, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
@@ -4950,7 +4959,13 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_3} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_1.address}"
+                        (Pair ${token_id_3}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair {} {}))))))`,
                 as: alice.pkh,
             });
 
@@ -4967,12 +4982,12 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
             assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees)));
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -5000,8 +5015,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_2, token_id_4, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_2, token_id_4, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
@@ -5010,7 +5023,13 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_2.address}" (Pair ${token_id_4} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_2.address}"
+                        (Pair ${token_id_4}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: alice.pkh,
             });
 
@@ -5027,14 +5046,15 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
-            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest - payout * 2)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value)));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(payout * 2)));
             assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -5062,8 +5082,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_3, token_id_5, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_3, token_id_5, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
@@ -5072,7 +5090,14 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_3.address}" (Pair ${token_id_5} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_3.address}"
+                        (Pair ${token_id_5}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                    )))))`,
                 as: alice.pkh,
             });
 
@@ -5089,14 +5114,15 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
-            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest - 4 * payout)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2 + royalties)));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties + payout * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 + royalties + payout * 2)));
             assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -5127,8 +5153,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_1, token_id_6, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_1, token_id_6, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
@@ -5137,7 +5161,13 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_6} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_1.address}"
+                        (Pair ${token_id_6}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair {} {}))))))`,
                 as: alice.pkh,
             });
 
@@ -5154,12 +5184,12 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
@@ -5188,8 +5218,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_2, token_id_7, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_2, token_id_7, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_2.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
@@ -5198,7 +5226,13 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_2.address}" (Pair ${token_id_7} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_2.address}"
+                        (Pair ${token_id_7}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: alice.pkh,
             });
 
@@ -5215,15 +5249,16 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value;
+            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5250,8 +5285,6 @@ describe('Accept floor bid tests', async () => {
             const alice_nft_balance = await getFA2Balance(nft_3, token_id_8, alice.pkh);
             const bob_nft_balance = await getFA2Balance(nft_3, token_id_8, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.floor_bids),
                 exprMichelineToJson(`(Pair "${nft_3.address}" (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset}))))`),
@@ -5260,7 +5293,14 @@ describe('Accept floor bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_floor_bid({
-                argMichelson: `(Pair "${nft_3.address}" (Pair ${token_id_8} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                argMichelson: `
+                    (Pair "${nft_3.address}"
+                        (Pair ${token_id_8}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA12)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                    )))))`,
                 as: alice.pkh,
             });
 
@@ -5277,15 +5317,16 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 4);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties + payout * 2);
+            assert(post_custody_nft_balance == 0 && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5303,9 +5344,14 @@ describe('Accept floor bid tests', async () => {
         it('Accept a non existing floor bid should fail', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_5.address);
-
                 await bids.accept_floor_bid({
-                    argMichelson: `(Pair "${nft_1.address}" (Pair 999999999 (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))))`,
+                    argMichelson: `
+                        (Pair "${nft_1.address}"
+                            (Pair 99999999
+                                (Pair "${bob.pkh}"
+                                    (Pair ${parseInt(FA2)}
+                                        (Pair 0x${bid_asset}
+                                            (Pair {} {}))))))`,
                     as: alice.pkh,
                 });
             }, '"MISSING_BID"');
@@ -5339,8 +5385,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_1, token_id_0, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_2, token_id_3, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`),
@@ -5349,7 +5393,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${bid_asset}
+                                    (Pair {} {})))))`,
                 as: alice.pkh,
             });
 
@@ -5369,12 +5418,12 @@ describe('Accept bundle bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5410,8 +5459,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_2, token_id_1, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_3, token_id_4, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`),
@@ -5420,7 +5467,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(FA2)}
+                            (Pair 0x${bid_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: alice.pkh,
             });
 
@@ -5441,14 +5493,15 @@ describe('Accept bundle bid tests', async () => {
 
             const protocol_fees = bid_amount * (fee / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+            const rest = bid_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties_per_nft * bundle_items.length);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5485,8 +5538,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_1, token_id_2, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_3, token_id_5, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`),
@@ -5495,7 +5546,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA2)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${bid_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: alice.pkh,
             });
 
@@ -5517,15 +5573,16 @@ describe('Accept bundle bid tests', async () => {
 
             const protocol_fees = bid_amount * (fee / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5553,7 +5610,6 @@ describe('Accept bundle bid tests', async () => {
 
             const bundle = mkPackedBundle(bundle_items);
 
-
             const custody_ft_balance = await getBalance(bids_storage.address);
             const bids_ft_balance = await getBalance(bids.address);
             const alice_ft_balance = await getBalance(alice.pkh);
@@ -5565,8 +5621,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_1, token_id_0, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_2, token_id_3, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             var bid = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))`),
@@ -5575,7 +5629,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${bid_asset}
+                                    (Pair {} {})))))`,
                 as: alice.pkh,
             });
 
@@ -5593,12 +5652,12 @@ describe('Accept bundle bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
             assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees)));
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5635,8 +5694,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_2, token_id_1, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_3, token_id_4, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))`),
@@ -5645,7 +5702,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${bid_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: alice.pkh,
             });
 
@@ -5666,14 +5728,15 @@ describe('Accept bundle bid tests', async () => {
 
             const protocol_fees = bid_amount * (fee / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+            const rest = bid_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
-            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest - payout * 2)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value + royalties_per_nft * bundle_items.length)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value)));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties_per_nft * bundle_items.length)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(payout * 2)));
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5709,8 +5772,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_1, token_id_2, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_3, token_id_5, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))`),
@@ -5719,7 +5780,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${bid_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: alice.pkh,
             });
 
@@ -5740,15 +5806,15 @@ describe('Accept bundle bid tests', async () => {
 
             const protocol_fees = bid_amount * (fee / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
-
-            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(total_bid_amount)));
+            assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
             assert(post_bids_ft_balance.isEqualTo(bids_ft_balance));
-            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest)));
+            assert(post_alice_ft_balance.isLessThan(alice_ft_balance.plus(rest - 4 * payout)));
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties_per_nft * bundle_items.length)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees * 2).plus(fee_value * 2 + royalties_per_nft * bundle_items.length)));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2)));
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5788,8 +5854,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_1, token_id_0, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_2, token_id_3, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`),
@@ -5798,7 +5862,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(FA12)}
+                                (Pair 0x${bid_asset}
+                                    (Pair {} {})))))`,
                 as: alice.pkh,
             });
 
@@ -5817,12 +5886,12 @@ describe('Accept bundle bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const rest = bid_amount - protocol_fees;
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
             assert(post_alice_ft_balance == alice_ft_balance + rest);
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5860,8 +5929,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_2, token_id_1, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_3, token_id_4, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000)));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`),
@@ -5870,7 +5937,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(FA12)}
+                            (Pair 0x${bid_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: alice.pkh,
             });
 
@@ -5891,14 +5963,15 @@ describe('Accept bundle bid tests', async () => {
 
             const protocol_fees = bid_amount * (fee / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value;
+            const rest = bid_amount - protocol_fees - royalties_per_nft * bundle_items.length - fee_value * 2;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - payout * 2);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value + royalties_per_nft * bundle_items.length);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + payout * 2);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5934,8 +6007,6 @@ describe('Accept bundle bid tests', async () => {
             const bob_nft_balance_0 = await getFA2Balance(nft_1, token_id_2, bob.pkh);
             const bob_nft_balance_1 = await getFA2Balance(nft_3, token_id_5, bob.pkh);
 
-            const total_bid_amount = Math.ceil(parseInt(bid_amount) * (1 + fee / 10000) + (parseInt(bid_amount) * (payout_value / 10000) * 2));
-
             var bid_record = await getValueFromBigMap(
                 parseInt(storage.bundle_bids),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`),
@@ -5944,7 +6015,12 @@ describe('Accept bundle bid tests', async () => {
             assert(bid_record != null);
 
             await bids.accept_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`,
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(FA12)}
+                                (Pair 0x${bid_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))`,
                 as: alice.pkh,
             });
 
@@ -5965,14 +6041,16 @@ describe('Accept bundle bid tests', async () => {
 
             const protocol_fees = bid_amount * (fee / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 2 * fee_value;
+            const rest = bid_amount - protocol_fees - 2 * royalties_per_nft * bundle_items.length - 4 * fee_value;
+            const payout = rest * (payout_value / 10000);
 
-            assert(post_custody_ft_balance == custody_ft_balance - total_bid_amount);
+
+            assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
             assert(post_bids_ft_balance == bids_ft_balance);
-            assert(post_alice_ft_balance == alice_ft_balance + rest);
+            assert(post_alice_ft_balance == alice_ft_balance + rest - 4 * payout);
             assert(post_bob_ft_balance == bob_ft_balance);
-            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length);
-            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees * 2 + fee_value * 2 + royalties_per_nft * bundle_items.length);
+            assert(post_carl_ft_balance == carl_ft_balance + fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2);
+            assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees + fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
             assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
@@ -5999,7 +6077,7 @@ describe('Accept bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.accept_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} 0x${bid_asset})))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair "${bob.pkh}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} {})))))`,
                     as: alice.pkh,
                 });
             }, '"MISSING_BID"');

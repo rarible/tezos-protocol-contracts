@@ -73,8 +73,8 @@ variable auction_contract : option<address> = none
 variable transfer_manager : option<address> = none
 
 record bid {
-  bid_payouts : list<part>;
   bid_origin_fees : list<part>;
+  bid_payouts : list<part>;
   bid_amount : nat;
   bid_bidder: address;
   bid_data_type  : option<bytes>;
@@ -91,8 +91,9 @@ record auction_record {
   auction_minimal_price: nat;
   auction_buy_out_price: nat;
   auction_minimal_step: nat;
-  auction_payouts : list<part>;
+  auction_max_seller_fees: nat;
   auction_origin_fees : list<part>;
+  auction_payouts : list<part>;
   auction_data_type  : option<bytes>;
   auction_data       : option<bytes>;
 }
@@ -106,8 +107,9 @@ record bundle_auction_record {
   bar_minimal_price: nat;
   bar_buy_out_price: nat;
   bar_minimal_step: nat;
-  bar_payouts : list<part>;
+  bar_max_seller_fees: nat;
   bar_origin_fees : list<part>;
+  bar_payouts : list<part>;
   bar_data_type  : option<bytes>;
   bar_data       : option<bytes>;
 }
