@@ -6,6 +6,8 @@ const {
     expectToThrow,
     exprMichelineToJson,
     getBalance,
+    setMockupNow,
+    isMockup
 } = require('@completium/completium-cli');
 const {
     errors,
@@ -58,8 +60,8 @@ const fee = 250;
 const payout_value = 100;
 const max_fees = 10000;
 
-const sale_amount = "1000000";
-const qty = "1";
+const sale_amount = 1000000;
+const qty = 1;
 // accounts
 const alice = getAccount(mockup_mode ? 'alice' : 'alice');
 const bob = getAccount(mockup_mode ? 'bob' : 'bob');
@@ -68,14 +70,6 @@ const daniel = getAccount(mockup_mode ? 'bootstrap1' : 'bootstrap1');
 
 //set endpointhead
 //setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
-
-const bundle_items = [
-    mkBundleItem("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", 0, 0),
-    mkBundleItem("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", 1, 1),
-    mkBundleItem("tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb", 2, 2)
-];
-
-const p = mkPackedBundle(bundle_items);
 
 describe('Contract deployments', async () => {
 
@@ -923,7 +917,9 @@ describe('Set sales tests', async () => {
                                             (Pair ${sale_amount}
                                                 (Pair ${qty}
                                                     (Pair None
-                                                        (Pair None ${max_fees}))))))))))`,
+                                                        (Pair None
+                                                            (Pair ${max_fees}
+                                                                (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -956,6 +952,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                        "int": "${max_fees}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
                    }
                 ]
              }`);
@@ -982,7 +984,9 @@ describe('Set sales tests', async () => {
                                             (Pair ${sale_amount}
                                                 (Pair ${qty}
                                                     (Pair None
-                                                        (Pair None ${max_fees}))))))))))`,
+                                                        (Pair None
+                                                            (Pair ${max_fees}
+                                                                (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1025,6 +1029,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                    },
+                    {
+                       "prim":"None"
+                    },
+                    {
+                       "prim":"None"
                     }
                 ]
              }`);
@@ -1052,8 +1062,9 @@ describe('Set sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))))`,
+                                                    (Pair None
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1112,6 +1123,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                    },
+                    {
+                       "prim":"None"
+                    },
+                    {
+                       "prim":"None"
                     }
                 ]
              }`);
@@ -1141,8 +1158,9 @@ describe('Set sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))))`,
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1175,6 +1193,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1200,8 +1224,9 @@ describe('Set sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))))`,
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1244,6 +1269,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1269,8 +1300,9 @@ describe('Set sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))))`,
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1329,6 +1361,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1356,8 +1394,9 @@ describe('Set sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))))`,
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1390,6 +1429,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1415,8 +1460,9 @@ describe('Set sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))))`,
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1459,6 +1505,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1484,8 +1536,9 @@ describe('Set sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair ${qty}
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))))`,
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1544,6 +1597,12 @@ describe('Set sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1567,8 +1626,9 @@ describe('Set sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))))`,
+                                                    (Pair None
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -1586,8 +1646,9 @@ describe('Set sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))))`,
+                                                    (Pair None
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -1606,8 +1667,9 @@ describe('Set sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))))`,
+                                                    (Pair None
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"WRONG_XTZ_PAYLOAD"');
@@ -1626,8 +1688,9 @@ describe('Set sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair 0
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))))`,
+                                                    (Pair None
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_s1")');
@@ -1646,11 +1709,54 @@ describe('Set sales tests', async () => {
                                         (Pair 0
                                             (Pair ${qty}
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))))`,
+                                                    (Pair None
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_s0")');
+        });
+
+        it('Set sale with end date < now duration should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                await sales.sell({
+                    argMichelson: `(Pair "${nft.address}"
+                    (Pair 10
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None
+                                                    (Pair (Some 150000)
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '"INVALID_SALE_END_DATE"');
+        });
+
+        it('Set sale with end date < start date duration should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                await sales.sell({
+                    argMichelson: `(Pair "${nft.address}"
+                    (Pair 10
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair (Some ${Math.floor(Date.now() / 1000) + 200000})
+                                                    (Pair (Some ${Math.floor(Date.now() / 1000) + 100000})
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '"INVALID_SALE_START_DATE"');
         });
 
         it('Set sale buying with a sale that already exists should fail', async () => {
@@ -1666,8 +1772,9 @@ describe('Set sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair ${qty}
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))))`,
+                                                    (Pair None
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_s2")');
@@ -1700,7 +1807,10 @@ describe('Set bundle sales tests', async () => {
                                 (Pair {}
                                     (Pair {}
                                         (Pair ${sale_amount}
-                                            (Pair None (Pair None ${max_fees}))))))))`,
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1730,6 +1840,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1762,7 +1878,9 @@ describe('Set bundle sales tests', async () => {
                                     (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
                                             (Pair None
-                                                (Pair None ${max_fees}))))))))`,
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1802,6 +1920,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1834,9 +1958,10 @@ describe('Set bundle sales tests', async () => {
                             (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
+                                        (Pair None
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))))`,
+                                                (Pair ${max_fees}
+                                                    (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1892,6 +2017,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1925,8 +2056,10 @@ describe('Set bundle sales tests', async () => {
                             (Pair {}
                                 (Pair {}
                                     (Pair ${sale_amount}
-                                            (Pair None (Pair None ${max_fees})
-                                        )))))))`,
+                                        (Pair None
+                                            (Pair None
+                                                (Pair ${max_fees}
+                                                    (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1956,6 +2089,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -1984,9 +2123,10 @@ describe('Set bundle sales tests', async () => {
                         (Pair { Pair "${carl.pkh}" ${payout_value}}
                             (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                 (Pair ${sale_amount}
+                                    (Pair None
                                         (Pair None
-                                            (Pair None ${max_fees})
-                                    )))))))`,
+                                            (Pair ${max_fees}
+                                                (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2026,6 +2166,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -2054,9 +2200,10 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
+                                            (Pair None
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))`,
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2112,6 +2259,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -2142,9 +2295,10 @@ describe('Set bundle sales tests', async () => {
                                 (Pair {}
                                     (Pair {}
                                         (Pair ${sale_amount}
+                                            (Pair None
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))`,
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2174,6 +2328,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -2202,9 +2362,10 @@ describe('Set bundle sales tests', async () => {
                             (Pair { Pair "${carl.pkh}" ${payout_value}}
                                 (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
+                                        (Pair None
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))`,
+                                                (Pair ${max_fees}
+                                                    (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2244,6 +2405,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -2272,9 +2439,10 @@ describe('Set bundle sales tests', async () => {
                             (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${sale_amount}
+                                        (Pair None
                                             (Pair None
-                                                (Pair None ${max_fees})
-                                        )))))))`,
+                                                (Pair ${max_fees}
+                                                    (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2330,6 +2498,12 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                     "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
                 }
                 ]
              }`);
@@ -2355,9 +2529,10 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
+                                            (Pair None
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))`,
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -2377,9 +2552,10 @@ describe('Set bundle sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${sale_amount}
+                                                (Pair None
                                                     (Pair None
-                                                        (Pair None ${max_fees})
-                                                )))))))`,
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -2400,9 +2576,10 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
+                                            (Pair None
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))`,
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"WRONG_XTZ_PAYLOAD"');
@@ -2419,9 +2596,10 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
+                                            (Pair None
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))`,
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_BUNDLE"');
@@ -2442,9 +2620,10 @@ describe('Set bundle sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${sale_amount}
+                                                (Pair None
                                                     (Pair None
-                                                        (Pair None ${max_fees})
-                                                )))))))`,
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"INVALID_BUNDLE_ITEM_QTY"');
@@ -2465,12 +2644,61 @@ describe('Set bundle sales tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair 0
+                                            (Pair None
                                                 (Pair None
-                                                    (Pair None ${max_fees})
-                                            )))))))`,
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb0")');
+        });
+
+        it('Set bundle sale with end date < now duration should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair None
+                                                (Pair (Some 150000)
+                                                    (Pair ${max_fees}
+                                                        (Pair None None)))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '"INVALID_SALE_END_DATE"');
+        });
+
+        it('Set bundle sale with end date < start date duration should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair (Some ${Math.floor(Date.now() / 1000) + 200000})
+                                                (Pair (Some ${Math.floor(Date.now() / 1000) + 100000})
+                                                    (Pair ${max_fees}
+                                                        (Pair None None)))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '"INVALID_SALE_START_DATE"');
         });
 
         it('Set bundle sale buying with a sale that already exists should fail', async () => {
@@ -2488,9 +2716,10 @@ describe('Set bundle sales tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${sale_amount}
+                                                (Pair None
                                                     (Pair None
-                                                        (Pair None ${max_fees})
-                                                )))))))`,
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb1")');
@@ -2611,7 +2840,7 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = sale_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
@@ -2817,7 +3046,7 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = sale_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
@@ -3022,7 +3251,7 @@ describe('Buy tests', async () => {
             const protocol_fees = sale_amount * (fee / 10000);
             const royalties = sale_amount * (payout_value / 10000);
             const fee_value = sale_amount * (payout_value / 10000);
-            const rest = sale_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = sale_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == 0);
@@ -3141,8 +3370,9 @@ describe('Buy tests', async () => {
                                             (Pair ${sale_amount}
                                                 (Pair ${qty}
                                                     (Pair None
-                                                        (Pair None ${max_fees})
-                                                )))))))))`,
+                                                        (Pair None
+                                                            (Pair ${max_fees}
+                                                                (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
                 await sales.buy({
@@ -3155,6 +3385,98 @@ describe('Buy tests', async () => {
                     as: bob.pkh,
                 });
             }, '"AMOUNT_MISMATCH"');
+        });
+
+        it('Buy with good start date and end date should succeed', async () => {
+            const sale_asset = mkXTZAsset();
+            const tokenId = 9;
+            const start_date = Date.now() / 1000;
+            if (isMockup()) {
+                await setMockupNow(start_date);
+            }
+            await sales.sell({
+                argMichelson: `(Pair "${nft.address}"
+                        (Pair ${tokenId}
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                            (Pair ${sale_amount}
+                                                (Pair ${qty}
+                                                    (Pair (Some ${Math.floor(start_date - 1)})
+                                                        (Pair (Some ${Math.floor(start_date + 10)})
+                                                            (Pair ${max_fees}
+                                                                (Pair None None))))))))))))`,
+                as: alice.pkh,
+            });
+            await sales.buy({
+                argMichelson: `
+                        (Pair "${nft.address}"
+                            (Pair ${tokenId}
+                                    (Pair "${alice.pkh}"
+                                        (Pair ${parseInt(XTZ)}
+                                            (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                amount: `${sale_amount}utz`,
+                as: bob.pkh,
+            });
+        });
+
+        it('Buy with before start date should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const tokenId = 9;
+                const start_date = Date.now() / 1000;
+                if (isMockup()) {
+                    await setMockupNow(start_date - 2);
+                }
+                await sales.sell({
+                    argMichelson: `(Pair "${nft.address}"
+                    (Pair ${tokenId}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair (Some ${Math.floor(start_date - 1)})
+                                                    (Pair (Some ${Math.floor(start_date + 10)})
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+                await sales.buy({
+                    argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${tokenId}
+                                (Pair "${alice.pkh}"
+                                    (Pair ${parseInt(XTZ)}
+                                        (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                    amouynt: `${sale_amount}utz`,
+                    as: bob.pkh,
+                });
+            }, '"SALE_NOT_STARTED"');
+        });
+
+
+        it('Buy with after end date should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const tokenId = 9;
+                const start_date = Date.now() / 1000;
+                if (isMockup()) {
+                    await setMockupNow(start_date + 100);
+                }
+                await sales.buy({
+                    argMichelson: `
+                (Pair "${nft.address}"
+                    (Pair ${tokenId}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                    amouynt: `${sale_amount}utz`,
+                    as: bob.pkh,
+                });
+            }, '"SALE_CLOSED"');
         });
     });
 });
@@ -3629,8 +3951,8 @@ describe('Buy bundle tests', async () => {
             assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
             assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest - 4 * payout)));
             assert(post_bob_ft_balance.isLessThan(bob_ft_balance - sale_amount));
-            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 +  royalties_per_nft * bundle_items.length + payout * 2)));
-            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 +  royalties_per_nft * bundle_items.length + payout * 2)));
+            assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2)));
+            assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 + royalties_per_nft * bundle_items.length + payout * 2)));
             assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
             assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
@@ -3921,8 +4243,10 @@ describe('Buy bundle tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${sale_amount}
-                                                (Pair None (Pair None ${max_fees})
-                                            )))))))`,
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
                 await sales.buy_bundle({
@@ -3930,6 +4254,99 @@ describe('Buy bundle tests', async () => {
                     as: bob.pkh
                 });
             }, '"AMOUNT_MISMATCH"');
+        });
+
+        it('Buy bundle with good start date and end date should succeed', async () => {
+            const sale_asset = mkXTZAsset();
+            const tokenId = 9;
+            const start_date = Date.now() / 1000;
+            if (isMockup()) {
+                await setMockupNow(start_date);
+            }
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_9, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle}
+                    (Pair ${parseInt(XTZ)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${sale_amount}
+                                        (Pair (Some ${Math.floor(start_date - 1)})
+                                            (Pair (Some ${Math.floor(start_date + 10)})
+                                                (Pair ${max_fees}
+                                                    (Pair None None))))))))))`,
+                as: alice.pkh,
+            });
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+                amount: `${sale_amount}utz`,
+                as: bob.pkh
+            });
+
+        });
+
+        it('Buy with before start date should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const tokenId = 9;
+                const start_date = Date.now() / 1000;
+                if (isMockup()) {
+                    await setMockupNow(start_date - 2);
+                }
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_0, 1),
+                    mkBundleItem(nft.address, token_id_9, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair (Some ${Math.floor(start_date - 1)})
+                                                (Pair (Some ${Math.floor(start_date + 10)})
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))`,
+                    as: alice.pkh,
+                });
+                await sales.buy_bundle({
+                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+                    amount: `${sale_amount}utz`,
+                    as: bob.pkh
+                });
+            }, '"SALE_NOT_STARTED"');
+        });
+
+
+        it('Buy with after end date should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const tokenId = 9;
+                const start_date = Date.now() / 1000;
+
+                if (isMockup()) {
+                    await setMockupNow(start_date + 100);
+                }
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_0, 1),
+                    mkBundleItem(nft.address, token_id_9, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.buy_bundle({
+                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+                    amount: `${sale_amount}utz`,
+                    as: bob.pkh
+                });
+            }, '"SALE_CLOSED"');
         });
     });
 });
