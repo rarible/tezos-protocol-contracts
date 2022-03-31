@@ -3,14 +3,14 @@
     "extension": ["js"],
     "package": "package.json",
     "slow": 0,
-    "timeout": 99999999999999,
+    "timeout": 0,
     "recursive": true,
     "file": [
-        "tests/multiple-nft-fa2-private-tests.js",
-        "tests/multiple-nft-fa2-public-tests.js",
-        "tests/single-nft-fa2-public-tests.js",
-        "tests/single-nft-fa2-private-tests.js",
-        "tests/utils.js"
+        "test/multiple-nft-fa2-private-tests.js",
+        "test/multiple-nft-fa2-public-tests.js",
+        "test/single-nft-fa2-public-tests.js",
+        "test/single-nft-fa2-private-tests.js",
+        "test/utils.js"
     ],
     "ui": "bdd",
     "watch-files": ["lib/**/*.js", "tests/**/*.js"],

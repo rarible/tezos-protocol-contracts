@@ -4,9 +4,9 @@
     "description": "Tezos FA2 contract templates",
     "main": "index.js",
     "scripts": {
-        "test": "mocha --timeout 0 --slow 50000 --reporter mochawesome",
-        "test-multiple-fa2-public": "mocha ./tests/multiple-nft-fa2-public-tests.js --timeout 0 --slow 50000 --reporter mochawesome",
-        "test-single-fa2-public":   "mocha ./tests/single-nft-fa2-public-tests.js   --timeout 0 --slow 50000 --reporter mochawesome"
+        "test": "mocha --timeout 0 --slow 0",
+        "test-multiple-fa2-public": "mocha ./tests/multiple-nft-fa2-public-tests.js --timeout 0 --slow 0",
+        "test-single-fa2-public": "mocha ./tests/single-nft-fa2-public-tests.js   --timeout 0 --slow 0"
     },
     "author": "",
     "license": "ISC",
