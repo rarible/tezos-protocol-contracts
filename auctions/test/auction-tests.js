@@ -3430,6 +3430,47 @@ describe('Start bundle Auction tests', async () => {
             }, '"FA2_INSUFFICIENT_BALANCE"');
         });
 
+        it('Starting bundle auction with too many NFT in bundle should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_1, 1),
+                    mkBundleItem(nft_1.address, token_id_2, 1),
+                    mkBundleItem(nft_1.address, token_id_3, 1),
+                    mkBundleItem(nft_1.address, token_id_4, 1),
+                    mkBundleItem(nft_1.address, token_id_5, 1),
+                    mkBundleItem(nft_1.address, token_id_6, 1),
+                    mkBundleItem(nft_1.address, token_id_7, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_2.address, token_id_1, 1),
+                    mkBundleItem(nft_1.address, token_id_2, 1),
+                    mkBundleItem(nft_1.address, token_id_3, 1),
+
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                    (Pair (Some ${start_time})
+                                            (Pair ${duration}
+                                                (Pair ${minimal_price}
+                                                    (Pair ${buyout_price}
+                                                        (Pair ${min_step}
+                                                            (Pair ${max_fees}
+                                                                (Pair {}
+                                                                    (Pair {}
+                                                                        (Pair None None)
+                        )))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "MAX_BUNDLE_SIZE" 10)');
+        });
+
         it('Starting bundle auction with duration < extension duration should fail', async () => {
             await expectToThrow(async () => {
                 const start_time = Math.floor(start_date + 1);
@@ -7156,5 +7197,146 @@ describe('Cancel bundle auction tests', async () => {
             exprMichelineToJson(`(pair bytes address)`)
         );
         assert(post_tx_auction == null);
+    });
+});
+
+describe('Miscellaneous tests', async () => {
+    it('Putting a bid on an auction close to max duration should not increase the end time', async () => {
+
+        const storage = await auction_storage.getStorage();
+        const bundle_items = [
+            mkBundleItem(nft_3.address, token_id_8, 1),
+            mkBundleItem(nft_3.address, token_id_9, 1),
+        ];
+
+        const bundle = mkPackedBundle(bundle_items);
+        const max_duration = 43200000;
+        const start_time = Math.floor(start_date);
+        if (isMockup()) {
+            await setMockupNow(start_time-1);
+        }
+        await auction.start_bundle_auction({
+            argMichelson:
+                `(Pair 0x${bundle}
+                    (Pair ${FA2}
+                        (Pair 0x${mkFungibleFA2Asset(fa2_ft.address, token_id_9.toString())}
+                            (Pair (Some ${Math.floor(start_time)})
+                                (Pair ${max_duration - 1}
+                                        (Pair ${minimal_price}
+                                            (Pair ${buyout_price}
+                                                (Pair ${min_step}
+                                                    (Pair ${max_fees}
+                                                        (Pair {}
+                                                            (Pair {}
+                                                                (Pair None None)
+        )))))))))))))`,
+            as: alice.pkh,
+        });
+
+        var auctions = await getValueFromBigMap(
+            parseInt(storage.bundle_auctions),
+            exprMichelineToJson(`(Pair 0x${bundle} "${alice.pkh}")`),
+            exprMichelineToJson(`(pair bytes address)`)
+        );
+
+        const expected_result = JSON.parse(`
+            [
+                {
+                    "int": "${FA2}"
+                }, {
+                    "bytes": "${mkFungibleFA2Asset(fa2_ft.address, token_id_9.toString())}"
+                }, {
+                    "prim": "None"
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + max_duration - 1) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${max_fees}"
+                },
+                [],
+                [], {
+                    "prim": "None"
+                }, {
+                    "prim": "None"
+                }
+            ]
+        `);
+
+        assert(JSON.stringify(auctions.args) === JSON.stringify(expected_result));
+
+        if (isMockup()) {
+            await setMockupNow(start_time + max_duration - 20);
+        }
+        await auction.put_bundle_bid({
+            argMichelson: `
+                (Pair 0x${bundle}
+                        (Pair "${alice.pkh}"
+                            (Pair {}
+                                (Pair {}
+                                    (Pair ${bid_amount}
+                                        (Pair "${bob.pkh}"
+                                            (Pair None None)
+                ))))))
+            `,
+            as: bob.pkh,
+        });
+
+        var post_tx_auction = await getValueFromBigMap(
+            parseInt(storage.bundle_auctions),
+            exprMichelineToJson(`(Pair 0x${bundle} "${alice.pkh}")`),
+            exprMichelineToJson(`(pair bytes address)`)
+        );
+
+        const post_tx_expected_result = JSON.parse(`
+            [
+                {
+                    "int": "${FA2}"
+                }, {
+                    "bytes": "${mkFungibleFA2Asset(fa2_ft.address, token_id_9.toString())}"
+                }, {
+                    "prim":"Some",
+                    "args": [
+                        {
+                            "prim":"Pair",
+                            "args":[
+                                [],
+                                [],
+                                {"int":"${bid_amount}"},
+                                {"string":"${bob.pkh}"},
+                                {"prim":"None"},
+                                {"prim":"None"}
+                            ]
+                        }
+                    ]
+                }, {
+                    "string": "${new Date(start_time * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "string": "${new Date((start_time + max_duration - 1) * 1000).toISOString().split('.')[0] + "Z"}"
+                }, {
+                    "int": "${minimal_price}"
+                }, {
+                    "int": "${buyout_price}"
+                }, {
+                    "int": "${min_step}"
+                }, {
+                    "int": "${max_fees}"
+                },
+                [],
+                [], {
+                    "prim": "None"
+                }, {
+                    "prim": "None"
+                }
+            ]
+        `);
+
+        assert(JSON.stringify(post_tx_auction.args) === JSON.stringify(post_tx_expected_result));
     });
 });
