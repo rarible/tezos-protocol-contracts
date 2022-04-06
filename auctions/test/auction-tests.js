@@ -317,6 +317,72 @@ describe('Auction contract setter tests', async () => {
         });
     });
 
+    describe('Bundle and fees setter tests', async () => {
+        it('Set bundle max limit as non admin should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.set_max_bundle_items({
+                    arg: {
+                        smbi_number: 11
+                    },
+                    as: bob.pkh
+                });
+            }, errors.INVALID_CALLER);
+        });
+
+        it('Set max fees limit as non admin should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.set_fees_limit({
+                    arg: {
+                        sfl: 11
+                    },
+                    as: bob.pkh
+                });
+            }, errors.INVALID_CALLER);
+        });
+
+        it('Set bundle max limit as admin should succeed', async () => {
+            const storage = await auction.getStorage();
+            assert(storage.max_bundle_items == 10);
+            await auction.set_max_bundle_items({
+                arg: {
+                    smbi_number: 11
+                },
+                as: alice.pkh
+            });
+            const post_test_storage = await auction.getStorage();
+            assert(post_test_storage.max_bundle_items == 11);
+            await auction.set_max_bundle_items({
+                arg: {
+                    smbi_number: 10
+                },
+                as: alice.pkh
+            });
+            const final_test_storage = await auction.getStorage();
+            assert(final_test_storage.max_bundle_items == 10);
+        });
+
+        it('Set max fees limit as admin should succeed', async () => {
+            const storage = await auction.getStorage();
+            assert(storage.max_fees_limit == 10000);
+            await auction.set_fees_limit({
+                arg: {
+                    sfl: 11
+                },
+                as: alice.pkh
+            });
+            const post_test_storage = await auction.getStorage();
+            assert(post_test_storage.max_fees_limit == 11);
+            await auction.set_fees_limit({
+                arg: {
+                    sfl: 10000
+                },
+                as: alice.pkh
+            });
+            const final_test_storage = await auction.getStorage();
+            assert(final_test_storage.max_fees_limit == 10000);
+        });
+    });
+
     describe('(Transfer manager)Authorize Auction, and auction storage contract tests', async () => {
         it('Authorize Auction, and auction storage contract as non admin should fail', async () => {
             await expectToThrow(async () => {
@@ -2266,6 +2332,110 @@ describe('Start Auction tests', async () => {
                 });
             }, '(Pair "InvalidCondition" "r_sa8")');
         });
+
+        it('Starting auction with max seller fees = 0 should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_auction({
+                    argMichelson:
+                        `(Pair "${nft.address}"
+                        (Pair ${token_id_9.toString()}
+                            (Pair ${auction_amount}
+                                (Pair ${XTZ}
+                                    (Pair 0x${mkXTZAsset()}
+                                            (Pair (Some ${start_time})
+                                                (Pair ${duration}
+                                                    (Pair ${minimal_price}
+                                                        (Pair ${buyout_price}
+                                                            (Pair ${min_step}
+                                                                (Pair 0
+                                                                    (Pair {}
+                                                                        (Pair {}
+                                                                            (Pair None None)
+                    )))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa9")');
+        });
+
+        it('Starting auction with max seller fees > max possible fees should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_auction({
+                    argMichelson:
+                        `(Pair "${nft.address}"
+                        (Pair ${token_id_9.toString()}
+                            (Pair ${auction_amount}
+                                (Pair ${XTZ}
+                                    (Pair 0x${mkXTZAsset()}
+                                            (Pair (Some ${start_time})
+                                                (Pair ${duration}
+                                                    (Pair ${minimal_price}
+                                                        (Pair ${buyout_price}
+                                                            (Pair ${min_step}
+                                                                (Pair 999999999999
+                                                                    (Pair {}
+                                                                        (Pair {}
+                                                                            (Pair None None)
+                    )))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa9")');
+        });
+
+        it('Starting auction with max seller fees < protocol fees should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_auction({
+                    argMichelson:
+                        `(Pair "${nft.address}"
+                        (Pair ${token_id_9.toString()}
+                            (Pair ${auction_amount}
+                                (Pair ${XTZ}
+                                    (Pair 0x${mkXTZAsset()}
+                                            (Pair (Some ${start_time})
+                                                (Pair ${duration}
+                                                    (Pair ${minimal_price}
+                                                        (Pair ${buyout_price}
+                                                            (Pair ${min_step}
+                                                                (Pair 100
+                                                                    (Pair {}
+                                                                        (Pair {}
+                                                                            (Pair None None)
+                    )))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa9")');
+        });
+
+        it('Starting auction with origin fees + protocol fees > max fees should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_auction({
+                    argMichelson:
+                        `(Pair "${nft.address}"
+                        (Pair ${token_id_9.toString()}
+                            (Pair ${auction_amount}
+                                (Pair ${XTZ}
+                                    (Pair 0x${mkXTZAsset()}
+                                            (Pair (Some ${start_time})
+                                                (Pair ${duration}
+                                                    (Pair ${minimal_price}
+                                                        (Pair ${buyout_price}
+                                                            (Pair ${min_step}
+                                                                (Pair 100
+                                                                    (Pair {Pair "${alice.pkh}" 11000}
+                                                                        (Pair {}
+                                                                            (Pair None None)
+                    )))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa9")');
+        });
     });
 });
 
@@ -3432,7 +3602,7 @@ describe('Put bid tests', async () => {
                     as: bob.pkh,
                 });
             } catch (error) {
-                assert(error.includes('"FA2_INSUFFICIENT_BALANCE"'));
+                error.value.includes('"FA2_INSUFFICIENT_BALANCE"')
             }
         });
 
@@ -3749,6 +3919,10 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[3].prim == 'None');
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
+
             await auction.put_bid({
                 argMichelson: `
                 (Pair "${nft.address}"
@@ -3773,6 +3947,12 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[2].int == bid_amount &&
                 post_bid.args[3].args[0].args[3].string == bob.pkh
             );
+
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put bid with good amount of Fungible FA2 should succeed (single bid origin fees, single payouts)', async () => {
@@ -3787,6 +3967,9 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[3].prim == 'None');
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_1, alice.pkh);
 
             await auction.put_bid({
                 argMichelson: `
@@ -3817,6 +4000,12 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[1][0].args[0].string == daniel.pkh &&
                 post_bid.args[3].args[0].args[1][0].args[1].int == payout_value
             );
+
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_1, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put bid with good amount of Fungible FA2 should succeed (multiple bid origin fees, multiple payouts)', async () => {
@@ -3831,6 +4020,9 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[3].prim == 'None');
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_2, alice.pkh);
 
             await auction.put_bid({
                 argMichelson: `
@@ -3865,6 +4057,12 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[1][1].args[0].string == daniel.pkh &&
                 post_bid.args[3].args[0].args[1][1].args[1].int == payout_value
             );
+
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_2, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put identical bid should fail', async () => {
@@ -3952,6 +4150,10 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[3].prim == 'None');
+
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+
             await auction.put_bid({
                 argMichelson: `
                 (Pair "${nft.address}"
@@ -3977,6 +4179,12 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[2].int == bid_amount &&
                 post_bid.args[3].args[0].args[3].string == bob.pkh
             );
+
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - bid_amount));
         });
 
         it('Put bid with good amount of XTZ (single bid origin fees, single payouts) should succeed', async () => {
@@ -3990,6 +4198,10 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[3].prim == 'None');
+
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+
             await auction.put_bid({
                 argMichelson: `
                 (Pair "${nft.address}"
@@ -4020,6 +4232,12 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[1][0].args[0].string == daniel.pkh &&
                 post_bid.args[3].args[0].args[1][0].args[1].int == payout_value
             );
+
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - bid_amount));
         });
 
         it('Put bid with good amount of XTZ (multiple bid origin fees, multiple payouts) should succeed', async () => {
@@ -4033,6 +4251,9 @@ describe('Put bid tests', async () => {
                 exprMichelineToJson(`(pair address (pair nat address))`)
             );
             assert(bid.args[3].prim == 'None');
+
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
 
             await auction.put_bid({
                 argMichelson: `
@@ -4068,6 +4289,13 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[1][1].args[0].string == daniel.pkh &&
                 post_bid.args[3].args[0].args[1][1].args[1].int == payout_value
             );
+
+
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - bid_amount));
         });
     });
 
@@ -4079,7 +4307,7 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
-            assert(bob_ft_balance == initial_fa12_ft_amount / 2);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
 
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -4101,8 +4329,6 @@ describe('Put bid tests', async () => {
                 `,
                 as: bob.pkh,
             });
-            const post_bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
-            assert(post_bob_ft_balance == initial_fa12_ft_amount / 2 - bid_amount);
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -4114,6 +4340,12 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[2].int == bid_amount &&
                 post_bid.args[3].args[0].args[3].string == bob.pkh
             );
+
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put bid with good amount of FA12 should succeed (single bid origin fees, single payouts)', async () => {
@@ -4123,7 +4355,7 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
-            assert(bob_ft_balance == initial_fa12_ft_amount / 2);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
 
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -4146,8 +4378,6 @@ describe('Put bid tests', async () => {
                 as: bob.pkh,
             });
 
-            const post_bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
-            assert(post_bob_ft_balance == initial_fa12_ft_amount / 2 - bid_amount);
 
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -4163,6 +4393,12 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[1][0].args[0].string == daniel.pkh &&
                 post_bid.args[3].args[0].args[1][0].args[1].int == payout_value
             );
+
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put bid with good amount of FA12 should succeed (multiple bid origin fees, multiple payouts)', async () => {
@@ -4172,7 +4408,7 @@ describe('Put bid tests', async () => {
             const storage = await auction_storage.getStorage();
 
             const bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
-            assert(bob_ft_balance == initial_fa12_ft_amount / 2);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
 
             const bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
@@ -4195,9 +4431,6 @@ describe('Put bid tests', async () => {
                 as: bob.pkh,
             });
 
-            const post_bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
-            assert(post_bob_ft_balance == initial_fa12_ft_amount / 2 - bid_amount);
-
             const post_bid = await getValueFromBigMap(
                 parseInt(storage.auctions),
                 exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_8} "${alice.pkh}"))`),
@@ -4216,6 +4449,12 @@ describe('Put bid tests', async () => {
                 post_bid.args[3].args[0].args[1][1].args[0].string == daniel.pkh &&
                 post_bid.args[3].args[0].args[1][1].args[1].int == payout_value
             );
+
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
     });
 });
@@ -4274,7 +4513,7 @@ describe('Put bundle bid tests', async () => {
                     as: bob.pkh,
                 });
             } catch (error) {
-                assert(error.includes('"FA2_INSUFFICIENT_BALANCE"'));
+                assert(error.value.includes('"FA2_INSUFFICIENT_BALANCE"'));
             }
         });
 
@@ -4638,6 +4877,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -4661,6 +4904,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[2].int == bid_amount &&
                 post_bid.args[2].args[0].args[3].string == bob.pkh
             );
+
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_0, bob.pkh);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_0, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put bundle bid with good amount of Fungible FA2 should succeed (single bid origin fees, single payouts)', async () => {
@@ -4682,6 +4931,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_1, alice.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -4709,6 +4962,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[1][0].args[0].string == daniel.pkh &&
                 post_bid.args[2].args[0].args[1][0].args[1].int == payout_value
             );
+
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bob.pkh);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_1, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put bundle bid with good amount of Fungible FA2 should succeed (multiple bid origin fees, multiple payouts)', async () => {
@@ -4730,6 +4989,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
+            const alice_ft_balance = await getFA2Balance(fa2_ft, token_id_2, alice.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -4762,6 +5025,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[1][1].args[0].string == daniel.pkh &&
                 post_bid.args[2].args[0].args[1][1].args[1].int == payout_value
             );
+
+            const post_bob_ft_balance = await getFA2Balance(fa2_ft, token_id_2, bob.pkh);
+            const post_alice_ft_balance = await getFA2Balance(fa2_ft, token_id_2, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put identical bundle bid should fail', async () => {
@@ -4875,6 +5144,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -4900,6 +5173,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[2].int == bid_amount &&
                 post_bid.args[2].args[0].args[3].string == bob.pkh
             );
+
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - bid_amount));
         });
 
         it('Put bundle bid with good amount of XTZ (single bid origin fees, single payouts) should succeed', async () => {
@@ -4921,6 +5200,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -4950,6 +5233,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[1][0].args[0].string == daniel.pkh &&
                 post_bid.args[2].args[0].args[1][0].args[1].int == payout_value
             );
+
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - bid_amount));
         });
 
         it('Put bundle bid with good amount of XTZ (multiple bid origin fees, multiple payouts) should succeed', async () => {
@@ -4971,6 +5260,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const alice_ft_balance = await getBalance(alice.pkh);
+            const bob_ft_balance = await getBalance(bob.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -5004,6 +5297,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[1][1].args[0].string == daniel.pkh &&
                 post_bid.args[2].args[0].args[1][1].args[1].int == payout_value
             );
+
+            const post_alice_ft_balance = await getBalance(alice.pkh);
+            const post_bob_ft_balance = await getBalance(bob.pkh);
+
+            assert(post_alice_ft_balance.isEqualTo(alice_ft_balance));
+            assert(post_bob_ft_balance.isLessThan(bob_ft_balance - bid_amount));
         });
     });
 
@@ -5026,6 +5325,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -5050,6 +5353,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[2].int == bid_amount &&
                 post_bid.args[2].args[0].args[3].string == bob.pkh
             );
+
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_0, bob.pkh);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_0, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put bundle bid with good amount of FA12 should succeed (single bid origin fees, single payouts)', async () => {
@@ -5070,6 +5379,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -5098,6 +5411,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[1][0].args[0].string == daniel.pkh &&
                 post_bid.args[2].args[0].args[1][0].args[1].int == payout_value
             );
+
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_1, bob.pkh);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_1, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
 
         it('Put bundle bid with good amount of FA12 should succeed (multiple bid origin fees, multiple payouts)', async () => {
@@ -5118,6 +5437,10 @@ describe('Put bundle bid tests', async () => {
                 exprMichelineToJson(`(pair bytes address)`)
             );
             assert(bid.args[2].prim == 'None');
+
+            const bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            const alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
+
             await auction.put_bundle_bid({
                 argMichelson: `
                     (Pair 0x${bundle}
@@ -5150,6 +5473,12 @@ describe('Put bundle bid tests', async () => {
                 post_bid.args[2].args[0].args[1][1].args[0].string == daniel.pkh &&
                 post_bid.args[2].args[0].args[1][1].args[1].int == payout_value
             );
+
+            const post_bob_ft_balance = await getFA12Balance(fa12_ft_2, bob.pkh);
+            const post_alice_ft_balance = await getFA12Balance(fa12_ft_2, alice.pkh);
+
+            assert(post_bob_ft_balance == bob_ft_balance - bid_amount);
+            assert(alice_ft_balance == post_alice_ft_balance);
         });
     });
 });
