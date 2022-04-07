@@ -2167,6 +2167,31 @@ describe('Start Auction tests', async () => {
     });
 
     describe('Common args test', async () => {
+        it('Starting auction with unknown buy asset payload should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_auction({
+                    argMichelson:
+                        `(Pair "${nft.address}"
+                            (Pair ${token_id_9.toString()}
+                                (Pair ${auction_amount}
+                                    (Pair 99
+                                        (Pair 0x${mkXTZAsset()}
+                                            (Pair (Some ${start_time})
+                                                (Pair ${duration}
+                                                    (Pair ${minimal_price}
+                                                        (Pair ${buyout_price}
+                                                            (Pair ${min_step}
+                                                                (Pair ${max_fees}
+                                                                    (Pair {}
+                                                                        (Pair {}
+                                                                            (Pair None None)
+                    )))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa1")');
+        });
 
         it('Starting auction with wrong buy asset payload (FA2) should fail', async () => {
             await expectToThrow(async () => {
@@ -2246,7 +2271,7 @@ describe('Start Auction tests', async () => {
             }, '"WRONG_BUY_ASSET_PAYLOAD"');
         });
 
-        it('Starting auction with NFT amount = 0 duration should fail', async () => {
+        it('Starting auction with NFT amount = 0 should fail', async () => {
             await expectToThrow(async () => {
                 const start_time = Math.floor(start_date + 1);
 
@@ -2374,6 +2399,56 @@ describe('Start Auction tests', async () => {
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sa4")');
+        });
+
+        it('Starting auction with min step = 0 should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_auction({
+                    argMichelson:
+                        `(Pair "${nft.address}"
+                        (Pair ${token_id_9.toString()}
+                            (Pair ${auction_amount}
+                                (Pair ${XTZ}
+                                    (Pair 0x${mkXTZAsset()}
+                                            (Pair (Some ${start_time})
+                                                (Pair ${duration}
+                                                    (Pair ${minimal_price}
+                                                        (Pair ${buyout_price}
+                                                            (Pair 0
+                                                                (Pair ${max_fees}
+                                                                    (Pair {}
+                                                                        (Pair {}
+                                                                            (Pair None None)
+                    )))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sa6")');
+        });
+
+        it('Starting auction with start date in the past should fail', async () => {
+            await expectToThrow(async () => {
+                await auction.start_auction({
+                    argMichelson:
+                        `(Pair "${nft.address}"
+                        (Pair ${token_id_9.toString()}
+                            (Pair ${auction_amount}
+                                (Pair ${XTZ}
+                                    (Pair 0x${mkXTZAsset()}
+                                            (Pair (Some 123456)
+                                                (Pair ${duration}
+                                                    (Pair ${minimal_price}
+                                                        (Pair ${buyout_price}
+                                                            (Pair ${min_step}
+                                                                (Pair ${max_fees}
+                                                                    (Pair {}
+                                                                        (Pair {}
+                                                                            (Pair None None)
+                    )))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '"AUCTION_START_DATE_IN_THE_PAST"');
         });
 
         it('Starting auction buying with Fungible FA2 that already exists should fail', async () => {
@@ -3460,6 +3535,38 @@ describe('Start bundle Auction tests', async () => {
 
     describe('Common bundle args test', async () => {
 
+        it('Starting bundle auction with unknown buy asset payload should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair 99
+                                (Pair 0x${mkXTZAsset()}
+                                    (Pair (Some ${start_time})
+                                        (Pair ${duration}
+                                            (Pair ${minimal_price}
+                                                (Pair ${buyout_price}
+                                                    (Pair ${min_step}
+                                                        (Pair ${max_fees}
+                                                            (Pair {}
+                                                                (Pair {}
+                                                                    (Pair None None)
+                    )))))))))))`,
+                    as: alice.pkh,
+                });
+
+            }, '(Pair "InvalidCondition" "r_sba1")');
+        });
+
         it('Starting bundle auction with wrong buy asset payload (FA2) should fail', async () => {
             await expectToThrow(async () => {
                 const start_time = Math.floor(start_date + 1);
@@ -3750,6 +3857,90 @@ describe('Start bundle Auction tests', async () => {
             }, '(Pair "InvalidCondition" "r_sba4")');
         });
 
+        it('Starting bundle auction with min_step = 0 duration should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                    (Pair (Some ${start_time})
+                                            (Pair ${duration}
+                                                (Pair ${minimal_price}
+                                                    (Pair ${buyout_price}
+                                                        (Pair 0
+                                                            (Pair ${max_fees}
+                                                                (Pair {}
+                                                                    (Pair {}
+                                                                        (Pair None None)
+                        )))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sba6")');
+        });
+
+        it('Starting bundle auction with start date in the past should fail', async () => {
+            await expectToThrow(async () => {
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                    (Pair (Some 15678)
+                                            (Pair ${duration}
+                                                (Pair ${minimal_price}
+                                                    (Pair ${buyout_price}
+                                                        (Pair ${min_step}
+                                                            (Pair ${max_fees}
+                                                                (Pair {}
+                                                                    (Pair {}
+                                                                        (Pair None None)
+                        )))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '"AUCTION_START_DATE_IN_THE_PAST"');
+        });
+
+        it('Starting bundle auction with invalid bundle should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x1234
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                    (Pair (Some ${start_time})
+                                            (Pair ${duration}
+                                                (Pair ${minimal_price}
+                                                    (Pair ${buyout_price}
+                                                        (Pair ${min_step}
+                                                            (Pair ${max_fees}
+                                                                (Pair {}
+                                                                    (Pair {}
+                                                                        (Pair None None)
+                        )))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '"CANT_UNPACK_BUNDLE"');
+        });
+
         it('Starting bundle auction buying with Fungible FA2 that already exists should fail', async () => {
             await expectToThrow(async () => {
                 const start_time = Math.floor(start_date + 1);
@@ -3779,6 +3970,126 @@ describe('Start bundle Auction tests', async () => {
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sba7")');
+        });
+
+        it('Starting auction with max seller fees = 0 should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                        (Pair (Some ${start_time})
+                                            (Pair ${duration}
+                                                (Pair ${minimal_price}
+                                                    (Pair ${buyout_price}
+                                                        (Pair ${min_step}
+                                                            (Pair 0
+                                                                (Pair {}
+                                                                    (Pair {}
+                                                                        (Pair None None)
+                    )))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sba8")');
+        });
+
+        it('Starting auction with max seller fees > max possible fees should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                    (Pair (Some ${start_time})
+                                        (Pair ${duration}
+                                            (Pair ${minimal_price}
+                                                (Pair ${buyout_price}
+                                                    (Pair ${min_step}
+                                                        (Pair 9999999999
+                                                            (Pair {}
+                                                                (Pair {}
+                                                                    (Pair None None)
+                    )))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sba8")');
+        });
+
+        it('Starting auction with max seller fees < protocol fees should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                        (Pair (Some ${start_time})
+                                            (Pair ${duration}
+                                                (Pair ${minimal_price}
+                                                    (Pair ${buyout_price}
+                                                        (Pair ${min_step}
+                                                            (Pair 100
+                                                                (Pair {}
+                                                                    (Pair {}
+                                                                        (Pair None None)
+                    )))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sba8")');
+        });
+
+        it('Starting auction with origin fees + protocol fees > max fees should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                        (Pair (Some ${start_time})
+                                            (Pair ${duration}
+                                                (Pair ${minimal_price}
+                                                    (Pair ${buyout_price}
+                                                        (Pair ${min_step}
+                                                            (Pair 100
+                                                                (Pair {Pair "${alice.pkh}" 11000}
+                                                                    (Pair {}
+                                                                        (Pair None None)
+                    )))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sba8")');
         });
     });
 });
