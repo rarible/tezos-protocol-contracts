@@ -1,0 +1,38 @@
+@startuml
+class Transfer_Manager {
+    {method} manage_transfers
+    {method} process_transfers
+}
+
+class Royalties_Provider {
+    {field} royalties
+    {method} get_royalties
+    {method} set_royalties
+}
+
+class Lottery {
+    {method} register_lottery
+    {method} start_lottery
+    {method} play
+    {method} reveal
+    {method} finalize
+}
+
+class Lottery_Storage {
+    {field} lottery_contract
+    {field} transfer_manager
+    {field} lotteries
+
+    {method} set_lottery
+    {method} remove_lottey
+
+    {method}{view} lottery_exists
+    {method}{view} get_lottery
+}
+
+Lottery --> Lottery_Storage : set_lottery
+Lottery --> Lottery_Storage : remove_lottey
+Lottery --> Transfer_Manager : manage_transfers
+
+Transfer_Manager --> Royalties_Provider: get_royalties
+@enduml

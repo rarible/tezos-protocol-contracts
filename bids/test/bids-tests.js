@@ -2157,6 +2157,16 @@ describe('Put bid tests', async () => {
 
     describe('Common args test', async () => {
 
+        it('Put bid with unknown buy asset should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                await bids.put_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    as: bob.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_pb3")');
+        });
+
         it('Put bid with wrong buy asset payload (FA2) should fail', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
@@ -2240,6 +2250,42 @@ describe('Put bid tests', async () => {
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
+        });
+
+        it('Put bid with not enough balance (FA2) should fail', async () => {
+            try {
+                const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
+                await bids.put_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None None)))))))))`,
+                    as: bob.pkh,
+                });
+            } catch (error) {
+                assert(error.value.includes("FA2_INSUFFICIENT_BALANCE"));
+            }
+        });
+
+        it('Put bid with not enough balance (FA12) should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                await bids.put_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None None)))))))))`,
+                    as: bob.pkh,
+                });
+            }, '"NotEnoughBalance"');
+        });
+
+        it('Put bid with not enough balance (XTZ) should fail', async () => {
+            try {
+                const bid_asset = mkXTZAsset();
+                await bids.put_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None None)))))))))`,
+                    as: bob.pkh,
+                    amount: `99999999999999999utz`
+
+                });
+            } catch (error) {
+                assert(error.includes(`Balance of contract ${bob.pkh} too low`));
+            }
         });
 
         it('Put bid with bid that already exists should update it and succeed', async () => {
@@ -2991,6 +3037,15 @@ describe('Put floor bid tests', async () => {
     });
 
     describe('Common args test', async () => {
+        it('Put floor bid with unknown buy asset payload should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                    as: bob.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_pfb3")');
+        });
 
         it('Put floor bid with wrong buy asset payload (FA2) should fail', async () => {
             await expectToThrow(async () => {
@@ -3023,7 +3078,7 @@ describe('Put floor bid tests', async () => {
             }, '"WRONG_XTZ_PAYLOAD"');
         });
 
-        it('Put floor bid with amount = 0 duration should fail', async () => {
+        it('Put floor bid with amount = 0 should fail', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
@@ -3033,7 +3088,7 @@ describe('Put floor bid tests', async () => {
             }, '(Pair "InvalidCondition" "r_pfb0")');
         });
 
-        it('Put bid with asset qty = 0 duration should fail', async () => {
+        it('Put bid with asset qty = 0 should fail', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
@@ -3075,6 +3130,41 @@ describe('Put floor bid tests', async () => {
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
+        });
+
+        it('Put floor bid with not enough balance (FA2) should fail', async () => {
+            try {
+                const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None None))))))))`,
+                    as: bob.pkh,
+                });
+            } catch (error) {
+                assert(error.value.includes("FA2_INSUFFICIENT_BALANCE"));
+            }
+        });
+
+        it('Put floor bid with not enough balance (FA12) should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None None))))))))`,
+                    as: bob.pkh,
+                });
+            }, '"NotEnoughBalance"');
+        });
+
+        it('Put floor bid with not enough balance (XTZ) should fail', async () => {
+            try {
+                const bid_asset = mkXTZAsset();
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None None))))))))`,
+                    as: bob.pkh,
+                    amount: "999999999999999utz",
+                });
+            } catch (error) {
+                assert(error.includes(`Balance of contract ${bob.pkh} too low`));
+            }
         });
 
         it('Put floor bid with bid that already exists should update it and succeed', async () => {
@@ -3865,6 +3955,22 @@ describe('Put bundle bid tests', async () => {
 
     describe('Common args test', async () => {
 
+        it('Put bundle bid with unknown buy asset payload should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_2, 1),
+                    mkBundleItem(nft_3.address, token_id_5, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await bids.put_bundle_bid({
+                    argMichelson: `(Pair 0x${bundle} (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    as: bob.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_pbb1")');
+        });
+
         it('Put bundle bid with wrong buy asset payload (FA2) should fail', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
@@ -3995,6 +4101,97 @@ describe('Put bundle bid tests', async () => {
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
+        });
+
+        it('Put bundle bid with not enough balance (FA2) should fail', async () => {
+            const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
+            const bundle_items = [
+                mkBundleItem(nft_1.address, token_id_2, 1),
+                mkBundleItem(nft_3.address, token_id_5, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+
+            try {
+                await bids.put_bundle_bid({
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None None)))))))`,
+                    as: bob.pkh,
+                });
+            } catch (error) {
+                assert(error.value.includes("FA2_INSUFFICIENT_BALANCE"));
+            }
+        });
+
+        it('Put bundle bid with not enough balance (FA12) should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_2, 1),
+                    mkBundleItem(nft_3.address, token_id_5, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await bids.put_bundle_bid({
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None None)))))))`,
+                    as: bob.pkh,
+                });
+            }, '"NotEnoughBalance"');
+        });
+
+        it('Put bundle bid with not enough balance (XTZ) should fail', async () => {
+            const bid_asset = mkXTZAsset();
+            const bundle_items = [
+                mkBundleItem(nft_1.address, token_id_2, 1),
+                mkBundleItem(nft_3.address, token_id_5, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+            try {
+                await bids.put_bundle_bid({
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None None)))))))`,
+                    as: bob.pkh,
+                    amount: "999999999999999utz"
+                });
+            } catch (error) {
+                assert(error.includes(`Balance of contract ${bob.pkh} too low`));
+            }
+        });
+
+        it('Put bundle bid with too many NFTs in bundle should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                const bundle_items = [
+                    mkBundleItem(nft_1.address, token_id_1, 1),
+                    mkBundleItem(nft_1.address, token_id_2, 1),
+                    mkBundleItem(nft_1.address, token_id_3, 1),
+                    mkBundleItem(nft_1.address, token_id_4, 1),
+                    mkBundleItem(nft_1.address, token_id_5, 1),
+                    mkBundleItem(nft_1.address, token_id_6, 1),
+                    mkBundleItem(nft_1.address, token_id_7, 1),
+                    mkBundleItem(nft_1.address, token_id_8, 1),
+                    mkBundleItem(nft_1.address, token_id_9, 1),
+                    mkBundleItem(nft_2.address, token_id_1, 1),
+                    mkBundleItem(nft_1.address, token_id_2, 1),
+                    mkBundleItem(nft_1.address, token_id_3, 1),
+                ];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await bids.put_bundle_bid({
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    as: carl.pkh,
+                });
+            }, '(Pair "MAX_BUNDLE_SIZE" 10)');
+        });
+
+        it('Put bundle bid with incorrect bundle should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+
+                await bids.put_bundle_bid({
+                    argMichelson: `(Pair 0x1234 (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    as: carl.pkh,
+                });
+            }, '"CANT_UNPACK_BUNDLE"');
         });
 
         it('Put bundle bid with bid that already exists should update it and succeed', async () => {
