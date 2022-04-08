@@ -772,124 +772,16 @@ describe('Tokens setup', async () => {
     });
 
     it('Add transfer manager contract as operator for NFT and FT', async () => {
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
+        await nft.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: alice.pkh,
         });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
+        await fa2_ft.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: alice.pkh,
         });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
-            as: alice.pkh,
-        });
-        await nft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${alice.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
-            as: alice.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_0})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_1})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_2})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_3})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_4})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_5})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_6})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_7})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_8})}`,
-            as: bob.pkh,
-        });
-        await fa2_ft.update_operators({
-            argMichelson: `{Left (Pair "${bob.pkh}" "${transfer_manager.address}" ${token_id_9})}`,
+        await fa2_ft.update_operators_for_all({
+            argMichelson: `{Left "${transfer_manager.address}"}`,
             as: bob.pkh,
         });
     });
@@ -1613,6 +1505,27 @@ describe('Set sales tests', async () => {
 
     describe('Common args test', async () => {
 
+        it('Set sale with unknown buy asset payload should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkFA12Asset(fa12_ft_2.address);
+                await sales.sell({
+                    argMichelson: `(Pair "${nft.address}"
+                    (Pair ${token_id_8}
+                        (Pair 99
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None
+                                                    (Pair None
+                                                        (Pair ${max_fees}
+                                                            (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_s4")');
+        });
+
         it('Set sale with wrong buy asset payload (FA2) should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkFA12Asset(fa12_ft_2.address);
@@ -1675,7 +1588,7 @@ describe('Set sales tests', async () => {
             }, '"WRONG_XTZ_PAYLOAD"');
         });
 
-        it('Set sale with NFT amount = 0 duration should fail', async () => {
+        it('Set sale with NFT amount = 0 should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkXTZAsset();
                 await sales.sell({
@@ -1696,7 +1609,7 @@ describe('Set sales tests', async () => {
             }, '(Pair "InvalidCondition" "r_s1")');
         });
 
-        it('Set sale with sale amount = 0 duration should fail', async () => {
+        it('Set sale with sale amount = 0 should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkXTZAsset();
                 await sales.sell({
@@ -1717,7 +1630,7 @@ describe('Set sales tests', async () => {
             }, '(Pair "InvalidCondition" "r_s0")');
         });
 
-        it('Set sale with end date < now duration should fail', async () => {
+        it('Set sale with end date < now should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkXTZAsset();
                 await sales.sell({
@@ -1738,7 +1651,7 @@ describe('Set sales tests', async () => {
             }, '"INVALID_SALE_END_DATE"');
         });
 
-        it('Set sale with end date < start date duration should fail', async () => {
+        it('Set sale with end date < start date should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkXTZAsset();
                 await sales.sell({
@@ -1757,6 +1670,90 @@ describe('Set sales tests', async () => {
                     as: alice.pkh,
                 });
             }, '"INVALID_SALE_START_DATE"');
+        });
+
+        it('Set sale with max fees amount = 0 should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                await sales.sell({
+                    argMichelson: `(Pair "${nft.address}"
+                    (Pair ${token_id_8}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None
+                                                    (Pair None
+                                                        (Pair 0
+                                                            (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_s3")');
+        });
+
+        it('Set sale with max fees amount > max limit should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                await sales.sell({
+                    argMichelson: `(Pair "${nft.address}"
+                    (Pair ${token_id_8}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None
+                                                    (Pair None
+                                                        (Pair 99999999999
+                                                            (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_s3")');
+        });
+
+        it('Set sale with max fees amount < protocol fees should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                await sales.sell({
+                    argMichelson: `(Pair "${nft.address}"
+                    (Pair ${token_id_8}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" 1; Pair "${daniel.pkh}" 1}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None
+                                                    (Pair None
+                                                        (Pair 150
+                                                            (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_s3")');
+        });
+
+        it('Set sale with max fees amount > protocol fees + origin fees should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                await sales.sell({
+                    argMichelson: `(Pair "${nft.address}"
+                    (Pair ${token_id_8}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" 10000; Pair "${daniel.pkh}" 10000}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair ${qty}
+                                                (Pair None
+                                                    (Pair None
+                                                        (Pair 150
+                                                            (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_s3")');
         });
 
         it('Set sale buying with a sale that already exists should fail', async () => {
@@ -2514,6 +2511,30 @@ describe('Set bundle sales tests', async () => {
 
     describe('Common args test', async () => {
 
+        it('Set bundle sale with unknown buy asset payload should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkFA12Asset(fa12_ft_2.address);
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair 99
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sb3")');
+        });
+
         it('Set bundle sale with wrong buy asset payload (FA2) should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkFA12Asset(fa12_ft_2.address);
@@ -2699,6 +2720,102 @@ describe('Set bundle sales tests', async () => {
                     as: alice.pkh,
                 });
             }, '"INVALID_SALE_START_DATE"');
+        });
+
+        it('Set bundle sale with max fees = 0 should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair 0
+                                                        (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sb2")');
+        });
+
+        it('Set bundle sale with max fees > max fees limit should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair 9999999999999
+                                                        (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sb2")');
+        });
+
+        it('Set bundle sale with max fees < protocol fees should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" 1; Pair "${daniel.pkh}" 1}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair 150
+                                                        (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sb2")');
+        });
+
+        it('Set bundle sale with max fees < protocol fees + origin fees should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkXTZAsset();
+                const bundle_items = [
+                    mkBundleItem(nft.address, token_id_1, 1),
+                    mkBundleItem(nft.address, token_id_3, 1),
+                ];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(XTZ)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" 10000; Pair "${daniel.pkh}" 1}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair 1000
+                                                        (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '(Pair "InvalidCondition" "r_sb2")');
         });
 
         it('Set bundle sale buying with a sale that already exists should fail', async () => {

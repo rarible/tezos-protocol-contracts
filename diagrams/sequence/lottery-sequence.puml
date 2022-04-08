@@ -1,0 +1,101 @@
+@startuml
+actor Player as player
+actor Admin as admin
+
+participant "Lottery" as lottery
+participant "Lottery Storage" as lottery_storage
+participant "Transfer manager" as transfer_manager
+participant "NFT" as nft
+participant "FA2 FT" as fa2_ft
+participant "FA12 FT" as fa12_ft
+
+group Operator setup
+    alt FA2 Fungible Token sale
+        player -> fa2_ft: update_operator(transfer_manager)
+    else FA12 Fungible Token sale
+        player -> fa12_ft: update_operator(transfer_manager)
+    end
+end
+
+group Register Lottery
+    admin -> lottery: register_lottery(nft, params)
+    lottery -> lottery_storage: set_lottery
+    lottery -> transfer_manager: process_transfer(nft, from: admin, to: lottery_storage)
+    transfer_manager -> nft: transfer(from: admin, to: lottery_storage)
+end
+
+group Start Lottery
+    admin -> lottery: start_lottery
+end
+
+
+group Play
+    loop For every player
+        player -> lottery: play
+        lottery -> lottery_storage: set_ticket(player)
+        lottery -> transfer_manager: process_transfers()
+        alt FA2 Fungible Token sale
+            transfer_manager -> fa2_ft: transfer(from: player, to: lottery_storage)
+        else FA12 Fungible Token sale
+            transfer_manager -> fa12_ft: transfer(from: player, to: lottery_storage)
+        else XTZ
+            player -> lottery: transfer XTZ(from: player, to: lottery)
+            lottery -> lottery_storage: transfer XTZ(from: lottery, to: lottery_storage)
+        end
+    end
+end
+
+group Reveal
+    admin -> lottery: start_reveal
+    note right
+        Here the entrypoint is
+        called by the admin but
+        it could be called by
+        anynone as it will be
+        completely decentralized
+        (and contract enforced)
+    end note
+    loop For every player
+        player -> lottery: reveal
+        note right
+            Players can reveal
+            their own keys but
+            they can also reveal
+            other players keys
+
+            Players get rewarded
+            for revealing their keys
+
+            It means you can also
+            get rewarded for
+            revealing someone else's
+            key
+        end note
+    end
+end
+
+group Finalize
+    admin -> lottery: finalize
+    note right
+        Here the entrypoint is
+        called by the admin but
+        it could be called by
+        anynone as it will be
+        completely decentralized
+        (and contract enforced)
+    end note
+    lottery -> lottery_storage: remove_lottery
+    lottery -> transfer_manager: manage_transfers
+    transfer_manager -> nft: transfer(from: lottery_storage, to: player)
+    alt FA2 Fungible Token sale
+        transfer_manager -> fa2_ft: transfer(from: lottery_storage, to: fee_receiver)
+        transfer_manager -> fa2_ft: transfer(from: lottery_storage, to: royalties_receiver)
+    else FA12 Fungible Token sale
+        transfer_manager -> fa12_ft: transfer(from: lottery_storage, to: fee_receiver)
+        transfer_manager -> fa12_ft: transfer(from: lottery_storage, to: royalties_receiver)
+    else XTZ
+        transfer_manager -> lottery_storage: transfer XTZ(from: lottery_storage, to: fee_receiver)
+        transfer_manager -> lottery_storage: transfer XTZ(from: lottery_storage, to: royalties_receiver)
+    end
+end
+@enduml

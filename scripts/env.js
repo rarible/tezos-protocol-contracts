@@ -44,7 +44,7 @@ exports.env = {
     },
     testnet: {
       quiet: false,
-      endpoint: 'https://hangzhounet.smartpy.io',
+      endpoint: 'https://rpc.ithacanet.teztnets.xyz',
       originator_alias: 'alice',
       owner_address: 'tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb',
       fee_receiver_address: 'tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb',

@@ -175,6 +175,11 @@ entry sell (
                 and s_sale.sale_max_fees_base_boint <= max_fees_limit
                 and s_sale.sale_max_fees_base_boint > protocol_fee
                 and process_sum_fees(s_sale.sale_origin_fees) + protocol_fee <= s_sale.sale_max_fees_base_boint;
+        r_s4: s_sale_type = FA2
+            or
+            s_sale_type = FA12
+            or
+            s_sale_type = XTZ;
     }
     effect {
       if(issome(s_sale.sale_end)) then (
@@ -212,6 +217,11 @@ entry sell_bundle (
               and sb_sale.bundle_sale_max_fees_base_boint <= max_fees_limit
               and sb_sale.bundle_sale_max_fees_base_boint > protocol_fee
               and process_sum_fees(sb_sale.bundle_sale_origin_fees) + protocol_fee <= sb_sale.bundle_sale_max_fees_base_boint;
+        r_sb3: sb_sale_type = FA2
+            or
+            sb_sale_type = FA12
+            or
+            sb_sale_type = XTZ;
     }
     effect {
       if(issome(sb_sale.bundle_sale_end)) then (

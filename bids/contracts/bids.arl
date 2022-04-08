@@ -136,6 +136,11 @@ entry put_bid(
     require {
         r_pb0: pb_bid.bid_amount > 0;
         r_pb2: pb_bid.bid_asset_qty > 0;
+        r_pb3: pb_bid_type = FA2
+            or
+            pb_bid_type = FA12
+            or
+            pb_bid_type = XTZ;
     }
     effect {
       var current_bid = get_bid(pb_asset_contract, pb_asset_token_id, caller, pb_bid_type, pb_bid_asset);
@@ -188,6 +193,11 @@ entry put_floor_bid(
     require {
         r_pfb0: pfb_bid.bid_amount > 0;
         r_pfb2: pfb_bid.bid_asset_qty > 0;
+        r_pfb3: pfb_bid_type = FA2
+            or
+            pfb_bid_type = FA12
+            or
+            pfb_bid_type = XTZ;
     }
     effect {
       var current_bid = get_floor_bid(pfb_asset_contract, caller, pfb_bid_type, pfb_bid_asset);
@@ -237,6 +247,11 @@ entry put_bundle_bid(
   pbb_bid : bundle_bid) {
     require {
         r_pbb0: pbb_bid.bundle_bid_amount > 0;
+        r_pbb1: pbb_bid_type = FA2
+            or
+            pbb_bid_type = FA12
+            or
+            pbb_bid_type = XTZ;
     }
     effect {
       var current_bid = get_bundle_bid(pbb_bundle, caller, pbb_bid_type, pbb_bid_asset);

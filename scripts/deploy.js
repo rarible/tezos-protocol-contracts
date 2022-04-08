@@ -130,7 +130,7 @@ describe("Contracts deployment", async () => {
   });
 
   it("Deploy FA2 FT", async () => {
-    [fa2_ft, _] = await deploy(env.contracts.fa12_ft.path, {
+    [fa2_ft, _] = await deploy(env.contracts.fa2_ft.path, {
       parameters: {
         owner: originator.pkh
       },
