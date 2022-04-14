@@ -1,0 +1,9 @@
+{
+    "symbol": "EURL",
+    "name": "Lugh Euro pegged stablecoin",
+    "decimals": 6,
+    "thumbnailUri": "ipfs://QmcqsYQn8pTxQr3P1dYpgYxQa6GQPmoBTSWQ8bpuFEuaqe",
+    "isTransferable": true,
+    "isBooleanAmount": false,
+    "shouldPreferSymbol": false
+  }

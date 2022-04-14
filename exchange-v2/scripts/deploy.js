@@ -13,7 +13,7 @@ let nft;
 const stage = 'privatenet'
 const prefix = 'legacy'
 
-const PROTOCOL_FEE = 250
+const PROTOCOL_FEE = 0
 
 const getName = name => stage + '_' + prefix + '_' + name
 
@@ -114,7 +114,7 @@ describe("Deploying", async () => {
     [fa12_ft, _] = await deploy(env.contracts.fa12_ft.path, {
       parameters: {
         initialholder: originator.pkh,
-        totalsupply: 99999999999999999999
+        totalsupply: 9999999999999999999999999
       },
       named: getName(env.contracts.fa12_ft.id),
       metadata_uri: env.stages[stage].metadata.fa12_ft,
@@ -217,3 +217,24 @@ describe("Declaring ownership", async () => {
     })
   });
 })
+
+describe("Tokens setup", async () => {
+  it('Set metadata and mint', async () => {
+    await fa2_ft.mint({
+      arg: {
+          itokenid: 0,
+          iowner: originator.pkh,
+          itokenMetadata: [{ key: '', value: '0x697066733a2f2f516d645756794865776b6b316e387562356f594a39647850505234776a446f47747a68523556713246454a6f745a' }],
+          iamount: 9999999999999999999999999,
+          iroyalties: [],
+      },
+      as: originator.pkh,
+    });
+    await fa12_ft.set_token_metadata({
+      arg: {
+          m: '0x697066733a2f2f516d556b55416b5758353944684551454b3563684c487237634e68633639634b676e757732616664706f53514e56'
+      },
+      as: originator.pkh
+    });
+  });
+});
