@@ -38,7 +38,7 @@ exports.env = {
     },
     privatenet: {
       quiet: false,
-      endpoint: 'http://localhost:8732',
+      endpoint: 'https://dev-tezos-node.rarible.org',
       originator_alias: 'bob',
       owner_address: 'tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6',
       fee_receiver_address: 'tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6',
