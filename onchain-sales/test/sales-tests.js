@@ -1633,6 +1633,9 @@ describe('Set sales tests', async () => {
         it('Set sale with end date < now should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkXTZAsset();
+                if (isMockup()) {
+                    await setMockupNow(Math.floor(Date.now() / 1000));
+                }
                 await sales.sell({
                     argMichelson: `(Pair "${nft.address}"
                     (Pair 10
@@ -2676,6 +2679,9 @@ describe('Set bundle sales tests', async () => {
 
         it('Set bundle sale with end date < now duration should fail', async () => {
             await expectToThrow(async () => {
+                if (isMockup()) {
+                    await setMockupNow(Math.floor(Date.now() / 1000));
+                }
                 const sale_asset = mkXTZAsset();
                 const bundle_items = [
                     mkBundleItem(nft.address, token_id_1, 1),
