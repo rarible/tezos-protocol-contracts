@@ -105,7 +105,7 @@ describe("Deploying", async () => {
       parameters: {
         owner: originator.pkh
       },
-      named: getName(env.contracts.fa2_ft.id),
+      named: getName("EURL"),
       metadata_uri: env.stages[stage].metadata.fa2_ft,
       as: originator.pkh
     });
@@ -116,7 +116,7 @@ describe("Deploying", async () => {
         initialholder: originator.pkh,
         totalsupply: 9999999999999999999999999
       },
-      named: getName(env.contracts.fa12_ft.id),
+      named: getName("uUSD"),
       metadata_uri: env.stages[stage].metadata.fa12_ft,
       as: originator.pkh
     });
@@ -126,7 +126,7 @@ describe("Deploying", async () => {
       parameters: {
         owner: originator.pkh
       },
-      named: getName(env.contracts.nft.id),
+      named: getName("Rarible-MT"),
       metadata_uri: env.stages[stage].metadata.nft,
       as: originator.pkh
     });
