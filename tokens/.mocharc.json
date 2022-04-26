@@ -9,8 +9,7 @@
         "test/multiple-nft-fa2-private-tests.js",
         "test/multiple-nft-fa2-public-tests.js",
         "test/single-nft-fa2-public-tests.js",
-        "test/single-nft-fa2-private-tests.js",
-        "test/utils.js"
+        "test/single-nft-fa2-private-tests.js"
     ],
     "ui": "bdd",
     "watch-files": ["lib/**/*.js", "tests/**/*.js"],
