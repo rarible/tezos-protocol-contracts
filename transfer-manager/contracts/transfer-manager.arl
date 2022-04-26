@@ -244,22 +244,26 @@ entry manage_transfers(
 
       //Now that we have processed all the fees, we need to process the operations
       //transfer protocol fees
-      ft_operations.prepend({
+      if(protocol_fees > 0) then (
+        ft_operations.prepend({
           ptp_asset_type = mt_ft_asset_type;
           ptp_asset = mt_ft_asset;
           ptp_amount = protocol_fees;
           ptp_origin = ft_origin;
           ptp_destination = get_fee_receiver(buy_asset_contract)
-      });
+        });
+      );
 
-      //transfer buy asset to seller
-      ft_operations.prepend({
+      if(total_after_all_fees > 0) then (
+        //transfer buy asset to seller
+        ft_operations.prepend({
           ptp_asset_type = mt_ft_asset_type;
           ptp_asset = mt_ft_asset;
           ptp_amount = total_after_all_fees;
           ptp_origin = mt_ft_origin;
           ptp_destination = mt_ft_destination
         });
+      );
 
       if(ft_origin = mt_rarible_custody) then (
         rarible_custody_operations.concat(ft_operations);
