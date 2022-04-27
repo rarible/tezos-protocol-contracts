@@ -26,10 +26,7 @@ let fa2;
 const alice  = getAccount(mockup_mode ? 'alice'      : 'alice');
 const bob    = getAccount(mockup_mode ? 'bob'        : 'bob');
 const carl   = getAccount(mockup_mode ? 'carl'       : 'carl');
-const daniel = getAccount(mockup_mode ? 'bootstrap1' : 'bootstrap1');
-
-//set endpointhead
-setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
+const daniel = getAccount(mockup_mode ? 'daniel' : 'daniel');
 
 const amount = 1;
 let tokenId = 0;
@@ -56,7 +53,7 @@ async function expectToThrowMissigned(f, e) {
                 );
             else
                 assert(
-                    ex.includes(e),
+                    ex.value.includes(e),
                     `${e} was not found in the error message`
                 );
         } else if (ex.message === m) {
@@ -262,7 +259,7 @@ describe('[Single Private NFT] Update operators', async () => {
     it('Add an operator for ourself should succeed', async () => {
         const storage = await fa2.getStorage();
         var initialOperators = await getValueFromBigMap(
-            parseInt(storage.operator),
+            parseInt(storage.operators),
             exprMichelineToJson(
                 `(Pair "${fa2.address}" (Pair ${tokenId} "${alice.pkh}"))`
             ),
@@ -274,7 +271,7 @@ describe('[Single Private NFT] Update operators', async () => {
             as: alice.pkh,
         });
         var operatorsAfterAdd = await getValueFromBigMap(
-            parseInt(storage.operator),
+            parseInt(storage.operators),
             exprMichelineToJson(
                 `(Pair "${fa2.address}" (Pair ${tokenId} "${alice.pkh}"))`
             ),
@@ -311,7 +308,7 @@ describe('[Single Private NFT] Update operators', async () => {
     it('Remove an existing operator should succeed', async () => {
         const storage = await fa2.getStorage();
         var initialOperators = await getValueFromBigMap(
-            parseInt(storage.operator),
+            parseInt(storage.operators),
             exprMichelineToJson(
                 `(Pair "${fa2.address}" (Pair ${tokenId} "${alice.pkh}"))`
             ),
@@ -323,7 +320,7 @@ describe('[Single Private NFT] Update operators', async () => {
             as: alice.pkh,
         });
         var operatorsAfterRemoval = await getValueFromBigMap(
-            parseInt(storage.operator),
+            parseInt(storage.operators),
             exprMichelineToJson(
                 `(Pair "${fa2.address}" (Pair ${tokenId} "${alice.pkh}"))`
             ),

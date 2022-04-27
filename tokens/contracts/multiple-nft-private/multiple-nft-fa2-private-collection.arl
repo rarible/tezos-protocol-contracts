@@ -145,7 +145,7 @@ asset ledger identified by ltoken lowner to big_map {
   lamount    : nat = 0;
 }
 
-asset operator identified by oaddr otoken oowner to big_map {
+asset operators identified by oaddr otoken oowner to big_map {
   oaddr       : address;
   otoken      : nat;
   oowner      : address;
@@ -192,7 +192,7 @@ asset permits to big_map {
   user_permits : map<bytes, user_permit> = [];
 }
 
-asset operator_for_all identified by fa_oaddr fa_oowner to big_map {
+asset operators_for_all identified by fa_oaddr fa_oowner to big_map {
   fa_oaddr    : address;
   fa_oowner   : address;
   fa_empty    : unit = Unit;
@@ -205,7 +205,7 @@ asset operator_for_all identified by fa_oaddr fa_oowner to big_map {
 /**
 * Adds or removes operators for specified tokens
 * @param upl list of add or remove operator specification
-*/ 
+*/
 entry update_operators (upl : list<or<operator_param, operator_param>>) {
   require { r0 : is_not_paused() }
   effect {
@@ -213,14 +213,10 @@ entry update_operators (upl : list<or<operator_param, operator_param>>) {
       match up with
       | left(param)  -> (* add *)
         dorequire(param.opp_owner = caller , CALLER_NOT_OWNER);
-        operator.add({
-          oaddr  = param.opp_operator; 
-          otoken = param.opp_token_id; 
-          oowner = param.opp_owner
-        })
+        operators.addupdate((param.opp_operator, param.opp_token_id, param.opp_owner), {})
       | right(param) -> (* remove *)
         dorequire(param.opp_owner = caller , CALLER_NOT_OWNER);
-        operator.remove((param.opp_operator, param.opp_token_id, param.opp_owner))
+        operators.remove((param.opp_operator, param.opp_token_id, param.opp_owner))
       end;
     done;
   }
@@ -229,16 +225,16 @@ entry update_operators (upl : list<or<operator_param, operator_param>>) {
 /**
 * Adds or removes an operator for *all* transfers for caller's tokens
 * @param upl list of add or remove operator address
-*/ 
+*/
 entry update_operators_for_all (upl : list<or<address, address>>) {
   require { r1 : is_not_paused() }
   effect {
     for up in upl do
       match up with
       | left(op)  -> (* add *)
-        operator_for_all.add({fa_oaddr = op; fa_oowner = caller})
+        operators_for_all.addupdate((op, caller), {})
       | right(op) -> (* remove *)
-        operator_for_all.remove((op, caller))
+        operators_for_all.remove((op, caller))
       end;
     done;
   }
@@ -251,11 +247,11 @@ function check_owner_and_operator(txs : list<address * list<transfer_destination
     var %from = tx[0];
     var tds = tx[1];
     for td in tds do begin
-      res &= 
-        if caller <> %from then 
-          (operator.contains((caller,td.token_id_dest,%from)) or 
-           operator_for_all.contains((caller, %from))) 
-        else 
+      res &=
+        if caller <> %from then
+          (operators.contains((caller,td.token_id_dest,%from)) or
+           operators_for_all.contains((caller, %from)))
+        else
           ledger.contains((td.token_id_dest, caller));
     end
     done
@@ -309,7 +305,7 @@ entry set_default_expiry(v : nat) {
 * Sets expiry for permit
 * @param v option of expiry value
 * @param p option of permit
-*/ 
+*/
 entry set_expiry(v : option<nat>, p : option<bytes>) {
   require { r7: is_not_paused() }
   effect {
@@ -355,8 +351,8 @@ entry set_expiry(v : option<nat>, p : option<bytes>) {
 //----------------------------------------------------------------------------
 
 /**
-* Adds a permit 
-* @param pk public key that signed 
+* Adds a permit
+* @param pk public key that signed
 * @param signature contract address * chain id * counter * data
 * @param data serialisation and hash (blake2B * pack) of transfer parameters (list of pairs of 'from' address and transfer destination)
 * Note: counter is to prevent replay attack
@@ -366,10 +362,10 @@ entry permit(pk : key, sig : signature, data : bytes) {
   effect {
     var user : address = key_address(pk);
     var empty : map<bytes, user_permit> = [];
-    var pcounter_user_permits : (nat * map<bytes, user_permit>) = 
-      if permits.contains(user) then 
+    var pcounter_user_permits : (nat * map<bytes, user_permit>) =
+      if permits.contains(user) then
         (permits[user].counter, permits[user].user_permits)
-      else 
+      else
         (0, empty);
     var pcounter = pcounter_user_permits[0];
     var puser_permits = pcounter_user_permits[1];
@@ -389,11 +385,11 @@ entry permit(pk : key, sig : signature, data : bytes) {
 //----------------------------------------------------------------------------
 
 /**
-* Transfers tokens with permits 
+* Transfers tokens with permits
 * @param batch list of pairs of permits (key and signature) and transfer specification
 * Note: a transfer specification is a list of pairs of 'from' address and transfer destination
 * Note: a transfer destination has a 'to' address, a token id and an amount
-*/ 
+*/
 entry transfer_gasless (batch : list<list<address * list<transfer_destination>> * (key * signature)>) {
   for b in batch do
     var pk  = b[1][0];
@@ -516,7 +512,7 @@ entry mint (itokenid : nat, iowner : address, iamount : nat, itokenMetadata: map
 /**
 * Burn an amount of token
 * @param itokenid token to burn
-* @param iamount amount to burn 
+* @param iamount amount to burn
 */
 entry burn(itokenid : nat, iamount : nat) {
   require { r2 : is_not_paused() }
@@ -563,7 +559,7 @@ view get_royalties(tokenId : nat) : list<part> {
   return (
     if royalties.contains(tokenId) then
       royalties[tokenId].rvalue
-    else 
+    else
       emptylist<part>()
   )
 }

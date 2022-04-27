@@ -4,14 +4,12 @@
     "description": "Tezos FA2 contract templates",
     "main": "index.js",
     "scripts": {
-        "test": "mocha --timeout 0 --slow 0",
-        "test-multiple-fa2-public": "mocha ./tests/multiple-nft-fa2-public-tests.js --timeout 0 --slow 0",
-        "test-single-fa2-public": "mocha ./tests/single-nft-fa2-public-tests.js   --timeout 0 --slow 0"
+        "test": "mocha --timeout 0 --slow 0"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@completium/completium-cli": "^0.3.35",
+        "@completium/completium-cli": "^0.3.36",
         "chai": "^4.3.4",
         "mocha": "^9.1.2",
         "mocha-logger": "^1.0.7"
