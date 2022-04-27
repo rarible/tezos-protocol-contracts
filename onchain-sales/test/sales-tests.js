@@ -4558,3 +4558,77 @@ describe('Cancel bundle sale tests', async () => {
     });
 
 });
+
+describe('Miscelleanous tests', async () => {
+    it('Buy and sell with smallest amount possible with no royalties should succeed', async () => {
+        const sale_asset = mkXTZAsset();
+        const tokenId = 9;
+        const start_date = Date.now() / 1000;
+        if (isMockup()) {
+            await setMockupNow(start_date - 2);
+        }
+        const bundle_items = [
+            mkBundleItem(nft.address, token_id_0, 1),
+            mkBundleItem(nft.address, token_id_3, 1)
+        ];
+
+        const bundle = mkPackedBundle(bundle_items);
+        await sales.sell_bundle({
+            argMichelson: `(Pair 0x${bundle}
+                (Pair ${parseInt(XTZ)}
+                    (Pair 0x${sale_asset}
+                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                (Pair 1
+                                    (Pair (Some ${Math.floor(start_date - 1)})
+                                        (Pair (Some ${Math.floor(start_date + 10)})
+                                            (Pair ${max_fees}
+                                                (Pair None None))))))))))`,
+            as: alice.pkh,
+        });
+        if (isMockup()) {
+            await setMockupNow(start_date);
+        }
+        await sales.buy_bundle({
+            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+            amount: `1utz`,
+            as: bob.pkh
+        });
+    });
+
+    it('Buy and sell with smallest amount possible with royalties should succeed', async () => {
+        const sale_asset = mkXTZAsset();
+        const tokenId = 9;
+        const start_date = Date.now() / 1000;
+        if (isMockup()) {
+            await setMockupNow(start_date - 2);
+        }
+        const bundle_items = [
+            mkBundleItem(nft.address, token_id_2, 1),
+            mkBundleItem(nft.address, token_id_5, 1)
+        ];
+
+        const bundle = mkPackedBundle(bundle_items);
+        await sales.sell_bundle({
+            argMichelson: `(Pair 0x${bundle}
+                (Pair ${parseInt(XTZ)}
+                    (Pair 0x${sale_asset}
+                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                (Pair 1
+                                    (Pair (Some ${Math.floor(start_date - 1)})
+                                        (Pair (Some ${Math.floor(start_date + 10)})
+                                            (Pair ${max_fees}
+                                                (Pair None None))))))))))`,
+            as: alice.pkh,
+        });
+        if (isMockup()) {
+            await setMockupNow(start_date);
+        }
+        await sales.buy_bundle({
+            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+            amount: `1utz`,
+            as: bob.pkh
+        });
+    });
+});

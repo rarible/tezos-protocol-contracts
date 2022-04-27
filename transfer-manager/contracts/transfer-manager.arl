@@ -197,35 +197,37 @@ entry manage_transfers(
       var share_per_nft = abs(floor(10000/length(mt_bundle)));
       for bundle_nft in mt_bundle do
         var price_per_nft = bp(mt_ft_amount, share_per_nft);
-        //Then process the amount of royalties, and the matching operations
-        var rest_royalties = process_royalties(
-          mt_ft_asset_type,
-          mt_ft_asset,
-          bundle_nft.bundle_item_contract,
-          bundle_nft.bundle_item_id,
-          price_per_nft,
-          ft_origin,
-          ft_operations
-        );
-        total_after_all_fees -= rest_royalties[0];
-        ft_operations := rest_royalties[1];
+        if(price_per_nft > 0) then (
+          //Then process the amount of royalties, and the matching operations
+          var rest_royalties = process_royalties(
+            mt_ft_asset_type,
+            mt_ft_asset,
+            bundle_nft.bundle_item_contract,
+            bundle_nft.bundle_item_id,
+            price_per_nft,
+            ft_origin,
+            ft_operations
+          );
+          total_after_all_fees -= rest_royalties[0];
+          ft_operations := rest_royalties[1];
 
-        var nft_operation: process_transfer_param = {
-          ptp_asset_type = FA2;
-          ptp_asset = pack({
-            fa2_asset_contract = bundle_nft.bundle_item_contract;
-            fa2_asset_token_id = bundle_nft.bundle_item_id
-            });
-          ptp_amount = bundle_nft.bundle_item_qty;
-          ptp_origin = mt_nft_origin;
-          ptp_destination = mt_nft_destination
-        };
+          var nft_operation: process_transfer_param = {
+            ptp_asset_type = FA2;
+            ptp_asset = pack({
+              fa2_asset_contract = bundle_nft.bundle_item_contract;
+              fa2_asset_token_id = bundle_nft.bundle_item_id
+              });
+            ptp_amount = bundle_nft.bundle_item_qty;
+            ptp_origin = mt_nft_origin;
+            ptp_destination = mt_nft_destination
+          };
 
-        if(mt_nft_origin = mt_rarible_custody) then (
-          rarible_custody_operations.prepend(nft_operation);
-        ) else (
-          transfer_manager_operations.prepend(nft_operation);
-        );
+          if(mt_nft_origin = mt_rarible_custody) then (
+            rarible_custody_operations.prepend(nft_operation);
+          ) else (
+            transfer_manager_operations.prepend(nft_operation);
+          );
+        )
       done;
 
       //Finally process the auction and bid payouts, and the matching operations
