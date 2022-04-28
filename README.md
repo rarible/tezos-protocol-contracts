@@ -32,9 +32,15 @@ Protocol is primarily targeted to NFTs, but it's not limited to NFTs only. Any a
 
 You are welcome to [suggest features](https://github.com/rarible/tezos-protocol-contracts/discussions) and [report bugs found](https://github.com/rarible/tezos-protocol-contracts/issues)!
 
+## Contributing
+
+The codebase is maintained using the "contributor workflow" where everyone without exception contributes patch proposals using "pull requests" (PRs). This facilitates social contribution, easy testing, and peer review.
+
+See more information on [CONTRIBUTING.md](https://github.com/rarible/protocol/blob/main/CONTRIBUTING.md).
+
 ## License
 
-Smart contracts for Rarible protocol are available under the [MIT License](LICENSE.md).
+Smart contracts for Rarible protocol are available under the [MIT License](LICENSE).
 
 ## Credits
 
