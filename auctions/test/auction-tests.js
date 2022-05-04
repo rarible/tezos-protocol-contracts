@@ -4673,7 +4673,7 @@ describe('Put bid tests', async () => {
                     amount: `${bid_amount + 1}utz`,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_BID_AMOUNT_MISMATCH"');
+            }, '(Pair "AUCTION_BID_AMOUNT_MISMATCH" (Pair 1000001 1000000))');
         });
 
         it('Put bid with good amount of XTZ (no bid origin fees, no payouts) should succeed', async () => {
@@ -5659,7 +5659,7 @@ describe('Put bundle bid tests', async () => {
                     amount: `${bid_amount + 1}utz`,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_BID_AMOUNT_MISMATCH"');
+            }, '(Pair "AUCTION_BID_AMOUNT_MISMATCH" (Pair 1000001 1000000))');
         });
 
         it('Put bundle bid with good amount of XTZ (no bid origin fees, no payouts) should succeed', async () => {

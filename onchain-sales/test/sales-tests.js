@@ -3507,7 +3507,7 @@ describe('Buy tests', async () => {
                                             (Pair 0x${sale_asset} (Pair {} {}))))))`,
                     as: bob.pkh,
                 });
-            }, '"AMOUNT_MISMATCH"');
+            }, '(Pair "AMOUNT_MISMATCH" (Pair 0 1000000))');
         });
 
         it('Buy with good start date and end date should succeed', async () => {
@@ -4376,7 +4376,7 @@ describe('Buy bundle tests', async () => {
                     argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
                     as: bob.pkh
                 });
-            }, '"AMOUNT_MISMATCH"');
+            }, '(Pair "AMOUNT_MISMATCH" (Pair 0 1000000))');
         });
 
         it('Buy bundle with good start date and end date should succeed', async () => {

@@ -275,7 +275,7 @@ entry buy(
       var buy_asset_token_id = unpack_result[1];
 
       if(b_sale_type = XTZ) then (
-        dorequire(transferred = current_sale.sale_amount * 1utz, AMOUNT_MISMATCH)
+        dorequire(transferred = current_sale.sale_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
       );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
@@ -329,7 +329,7 @@ entry buy_bundle(
       var unpacked_bundle = verify_and_unpack_bundle(bb_bundle);
 
       if(bb_sale_type = XTZ) then (
-        dorequire(transferred = current_sale.bundle_sale_amount * 1utz, AMOUNT_MISMATCH)
+        dorequire(transferred = current_sale.bundle_sale_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.bundle_sale_amount * 1utz))
       );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
