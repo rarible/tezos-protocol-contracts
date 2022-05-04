@@ -3535,6 +3535,35 @@ describe('Start bundle Auction tests', async () => {
 
     describe('Common bundle args test', async () => {
 
+        it('Starting bundle auction with empty bundle should fail', async () => {
+            await expectToThrow(async () => {
+                const start_time = Math.floor(start_date + 1);
+
+                const bundle_items = [];
+
+                const bundle = mkPackedBundle(bundle_items);
+
+                await auction.start_bundle_auction({
+                    argMichelson:
+                        `(Pair 0x${bundle}
+                            (Pair ${XTZ}
+                                (Pair 0x${mkXTZAsset()}
+                                    (Pair (Some ${start_time})
+                                        (Pair ${duration}
+                                            (Pair ${minimal_price}
+                                                (Pair ${buyout_price}
+                                                    (Pair ${min_step}
+                                                        (Pair ${max_fees}
+                                                            (Pair {}
+                                                                (Pair {}
+                                                                    (Pair None None)
+                    )))))))))))`,
+                    as: alice.pkh,
+                });
+
+            }, '"BUNDLE_CANT_BE_EMPTY"');
+        });
+
         it('Starting bundle auction with unknown buy asset payload should fail', async () => {
             await expectToThrow(async () => {
                 const start_time = Math.floor(start_date + 1);

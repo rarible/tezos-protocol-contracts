@@ -2514,6 +2514,27 @@ describe('Set bundle sales tests', async () => {
 
     describe('Common args test', async () => {
 
+        it('Set bundle sale with empty bundle should fail', async () => {
+            await expectToThrow(async () => {
+                const sale_asset = mkFA12Asset(fa12_ft_2.address);
+                const bundle_items = [];
+                const bundle = mkPackedBundle(bundle_items);
+                await sales.sell_bundle({
+                    argMichelson: `(Pair 0x${bundle}
+                        (Pair ${parseInt(FA12)}
+                            (Pair 0x${sale_asset}
+                                (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                        (Pair ${sale_amount}
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
+                    as: alice.pkh,
+                });
+            }, '"BUNDLE_CANT_BE_EMPTY"');
+        });
+
         it('Set bundle sale with unknown buy asset payload should fail', async () => {
             await expectToThrow(async () => {
                 const sale_asset = mkFA12Asset(fa12_ft_2.address);

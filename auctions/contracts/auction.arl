@@ -26,6 +26,7 @@ constant CANT_UNPACK_BUNDLE: string = "CANT_UNPACK_BUNDLE"
 constant MAX_BUNDLE_SIZE: string = "MAX_BUNDLE_SIZE"
 constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
 constant FEES_OVER_SELLER_LIMIT: string = "FEES_OVER_SELLER_LIMIT"
+constant BUNDLE_CANT_BE_EMPTY: string = "BUNDLE_CANT_BE_EMPTY"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -751,6 +752,7 @@ function verify_and_unpack_bundle(vaub_data: bytes) : (list<bundle_item>) {
     )
     | none -> fail(CANT_UNPACK_BUNDLE)
     end;
+    dorequire(length(bundle) > 0, BUNDLE_CANT_BE_EMPTY);
     for item in bundle do
       dorequire(item.bundle_item_qty > 0, INVALID_BUNDLE_ITEM_QTY);
     done;

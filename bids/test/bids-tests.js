@@ -3955,6 +3955,19 @@ describe('Put bundle bid tests', async () => {
 
     describe('Common args test', async () => {
 
+        it('Put bundle bid with empty bundle should fail', async () => {
+            await expectToThrow(async () => {
+                const bid_asset = mkXTZAsset();
+                const bundle_items = [];
+
+                const bundle = mkPackedBundle(bundle_items);
+                await bids.put_bundle_bid({
+                    argMichelson: `(Pair 0x${bundle} (Pair ${XTZ} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    as: bob.pkh,
+                });
+            }, '"BUNDLE_CANT_BE_EMPTY"');
+        });
+
         it('Put bundle bid with unknown buy asset payload should fail', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
