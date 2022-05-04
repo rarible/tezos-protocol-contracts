@@ -2225,7 +2225,7 @@ describe('Put bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
-            }, '"BID_AMOUNT_MISMATCH"');
+            }, '(Pair "BID_AMOUNT_MISMATCH" (Pair 0 1000000))');
         });
 
         it('Put bid as non owner of the asset (FA2) should fail', async () => {
@@ -3105,7 +3105,7 @@ describe('Put floor bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
                     as: bob.pkh,
                 });
-            }, '"BID_AMOUNT_MISMATCH"');
+            }, '(Pair "BID_AMOUNT_MISMATCH" (Pair 0 1000000))');
         });
 
         it('Put floor bid as non owner of the asset (FA2) should fail', async () => {
@@ -4064,7 +4064,7 @@ describe('Put bundle bid tests', async () => {
                     argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
                     as: bob.pkh,
                 });
-            }, '"BID_AMOUNT_MISMATCH"');
+            }, '(Pair "BID_AMOUNT_MISMATCH" (Pair 0 1000000))');
         });
 
         it('Put bundle bid as non owner of the asset (FA2) should fail', async () => {

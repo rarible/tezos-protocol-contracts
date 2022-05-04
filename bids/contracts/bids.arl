@@ -168,7 +168,7 @@ entry put_bid(
             ptp_destination = bids_storage
         }]);
       ) else (
-        dorequire(transferred = (pb_bid.bid_amount * 1utz), BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pb_bid.bid_amount * 1utz), (BID_AMOUNT_MISMATCH, transferred, pb_bid.bid_amount * 1utz));
       );
 
 
@@ -225,7 +225,7 @@ entry put_floor_bid(
             ptp_destination = bids_storage
         }]);
       ) else (
-        dorequire(transferred = (pfb_bid.bid_amount * 1utz), BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pfb_bid.bid_amount * 1utz), (BID_AMOUNT_MISMATCH, transferred, pfb_bid.bid_amount * 1utz));
       );
 
       transfer transferred to bids_storage call set_floor_bid<address * address * asset_type * bytes * bid>(
@@ -281,7 +281,7 @@ entry put_bundle_bid(
             ptp_destination = bids_storage
         }]);
       ) else (
-        dorequire(transferred = (pbb_bid.bundle_bid_amount * 1utz), BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pbb_bid.bundle_bid_amount * 1utz), (BID_AMOUNT_MISMATCH, transferred, pbb_bid.bundle_bid_amount * 1utz));
       );
 
       transfer transferred to bids_storage call set_bundle_bid<bytes * address * asset_type * bytes * bundle_bid>(

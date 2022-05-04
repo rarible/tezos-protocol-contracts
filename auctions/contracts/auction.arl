@@ -392,7 +392,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
       buy_asset_token_id := processed_asset[1];
 
       if(is_xtz) then (
-        dorequire(transferred = (pb_bid.bid_amount * 1utz), AUCTION_BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pb_bid.bid_amount * 1utz), (AUCTION_BID_AMOUNT_MISMATCH, transferred, pb_bid.bid_amount * 1utz));
       );
 
       if(isnone(previous_bid)) then (
@@ -483,7 +483,7 @@ entry put_bundle_bid(pbb_bundle: bytes, pbb_asset_seller: address, pbb_bid: bid)
       buy_asset_token_id := processed_asset[1];
 
       if(is_xtz) then (
-        dorequire(transferred = (pbb_bid.bid_amount * 1utz), AUCTION_BID_AMOUNT_MISMATCH);
+        dorequire(transferred = (pbb_bid.bid_amount * 1utz), (AUCTION_BID_AMOUNT_MISMATCH, transferred, pbb_bid.bid_amount * 1utz));
       );
 
       if(isnone(previous_bid)) then (
