@@ -1,0 +1,21 @@
+{
+    "name": "tezos-signature-checker",
+    "version": "1.0.0",
+    "description": "Tezos Signature Checker Contract",
+    "main": "index.js",
+    "scripts": {
+        "test": "mocha --timeout 0 --slow 0"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@completium/completium-cli": "^0.3.36",
+        "chai": "^4.3.4",
+        "mocha": "^9.1.2",
+        "mocha-logger": "^1.0.7"
+    },
+    "devDependencies": {
+        "mochawesome": "^6.3.1",
+        "prettier": "2.4.1"
+    }
+}

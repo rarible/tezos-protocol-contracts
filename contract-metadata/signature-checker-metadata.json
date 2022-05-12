@@ -1,0 +1,14 @@
+{
+    "name": "Rarible Signature Checker",
+    "description": "Rarible Signature Checker contract",
+    "version": "1.0.0",
+    "authors": [ "Florian PAUTOT <florian.pautot@gmail.com>" ],
+    "license": {
+      "name": "MIT",
+      "details": "MIT License"
+    },
+    "homepage": "https://github.com/rarible/tezos-protocol-contracts/tree/main/signature-checker",
+    "interfaces": [
+      "TZIP-16"
+    ]
+}

@@ -20,6 +20,7 @@ exports.env = {
         fa2_ft: 'ipfs://QmVdnJR2FAVWEjXhK57aMRT8GJHBETTGXJXu9yS1CWhg91',
         fa12_ft: 'ipfs://QmS6H5pc3AyWB4CP5vvFjgFHovipUgYqMKhVeEF41CqkTq',
         nft: 'ipfs://QmQZuCnXe1g2WTvzPZXS15U5gfZu8eEMuPepMpaAyUPsAq',
+        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH'
       }
     },
     privatenet: {
@@ -40,6 +41,7 @@ exports.env = {
         fa2_ft: 'ipfs://QmVdnJR2FAVWEjXhK57aMRT8GJHBETTGXJXu9yS1CWhg91',
         fa12_ft: 'ipfs://QmS6H5pc3AyWB4CP5vvFjgFHovipUgYqMKhVeEF41CqkTq',
         nft: 'ipfs://QmQZuCnXe1g2WTvzPZXS15U5gfZu8eEMuPepMpaAyUPsAq',
+        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH'
       }
     },
     testnet: {
@@ -60,6 +62,7 @@ exports.env = {
         fa2_ft: 'ipfs://QmVdnJR2FAVWEjXhK57aMRT8GJHBETTGXJXu9yS1CWhg91',
         fa12_ft: 'ipfs://QmS6H5pc3AyWB4CP5vvFjgFHovipUgYqMKhVeEF41CqkTq',
         nft: 'ipfs://QmQZuCnXe1g2WTvzPZXS15U5gfZu8eEMuPepMpaAyUPsAq',
+        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH'
       }
     },
     mainnet: {
@@ -76,7 +79,8 @@ exports.env = {
         royalties: 'ipfs://QmNezxVRun6fHQMRxtjWcCV1obtEeDcmfzQGMAVNxK6f3o',
         transfer_manager: 'ipfs://QmYhCiJyuxnysNPdFhWHNKgQweZDq8qtMvefAsZAHmgVF8',
         sales: 'ipfs://QmP1TknobiPBUtEtvQcpjudeQgM6YmKjspRmf8zxHB73Gi',
-        sales_storage: 'ipfs://QmZn3WK42dwnf57cdukcCGAnzaS8FLT8iPvyHUBjCVTQei'
+        sales_storage: 'ipfs://QmZn3WK42dwnf57cdukcCGAnzaS8FLT8iPvyHUBjCVTQei',
+        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH'
       }
     }
   },
@@ -124,6 +128,10 @@ exports.env = {
     nft: {
       id: 'nft',
       path: '../test-contracts/test-nft.arl',
+    },
+    sig_checker: {
+      id: 'sig_checker',
+      path: '../signature-checker/contracts/signature-checker.arl',
     }
   }
 };
