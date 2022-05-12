@@ -171,194 +171,194 @@ describe("Contracts deployment", async () => {
     });
   });
 });
-//
-// describe("Contract configuration", async () => {
-//   it('Set auction contract for Auctions Storage', async () => {
-//     await auctions_storage.set_auction_contract({
+
+describe("Contract configuration", async () => {
+  it('Set auction contract for Auctions Storage', async () => {
+    await auctions_storage.set_auction_contract({
+      arg: {
+        sac_contract: auctions.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set transfer manager for Auctions Storage', async () => {
+    await auctions_storage.set_transfer_manager({
+      arg: {
+        stm_contract: transfer_manager.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set transfer manager for Bids storage', async () => {
+    await bids_storage.set_transfer_manager({
+      arg: {
+        stm_contract: transfer_manager.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set auction storage for Auctions', async () => {
+    await auctions.set_auction_storage_contract({
+      arg: {
+        sacs_contract: auctions_storage.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set royalties provider for Transfer Manager', async () => {
+    await transfer_manager.set_royalties_provider({
+      arg: {
+        srp: royalties.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set Bids contract for Bids Storage', async () => {
+    await bids_storage.set_bids_contract({
+      arg: {
+        sac_contract: bids.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set Bids storage for Bids', async () => {
+    await bids.set_bids_storage_contract({
+      arg: {
+        sbsc_contract: bids_storage.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set sales contract for Sales Storage', async () => {
+    await sales_storage.set_sales_contract({
+      arg: {
+        ssc_contract: sales.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set Sales storage for Sales contract', async () => {
+    await sales.set_sales_storage({
+      arg: {
+        ssc_contract: sales_storage.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Authorize contracts for the Transfer Manager', async () => {
+    await transfer_manager.authorize_contract({
+      arg: {
+        ac_contract: sales.address
+      },
+      as: originator.pkh
+    });
+    await transfer_manager.authorize_contract({
+      arg: {
+        ac_contract: sales_storage.address
+      },
+      as: originator.pkh
+    });
+    await transfer_manager.authorize_contract({
+      arg: {
+        ac_contract: bids.address
+      },
+      as: originator.pkh
+    });
+    await transfer_manager.authorize_contract({
+      arg: {
+        ac_contract: bids_storage.address
+      },
+      as: originator.pkh
+    });
+    await transfer_manager.authorize_contract({
+      arg: {
+        ac_contract: auctions.address
+      },
+      as: originator.pkh
+    });
+    await transfer_manager.authorize_contract({
+      arg: {
+        ac_contract: auctions_storage.address
+      },
+      as: originator.pkh
+    });
+  });
+
+  it('Set up tokens', async () => {
+    await fa2_ft.mint({
+      arg: {
+          itokenid: 0,
+          iowner: originator.pkh,
+          itokenMetadata: [{ key: '', value: '0x697066733a2f2f516d645756794865776b6b316e387562356f594a39647850505234776a446f47747a68523556713246454a6f745a' }],
+          iamount: 9999999999999999999999999,
+          iroyalties: [],
+      },
+      as: originator.pkh,
+    });
+    await fa12_ft.set_token_metadata({
+      arg: {
+          m: '0x697066733a2f2f516d556b55416b5758353944684551454b3563684c487237634e68633639634b676e757732616664706f53514e56'
+      },
+      as: originator.pkh
+    });
+  });
+});
+
+
+// describe("Declaring ownership", async () => {
+
+//   it("Declare Ownership Royalties", async () => {
+//     await royalties.declare_ownership({
 //       arg: {
-//         sac_contract: auctions.address
+//         candidate: owner_address
 //       },
 //       as: originator.pkh
-//     });
+//     })
 //   });
-//
-//   it('Set transfer manager for Auctions Storage', async () => {
-//     await auctions_storage.set_transfer_manager({
+
+
+//   it("Declare Ownership Transfer Proxy", async () => {
+//     await transfer_proxy.declare_ownership({
 //       arg: {
-//         stm_contract: transfer_manager.address
+//         candidate: owner_address
 //       },
 //       as: originator.pkh
-//     });
+//     })
 //   });
-//
-//   it('Set transfer manager for Bids storage', async () => {
-//     await bids_storage.set_transfer_manager({
+
+//   it("Declare Ownership Transfer Manager", async () => {
+//     await transfer_manager.declare_ownership({
 //       arg: {
-//         stm_contract: transfer_manager.address
+//         candidate: owner_address
 //       },
 //       as: originator.pkh
-//     });
+//     })
 //   });
-//
-//   it('Set auction storage for Auctions', async () => {
-//     await auctions.set_auction_storage_contract({
+
+//   it("Declare Ownership Fill", async () => {
+//     await fill.declare_ownership({
 //       arg: {
-//         sacs_contract: auctions_storage.address
+//         candidate: owner_address
 //       },
 //       as: originator.pkh
-//     });
+//     })
 //   });
-//
-//   it('Set royalties provider for Transfer Manager', async () => {
-//     await transfer_manager.set_royalties_provider({
+
+//   it("Declare Ownership Exchange", async () => {
+//     await exchange.declare_ownership({
 //       arg: {
-//         srp: royalties.address
+//         candidate: owner_address
 //       },
 //       as: originator.pkh
-//     });
+//     })
 //   });
-//
-//   it('Set Bids contract for Bids Storage', async () => {
-//     await bids_storage.set_bids_contract({
-//       arg: {
-//         sac_contract: bids.address
-//       },
-//       as: originator.pkh
-//     });
-//   });
-//
-//   it('Set Bids storage for Bids', async () => {
-//     await bids.set_bids_storage_contract({
-//       arg: {
-//         sbsc_contract: bids_storage.address
-//       },
-//       as: originator.pkh
-//     });
-//   });
-//
-//   it('Set sales contract for Sales Storage', async () => {
-//     await sales_storage.set_sales_contract({
-//       arg: {
-//         ssc_contract: sales.address
-//       },
-//       as: originator.pkh
-//     });
-//   });
-//
-//   it('Set Sales storage for Sales contract', async () => {
-//     await sales.set_sales_storage({
-//       arg: {
-//         ssc_contract: sales_storage.address
-//       },
-//       as: originator.pkh
-//     });
-//   });
-//
-//   it('Authorize contracts for the Transfer Manager', async () => {
-//     await transfer_manager.authorize_contract({
-//       arg: {
-//         ac_contract: sales.address
-//       },
-//       as: originator.pkh
-//     });
-//     await transfer_manager.authorize_contract({
-//       arg: {
-//         ac_contract: sales_storage.address
-//       },
-//       as: originator.pkh
-//     });
-//     await transfer_manager.authorize_contract({
-//       arg: {
-//         ac_contract: bids.address
-//       },
-//       as: originator.pkh
-//     });
-//     await transfer_manager.authorize_contract({
-//       arg: {
-//         ac_contract: bids_storage.address
-//       },
-//       as: originator.pkh
-//     });
-//     await transfer_manager.authorize_contract({
-//       arg: {
-//         ac_contract: auctions.address
-//       },
-//       as: originator.pkh
-//     });
-//     await transfer_manager.authorize_contract({
-//       arg: {
-//         ac_contract: auctions_storage.address
-//       },
-//       as: originator.pkh
-//     });
-//   });
-//
-//   it('Set up tokens', async () => {
-//     await fa2_ft.mint({
-//       arg: {
-//           itokenid: 0,
-//           iowner: originator.pkh,
-//           itokenMetadata: [{ key: '', value: '0x697066733a2f2f516d645756794865776b6b316e387562356f594a39647850505234776a446f47747a68523556713246454a6f745a' }],
-//           iamount: 9999999999999999999999999,
-//           iroyalties: [],
-//       },
-//       as: originator.pkh,
-//     });
-//     await fa12_ft.set_token_metadata({
-//       arg: {
-//           m: '0x697066733a2f2f516d556b55416b5758353944684551454b3563684c487237634e68633639634b676e757732616664706f53514e56'
-//       },
-//       as: originator.pkh
-//     });
-//   });
-// });
-//
-//
-// // describe("Declaring ownership", async () => {
-//
-// //   it("Declare Ownership Royalties", async () => {
-// //     await royalties.declare_ownership({
-// //       arg: {
-// //         candidate: owner_address
-// //       },
-// //       as: originator.pkh
-// //     })
-// //   });
-//
-//
-// //   it("Declare Ownership Transfer Proxy", async () => {
-// //     await transfer_proxy.declare_ownership({
-// //       arg: {
-// //         candidate: owner_address
-// //       },
-// //       as: originator.pkh
-// //     })
-// //   });
-//
-// //   it("Declare Ownership Transfer Manager", async () => {
-// //     await transfer_manager.declare_ownership({
-// //       arg: {
-// //         candidate: owner_address
-// //       },
-// //       as: originator.pkh
-// //     })
-// //   });
-//
-// //   it("Declare Ownership Fill", async () => {
-// //     await fill.declare_ownership({
-// //       arg: {
-// //         candidate: owner_address
-// //       },
-// //       as: originator.pkh
-// //     })
-// //   });
-//
-// //   it("Declare Ownership Exchange", async () => {
-// //     await exchange.declare_ownership({
-// //       arg: {
-// //         candidate: owner_address
-// //       },
-// //       as: originator.pkh
-// //     })
-// //   });
-// // })
+// })
