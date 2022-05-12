@@ -162,6 +162,14 @@ describe("Contracts deployment", async () => {
       as: originator.pkh
     });
   });
+
+  it("Deploy Signature Checker", async () => {
+    [nft, _] = await deploy(env.contracts.sig_checker.path, {
+      named: getName(env.contracts.sig_checker.id),
+      metadata_uri: env.stages[stage].metadata.sig_checker,
+      as: originator.pkh
+    });
+  });
 });
 
 describe("Contract configuration", async () => {

@@ -1,0 +1,9 @@
+archetype signature_checker
+with metadata ""
+
+
+getter check_signature(public_key: key, payload : bytes, payload_signature : signature) : bool {
+  return check_signature(public_key, payload_signature, payload)
+}
+
+entry default() {}
