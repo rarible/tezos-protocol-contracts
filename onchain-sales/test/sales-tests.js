@@ -2903,7 +2903,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA2)}
                                     (Pair 0x${sale_asset}
-                                        (Pair {} {}))))))`,
+                                        (Pair ${qty}
+                                            (Pair {} {})))))))`,
                 as: bob.pkh,
             });
 
@@ -2967,7 +2968,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA2)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 as: bob.pkh,
             });
 
@@ -3035,7 +3037,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA2)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 as: bob.pkh,
             });
 
@@ -3105,7 +3108,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(XTZ)}
                                     (Pair 0x${sale_asset}
-                                        (Pair {} {}))))))`,
+                                        (Pair ${qty}
+                                            (Pair {} {})))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -3171,7 +3175,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(XTZ)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -3241,7 +3246,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(XTZ)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -3313,7 +3319,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA12)}
                                     (Pair 0x${sale_asset}
-                                        (Pair {} {}))))))`,
+                                        (Pair ${qty}
+                                            (Pair {} {})))))))`,
                 as: bob.pkh,
             });
 
@@ -3378,7 +3385,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA12)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 as: bob.pkh,
             });
 
@@ -3445,7 +3453,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA12)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 as: bob.pkh,
             });
 
@@ -3494,7 +3503,9 @@ describe('Buy tests', async () => {
                             (Pair 1111
                                 (Pair "${alice.pkh}"
                                     (Pair ${parseInt(FA12)}
-                                        (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                        (Pair 0x${sale_asset}
+                                            (Pair ${qty}
+                                                (Pair {} {})))))))`,
                     as: bob.pkh,
                 });
             }, '"MISSING_SALE"');
@@ -3525,7 +3536,9 @@ describe('Buy tests', async () => {
                             (Pair ${tokenId}
                                     (Pair "${alice.pkh}"
                                         (Pair ${parseInt(XTZ)}
-                                            (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                            (Pair 0x${sale_asset}
+                                                (Pair ${qty}
+                                                    (Pair {} {})))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "AMOUNT_MISMATCH" (Pair 0 1000000))');
@@ -3559,7 +3572,9 @@ describe('Buy tests', async () => {
                             (Pair ${tokenId}
                                     (Pair "${alice.pkh}"
                                         (Pair ${parseInt(XTZ)}
-                                            (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                                (Pair 0x${sale_asset}
+                                                    (Pair ${qty}
+                                                        (Pair {} {})))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -3594,7 +3609,9 @@ describe('Buy tests', async () => {
                         (Pair ${tokenId}
                                 (Pair "${alice.pkh}"
                                     (Pair ${parseInt(XTZ)}
-                                        (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                        (Pair 0x${sale_asset}
+                                            (Pair ${qty}
+                                                (Pair {} {})))))))`,
                     amouynt: `${sale_amount}utz`,
                     as: bob.pkh,
                 });
@@ -3616,7 +3633,9 @@ describe('Buy tests', async () => {
                     (Pair ${tokenId}
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(XTZ)}
-                                    (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                    (Pair 0x${sale_asset}
+                                        (Pair ${qty}
+                                            (Pair {} {})))))))`,
                     amouynt: `${sale_amount}utz`,
                     as: bob.pkh,
                 });
@@ -4651,5 +4670,185 @@ describe('Miscelleanous tests', async () => {
             amount: `1utz`,
             as: bob.pkh
         });
+    });
+
+    it('Buy with partial fill should succeed', async () => {
+        const storage = await sales_storage.getStorage();
+        const sale_asset = mkXTZAsset();
+        const test_qty = 3;
+        var sale = await getValueFromBigMap(
+            parseInt(storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+        );
+        assert(sale == null);
+        await sales.sell({
+            argMichelson: `(Pair "${nft.address}"
+            (Pair ${token_id_0}
+                (Pair ${parseInt(XTZ)}
+                    (Pair 0x${sale_asset}
+                        (Pair {}
+                            (Pair {}
+                                (Pair ${sale_amount}
+                                    (Pair ${test_qty}
+                                        (Pair None
+                                            (Pair None
+                                                (Pair ${max_fees}
+                                                    (Pair None None))))))))))))`,
+            as: alice.pkh,
+        });
+
+        var post_tx_sale = await getValueFromBigMap(
+            parseInt(storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+        );
+
+        const expected_result = JSON.parse(`{
+            "prim":"Pair",
+            "args":[
+                [
+
+                ],
+                [
+
+                ],
+                {
+                    "int": "${sale_amount}"
+                },
+                {
+                    "int": "${test_qty}"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                "int": "${max_fees}"
+            },
+            {
+                "prim":"None"
+            },
+            {
+                "prim":"None"
+            }
+            ]
+            }`);
+        assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+
+        await sales.buy({
+            argMichelson: `
+                (Pair "${nft.address}"
+                    (Pair ${token_id_0}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair 1
+                                        (Pair {} {})))))))`,
+            as: bob.pkh,
+            amount: `${sale_amount}utz`,
+        });
+
+        const post_storage = await sales_storage.getStorage();
+        const post_buy_sale = await getValueFromBigMap(
+            parseInt(post_storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+        );
+
+        const post_buy_result = JSON.parse(`{
+            "prim":"Pair",
+            "args":[
+                [
+
+                ],
+                [
+
+                ],
+                {
+                    "int": "${sale_amount}"
+                },
+                {
+                    "int": "${test_qty - 1}"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                "int": "${max_fees}"
+            },
+            {
+                "prim":"None"
+            },
+            {
+                "prim":"None"
+            }
+            ]
+            }`);
+        assert(JSON.stringify(post_buy_sale) === JSON.stringify(post_buy_result));
+    });
+
+    it('Buy with amount = 0 should fail', async () => {
+        await expectToThrow(async () => {
+            const sale_asset = mkXTZAsset();
+            await sales.buy({
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair 0
+                                            (Pair {} {})))))))`,
+                as: bob.pkh,
+                amount: `${sale_amount}utz`,
+            });
+        }, '"INVALID_BUY_AMOUNT"');
+    });
+
+    it('Buy with amount > sale amount should fail', async () => {
+        await expectToThrow(async () => {
+            const sale_asset = mkXTZAsset();
+            await sales.buy({
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair 9
+                                            (Pair {} {})))))))`,
+                as: bob.pkh,
+                amount: `${sale_amount}utz`,
+            });
+        }, '"INVALID_BUY_AMOUNT"');
+    });
+
+    it('Buy with multiple items should succeed', async () => {
+            const sale_asset = mkXTZAsset();
+            await sales.buy({
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair 2
+                                            (Pair {} {})))))))`,
+                as: bob.pkh,
+                amount: `${sale_amount*2}utz`,
+            });
+        const post_storage = await sales_storage.getStorage();
+        const post_buy_sale = await getValueFromBigMap(
+            parseInt(post_storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+        );
+        assert(post_buy_sale == null)
     });
 });

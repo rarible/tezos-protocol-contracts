@@ -22,6 +22,7 @@ constant INVALID_SALE_END_DATE: string = "INVALID_SALE_END_DATE"
 constant INVALID_SALE_START_DATE: string = "INVALID_SALE_START_DATE"
 constant SALE_CLOSED: string = "SALE_CLOSED"
 constant SALE_NOT_STARTED: string = "SALE_NOT_STARTED"
+constant INVALID_BUY_AMOUNT: string = "INVALID_BUY_AMOUNT"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -255,11 +256,13 @@ entry buy(
   b_seller: address,
   b_sale_type: asset_type,
   b_sale_asset: bytes,
+  b_amount: nat,
   b_origin_fees: list<part>,
   b_payouts: list<part>){
     effect {
       var current_sale = require_some(get_sale(b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset), MISSING_SALE);
       dorequire(process_sum_fees(current_sale.sale_origin_fees) + process_sum_fees(b_origin_fees) + protocol_fee <= current_sale.sale_max_fees_base_boint, FEES_OVER_SELLER_LIMIT);
+      dorequire(b_amount > 0 and b_amount <= current_sale.sale_asset_qty, INVALID_BUY_AMOUNT);
 
       if(issome(current_sale.sale_end)) then (
         var end_date = opt_get(current_sale.sale_end);
@@ -276,7 +279,7 @@ entry buy(
       var buy_asset_token_id = unpack_result[1];
 
       if(b_sale_type = XTZ) then (
-        dorequire(transferred = current_sale.sale_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
+        dorequire(transferred = current_sale.sale_amount * b_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
       );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
@@ -288,7 +291,7 @@ entry buy(
           }],
           b_seller,
           caller,
-          current_sale.sale_amount,
+          current_sale.sale_amount * b_amount,
           b_sale_type,
           b_sale_asset,
           caller,
@@ -299,9 +302,21 @@ entry buy(
           current_sale.sale_payouts.concat(b_payouts)
         )
       );
-
-      transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset))
-
+      if(b_amount = current_sale.sale_asset_qty) then (
+        transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset))
+      ) else (
+        current_sale.sale_asset_qty := abs(current_sale.sale_asset_qty - b_amount);
+        transfer 0tz to sales_storage call set_sale<address * nat * address * asset_type * bytes * sale>(
+          (
+            b_asset_contract,
+            b_asset_token_id,
+            b_seller,
+            b_sale_type,
+            b_sale_asset,
+            current_sale
+          )
+        );
+      )
     }
 }
 
