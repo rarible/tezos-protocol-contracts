@@ -146,6 +146,7 @@ record bundle_sale {
   bundle_sale_amount : nat;
   bundle_sale_start: option<date>;
   bundle_sale_end: option<date>;
+  bundle_sale_qty: nat;
   bundle_sale_max_fees_base_boint: nat;
   bundle_sale_data_type  : option<bytes>;
   bundle_sale_data       : option<bytes>;
@@ -325,12 +326,14 @@ entry buy_bundle(
   bb_seller: address,
   bb_sale_type: asset_type,
   bb_sale_asset: bytes,
+  bb_amount: nat,
   bb_origin_fees: list<part>,
   bb_payouts: list<part>
   ){
     effect {
       var current_sale = require_some(get_bundle_sale(bb_bundle, bb_seller, bb_sale_type, bb_sale_asset), MISSING_BUNDLE_SALE);
       dorequire(process_sum_fees(current_sale.bundle_sale_origin_fees) + process_sum_fees(bb_origin_fees) + protocol_fee <= current_sale.bundle_sale_max_fees_base_boint, FEES_OVER_SELLER_LIMIT);
+      dorequire(bb_amount > 0 and bb_amount <= current_sale.bundle_sale_qty, INVALID_BUY_AMOUNT);
 
       if(issome(current_sale.bundle_sale_end)) then (
         var end_date = opt_get(current_sale.bundle_sale_end);
@@ -345,7 +348,7 @@ entry buy_bundle(
       var unpacked_bundle = verify_and_unpack_bundle(bb_bundle);
 
       if(bb_sale_type = XTZ) then (
-        dorequire(transferred = current_sale.bundle_sale_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.bundle_sale_amount * 1utz))
+        dorequire(transferred = current_sale.bundle_sale_amount * bb_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.bundle_sale_amount * 1utz))
       );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
@@ -365,8 +368,20 @@ entry buy_bundle(
         )
       );
 
-      transfer 0tz to sales_storage call remove_bundle_sale<bytes * address * asset_type * bytes>((bb_bundle, bb_seller, bb_sale_type, bb_sale_asset))
-
+      if(bb_amount = current_sale.bundle_sale_qty) then (
+        transfer 0tz to sales_storage call remove_bundle_sale<bytes * address * asset_type * bytes>((bb_bundle, bb_seller, bb_sale_type, bb_sale_asset))
+      ) else (
+        current_sale.bundle_sale_qty := abs(current_sale.bundle_sale_qty - bb_amount);
+        transfer 0tz to sales_storage call set_bundle_sale<bytes * address * asset_type * bytes * bundle_sale>(
+          (
+            bb_bundle,
+            bb_seller,
+            bb_sale_type,
+            bb_sale_asset,
+            current_sale
+          )
+        );
+      );
     }
 }
 
