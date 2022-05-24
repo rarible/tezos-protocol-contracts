@@ -1809,8 +1809,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1837,6 +1838,9 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
+                   },
+                  {
+                      "int": "${qty}"
                    },
                    {
                     "int": "${max_fees}"
@@ -1879,8 +1883,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                        (Pair None None)))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -1918,6 +1923,9 @@ describe('Set bundle sales tests', async () => {
                    {
                       "prim":"None"
                    },
+                  {
+                        "int": "${qty}"
+                    },
                    {
                     "int": "${max_fees}"
                 },
@@ -1960,8 +1968,9 @@ describe('Set bundle sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair None
                                             (Pair None
-                                                (Pair ${max_fees}
-                                                    (Pair None None))))))))))))`,
+                                                (Pair ${qty}
+                                                    (Pair ${max_fees}
+                                                        (Pair None None)))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2014,6 +2023,9 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
+                   },
+                   {
+                      "int": "${qty}"
                    },
                    {
                     "int": "${max_fees}"
@@ -2058,8 +2070,9 @@ describe('Set bundle sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair None
                                             (Pair None
-                                                (Pair ${max_fees}
-                                                    (Pair None None))))))))))))`,
+                                                (Pair ${qty}
+                                                    (Pair ${max_fees}
+                                                        (Pair None None)))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2086,6 +2099,9 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
+                   },
+                   {
+                      "int": "${qty}"
                    },
                    {
                     "int": "${max_fees}"
@@ -2125,8 +2141,9 @@ describe('Set bundle sales tests', async () => {
                                 (Pair ${sale_amount}
                                     (Pair None
                                         (Pair None
-                                            (Pair ${max_fees}
-                                                (Pair None None))))))))))))`,
+                                            (Pair ${qty}
+                                                (Pair ${max_fees}
+                                                    (Pair None None)))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2163,6 +2180,9 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
+                   },
+                    {
+                      "int": "${qty}"
                    },
                    {
                     "int": "${max_fees}"
@@ -2202,8 +2222,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2256,6 +2277,9 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
+                   },
+                  {
+                      "int": "${qty}"
                    },
                    {
                     "int": "${max_fees}"
@@ -2297,8 +2321,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2325,6 +2350,9 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
+                   },
+                   {
+                      "int": "${qty}"
                    },
                    {
                     "int": "${max_fees}"
@@ -2364,8 +2392,9 @@ describe('Set bundle sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair None
                                             (Pair None
-                                                (Pair ${max_fees}
-                                                    (Pair None None))))))))))))`,
+                                                (Pair ${qty}
+                                                    (Pair ${max_fees}
+                                                        (Pair None None)))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2402,6 +2431,9 @@ describe('Set bundle sales tests', async () => {
                    },
                    {
                       "prim":"None"
+                   },
+                   {
+                      "int": "${qty}"
                    },
                    {
                     "int": "${max_fees}"
@@ -2441,8 +2473,9 @@ describe('Set bundle sales tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair None
                                             (Pair None
-                                                (Pair ${max_fees}
-                                                    (Pair None None))))))))))))`,
+                                                (Pair ${qty}
+                                                    (Pair ${max_fees}
+                                                        (Pair None None)))))))))))))`,
                 as: alice.pkh,
             });
 
@@ -2497,6 +2530,9 @@ describe('Set bundle sales tests', async () => {
                       "prim":"None"
                    },
                    {
+                      "int": "${qty}"
+                   },
+                   {
                     "int": "${max_fees}"
                 },
                 {
@@ -2528,8 +2564,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"BUNDLE_CANT_BE_EMPTY"');
@@ -2552,8 +2589,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb3")');
@@ -2576,8 +2614,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -2599,8 +2638,9 @@ describe('Set bundle sales tests', async () => {
                                             (Pair ${sale_amount}
                                                 (Pair None
                                                     (Pair None
-                                                        (Pair ${max_fees}
-                                                            (Pair None None))))))))))))`,
+                                                        (Pair ${qty}
+                                                            (Pair ${max_fees}
+                                                                (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -2623,8 +2663,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"WRONG_XTZ_PAYLOAD"');
@@ -2643,8 +2684,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"CANT_UNPACK_BUNDLE"');
@@ -2667,8 +2709,9 @@ describe('Set bundle sales tests', async () => {
                                             (Pair ${sale_amount}
                                                 (Pair None
                                                     (Pair None
-                                                        (Pair ${max_fees}
-                                                            (Pair None None))))))))))))`,
+                                                        (Pair ${qty}
+                                                            (Pair ${max_fees}
+                                                                (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"INVALID_BUNDLE_ITEM_QTY"');
@@ -2691,8 +2734,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair 0
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb0")');
@@ -2718,8 +2762,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair (Some 150000)
-                                                    (Pair ${max_fees}
-                                                        (Pair None None)))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"INVALID_SALE_END_DATE"');
@@ -2742,8 +2787,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair (Some ${Math.floor(Date.now() / 1000) + 200000})
                                                 (Pair (Some ${Math.floor(Date.now() / 1000) + 100000})
-                                                    (Pair ${max_fees}
-                                                        (Pair None None)))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '"INVALID_SALE_START_DATE"');
@@ -2766,8 +2812,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair 0
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair 0
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb2")');
@@ -2790,8 +2837,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair 9999999999999
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair 9999999999
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb2")');
@@ -2814,8 +2862,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair 150
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair 150
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb2")');
@@ -2838,8 +2887,9 @@ describe('Set bundle sales tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair 1000
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair 1000
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb2")');
@@ -2862,8 +2912,9 @@ describe('Set bundle sales tests', async () => {
                                             (Pair ${sale_amount}
                                                 (Pair None
                                                     (Pair None
-                                                        (Pair ${max_fees}
-                                                            (Pair None None))))))))))))`,
+                                                        (Pair ${qty}
+                                                            (Pair ${max_fees}
+                                                                (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_sb1")');
@@ -2903,7 +2954,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA2)}
                                     (Pair 0x${sale_asset}
-                                        (Pair {} {}))))))`,
+                                        (Pair ${qty}
+                                            (Pair {} {})))))))`,
                 as: bob.pkh,
             });
 
@@ -2967,7 +3019,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA2)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 as: bob.pkh,
             });
 
@@ -3035,7 +3088,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA2)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 as: bob.pkh,
             });
 
@@ -3105,7 +3159,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(XTZ)}
                                     (Pair 0x${sale_asset}
-                                        (Pair {} {}))))))`,
+                                        (Pair ${qty}
+                                            (Pair {} {})))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -3171,7 +3226,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(XTZ)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -3241,7 +3297,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(XTZ)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -3313,7 +3370,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA12)}
                                     (Pair 0x${sale_asset}
-                                        (Pair {} {}))))))`,
+                                        (Pair ${qty}
+                                            (Pair {} {})))))))`,
                 as: bob.pkh,
             });
 
@@ -3378,7 +3436,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA12)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 as: bob.pkh,
             });
 
@@ -3445,7 +3504,8 @@ describe('Buy tests', async () => {
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(FA12)}
                                     (Pair 0x${sale_asset}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
+                                        (Pair ${qty}
+                                            (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))))`,
                 as: bob.pkh,
             });
 
@@ -3494,7 +3554,9 @@ describe('Buy tests', async () => {
                             (Pair 1111
                                 (Pair "${alice.pkh}"
                                     (Pair ${parseInt(FA12)}
-                                        (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                        (Pair 0x${sale_asset}
+                                            (Pair ${qty}
+                                                (Pair {} {})))))))`,
                     as: bob.pkh,
                 });
             }, '"MISSING_SALE"');
@@ -3525,7 +3587,9 @@ describe('Buy tests', async () => {
                             (Pair ${tokenId}
                                     (Pair "${alice.pkh}"
                                         (Pair ${parseInt(XTZ)}
-                                            (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                            (Pair 0x${sale_asset}
+                                                (Pair ${qty}
+                                                    (Pair {} {})))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "AMOUNT_MISMATCH" (Pair 0 1000000))');
@@ -3559,7 +3623,9 @@ describe('Buy tests', async () => {
                             (Pair ${tokenId}
                                     (Pair "${alice.pkh}"
                                         (Pair ${parseInt(XTZ)}
-                                            (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                                (Pair 0x${sale_asset}
+                                                    (Pair ${qty}
+                                                        (Pair {} {})))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh,
             });
@@ -3594,7 +3660,9 @@ describe('Buy tests', async () => {
                         (Pair ${tokenId}
                                 (Pair "${alice.pkh}"
                                     (Pair ${parseInt(XTZ)}
-                                        (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                        (Pair 0x${sale_asset}
+                                            (Pair ${qty}
+                                                (Pair {} {})))))))`,
                     amouynt: `${sale_amount}utz`,
                     as: bob.pkh,
                 });
@@ -3616,7 +3684,9 @@ describe('Buy tests', async () => {
                     (Pair ${tokenId}
                             (Pair "${alice.pkh}"
                                 (Pair ${parseInt(XTZ)}
-                                    (Pair 0x${sale_asset} (Pair {} {}))))))`,
+                                    (Pair 0x${sale_asset}
+                                        (Pair ${qty}
+                                            (Pair {} {})))))))`,
                     amouynt: `${sale_amount}utz`,
                     as: bob.pkh,
                 });
@@ -3664,7 +3734,8 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(FA2)}
                                 (Pair 0x${sale_asset}
-                                    (Pair {} {})))))`,
+                                    (Pair ${qty}
+                                        (Pair {} {}))))))`,
                 as: bob.pkh,
             });
 
@@ -3739,7 +3810,8 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(FA2)}
                                 (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
+                                    (Pair ${qty}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: bob.pkh,
             });
 
@@ -3821,8 +3893,9 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(FA2)}
                                 (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
-                )))))`,
+                                    (Pair ${qty}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                ))))))`,
                 as: bob.pkh
             });
 
@@ -3906,7 +3979,8 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(XTZ)}
                                 (Pair 0x${sale_asset}
-                                    (Pair {} {})))))`,
+                                    (Pair ${qty}
+                                        (Pair {} {}))))))`,
                 as: bob.pkh,
                 amount: `${sale_amount}utz`,
             });
@@ -3983,7 +4057,8 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(XTZ)}
                                 (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
+                                    (Pair ${qty}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: bob.pkh,
                 amount: `${sale_amount}utz`,
             });
@@ -4065,7 +4140,8 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(XTZ)}
                                 (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})))))`,
+                                    (Pair ${qty}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: bob.pkh,
                 amount: `${sale_amount}utz`,
             });
@@ -4150,7 +4226,8 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(FA12)}
                                 (Pair 0x${sale_asset}
-                                    (Pair {} {})))))`,
+                                    (Pair ${qty}
+                                        (Pair {} {}))))))`,
                 as: bob.pkh,
             });
 
@@ -4226,7 +4303,8 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(FA12)}
                                 (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}})))))`,
+                                    (Pair ${qty}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}} { Pair "${daniel.pkh}" ${payout_value}}))))))`,
                 as: bob.pkh,
             });
 
@@ -4307,8 +4385,9 @@ describe('Buy bundle tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(FA12)}
                                 (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
-                )))))`,
+                                    (Pair ${qty}
+                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}} { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}})
+                ))))))`,
                 as: bob.pkh
             });
 
@@ -4389,12 +4468,13 @@ describe('Buy bundle tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair None
                                                 (Pair None
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
                 await sales.buy_bundle({
-                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair ${qty} (Pair {} {}))))))`,
                     as: bob.pkh
                 });
             }, '(Pair "AMOUNT_MISMATCH" (Pair 0 1000000))');
@@ -4422,12 +4502,13 @@ describe('Buy bundle tests', async () => {
                                     (Pair ${sale_amount}
                                         (Pair (Some ${Math.floor(start_date - 1)})
                                             (Pair (Some ${Math.floor(start_date + 10)})
-                                                (Pair ${max_fees}
-                                                    (Pair None None))))))))))`,
+                                                (Pair ${qty}
+                                                    (Pair ${max_fees}
+                                                        (Pair None None)))))))))))`,
                 as: alice.pkh,
             });
             await sales.buy_bundle({
-                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair ${qty} (Pair {} {}))))))`,
                 amount: `${sale_amount}utz`,
                 as: bob.pkh
             });
@@ -4457,12 +4538,13 @@ describe('Buy bundle tests', async () => {
                                         (Pair ${sale_amount}
                                             (Pair (Some ${Math.floor(start_date - 1)})
                                                 (Pair (Some ${Math.floor(start_date + 10)})
-                                                    (Pair ${max_fees}
-                                                        (Pair None None))))))))))`,
+                                                    (Pair ${qty}
+                                                        (Pair ${max_fees}
+                                                            (Pair None None)))))))))))`,
                     as: alice.pkh,
                 });
                 await sales.buy_bundle({
-                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair ${qty} (Pair {} {}))))))`,
                     amount: `${sale_amount}utz`,
                     as: bob.pkh
                 });
@@ -4486,7 +4568,7 @@ describe('Buy bundle tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await sales.buy_bundle({
-                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair ${qty} (Pair {} {}))))))`,
                     amount: `${sale_amount}utz`,
                     as: bob.pkh
                 });
@@ -4603,15 +4685,16 @@ describe('Miscelleanous tests', async () => {
                                 (Pair 1
                                     (Pair (Some ${Math.floor(start_date - 1)})
                                         (Pair (Some ${Math.floor(start_date + 10)})
-                                            (Pair ${max_fees}
-                                                (Pair None None))))))))))`,
+                                            (Pair ${qty}
+                                                (Pair ${max_fees}
+                                                    (Pair None None)))))))))))`,
             as: alice.pkh,
         });
         if (isMockup()) {
             await setMockupNow(start_date);
         }
         await sales.buy_bundle({
-            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair ${qty} (Pair {} {}))))))`,
             amount: `1utz`,
             as: bob.pkh
         });
@@ -4639,17 +4722,365 @@ describe('Miscelleanous tests', async () => {
                                 (Pair 1
                                     (Pair (Some ${Math.floor(start_date - 1)})
                                         (Pair (Some ${Math.floor(start_date + 10)})
-                                            (Pair ${max_fees}
-                                                (Pair None None))))))))))`,
+                                            (Pair ${qty}
+                                                (Pair ${max_fees}
+                                                    (Pair None None)))))))))))`,
             as: alice.pkh,
         });
         if (isMockup()) {
             await setMockupNow(start_date);
         }
         await sales.buy_bundle({
-            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair {} {})))))`,
+            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair ${qty} (Pair {} {}))))))`,
             amount: `1utz`,
             as: bob.pkh
         });
+    });
+
+    it('Buy with partial fill should succeed', async () => {
+        const storage = await sales_storage.getStorage();
+        const sale_asset = mkXTZAsset();
+        const test_qty = 3;
+        var sale = await getValueFromBigMap(
+            parseInt(storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+        );
+        assert(sale == null);
+        await sales.sell({
+            argMichelson: `(Pair "${nft.address}"
+            (Pair ${token_id_0}
+                (Pair ${parseInt(XTZ)}
+                    (Pair 0x${sale_asset}
+                        (Pair {}
+                            (Pair {}
+                                (Pair ${sale_amount}
+                                    (Pair ${test_qty}
+                                        (Pair None
+                                            (Pair None
+                                                (Pair ${max_fees}
+                                                    (Pair None None))))))))))))`,
+            as: alice.pkh,
+        });
+
+        var post_tx_sale = await getValueFromBigMap(
+            parseInt(storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+        );
+
+        const expected_result = JSON.parse(`{
+            "prim":"Pair",
+            "args":[
+                [
+
+                ],
+                [
+
+                ],
+                {
+                    "int": "${sale_amount}"
+                },
+                {
+                    "int": "${test_qty}"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                "int": "${max_fees}"
+            },
+            {
+                "prim":"None"
+            },
+            {
+                "prim":"None"
+            }
+            ]
+            }`);
+        assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+
+        await sales.buy({
+            argMichelson: `
+                (Pair "${nft.address}"
+                    (Pair ${token_id_0}
+                        (Pair "${alice.pkh}"
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair 1
+                                        (Pair {} {})))))))`,
+            as: bob.pkh,
+            amount: `${sale_amount}utz`,
+        });
+
+        const post_storage = await sales_storage.getStorage();
+        const post_buy_sale = await getValueFromBigMap(
+            parseInt(post_storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+        );
+
+        const post_buy_result = JSON.parse(`{
+            "prim":"Pair",
+            "args":[
+                [
+
+                ],
+                [
+
+                ],
+                {
+                    "int": "${sale_amount}"
+                },
+                {
+                    "int": "${test_qty - 1}"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                "int": "${max_fees}"
+            },
+            {
+                "prim":"None"
+            },
+            {
+                "prim":"None"
+            }
+            ]
+            }`);
+        assert(JSON.stringify(post_buy_sale) === JSON.stringify(post_buy_result));
+    });
+
+    it('Buy with amount = 0 should fail', async () => {
+        await expectToThrow(async () => {
+            const sale_asset = mkXTZAsset();
+            await sales.buy({
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair 0
+                                            (Pair {} {})))))))`,
+                as: bob.pkh,
+                amount: `${sale_amount}utz`,
+            });
+        }, '"INVALID_BUY_AMOUNT"');
+    });
+
+    it('Buy with amount > sale amount should fail', async () => {
+        await expectToThrow(async () => {
+            const sale_asset = mkXTZAsset();
+            await sales.buy({
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair 9
+                                            (Pair {} {})))))))`,
+                as: bob.pkh,
+                amount: `${sale_amount}utz`,
+            });
+        }, '"INVALID_BUY_AMOUNT"');
+    });
+
+    it('Buy with multiple items should succeed', async () => {
+            const sale_asset = mkXTZAsset();
+            await sales.buy({
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${alice.pkh}"
+                                (Pair ${parseInt(XTZ)}
+                                    (Pair 0x${sale_asset}
+                                        (Pair 2
+                                            (Pair {} {})))))))`,
+                as: bob.pkh,
+                amount: `${sale_amount*2}utz`,
+            });
+        const post_storage = await sales_storage.getStorage();
+        const post_buy_sale = await getValueFromBigMap(
+            parseInt(post_storage.sales),
+            exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
+            exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+        );
+        assert(post_buy_sale == null)
+    });
+
+    it('Buy bundle with partial fill should succeed', async () => {
+        const storage = await sales_storage.getStorage();
+        const sale_asset = mkXTZAsset();
+        const bundle_items = [
+            mkBundleItem(nft.address, token_id_0, 1),
+            mkBundleItem(nft.address, token_id_3, 1)
+        ];
+        const bundle = mkPackedBundle(bundle_items);
+
+        const test_qty = 3;
+
+        await sales.sell_bundle({
+            argMichelson: `(Pair 0x${bundle}
+                (Pair ${parseInt(XTZ)}
+                    (Pair 0x${sale_asset}
+                        (Pair {}
+                            (Pair {}
+                                (Pair ${sale_amount}
+                                    (Pair None
+                                        (Pair None
+                                            (Pair ${test_qty}
+                                                (Pair ${max_fees}
+                                                    (Pair None None)))))))))))`,
+            as: alice.pkh,
+        });
+
+        var post_tx_sale = await getValueFromBigMap(
+            parseInt(storage.bundle_sales),
+            exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+            exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+        );
+
+        const expected_result = JSON.parse(`{
+            "prim":"Pair",
+            "args":[
+                [
+
+                ],
+                [
+
+                ],
+                {
+                    "int": "${sale_amount}"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "int": "${test_qty}"
+                },
+                {
+                    "int": "${max_fees}"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "prim":"None"
+                }
+            ]
+        }`);
+        assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+
+        await sales.buy_bundle({
+            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair 1 (Pair {} {}))))))`,
+            amount: `${sale_amount}utz`,
+            as: bob.pkh
+        });
+
+        const post_storage = await sales_storage.getStorage();
+        const post_buy_sale = await getValueFromBigMap(
+            parseInt(post_storage.bundle_sales),
+            exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+            exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+        );
+
+        const post_buy_result = JSON.parse(`{
+            "prim":"Pair",
+            "args":[
+                [
+
+                ],
+                [
+
+                ],
+                {
+                    "int": "${sale_amount}"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "int": "${test_qty - 1}"
+                },
+                {
+                    "int": "${max_fees}"
+                },
+                {
+                    "prim":"None"
+                },
+                {
+                    "prim":"None"
+                }
+            ]
+        }`);
+        assert(JSON.stringify(post_buy_sale) === JSON.stringify(post_buy_result));
+    });
+
+    it('Buy bundle with qty = 0 should fail', async () => {
+        await expectToThrow(async () => {
+            const sale_asset = mkXTZAsset();
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_3, 1)
+            ];
+            const bundle = mkPackedBundle(bundle_items);
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair 0 (Pair {} {}))))))`,
+                amount: `${sale_amount}utz`,
+                as: bob.pkh
+            });
+        }, '"INVALID_BUY_AMOUNT"');
+    });
+
+    it('Buy bundle with qty > sale amount should fail', async () => {
+        await expectToThrow(async () => {
+            const sale_asset = mkXTZAsset();
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_0, 1),
+                mkBundleItem(nft.address, token_id_3, 1)
+            ];
+            const bundle = mkPackedBundle(bundle_items);
+            await sales.buy_bundle({
+                argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair 99 (Pair {} {}))))))`,
+                amount: `${sale_amount}utz`,
+                as: bob.pkh
+            });
+        }, '"INVALID_BUY_AMOUNT"');
+    });
+
+    it('Buy with multiple items should succeed', async () => {
+        const sale_asset = mkXTZAsset();
+        const bundle_items = [
+            mkBundleItem(nft.address, token_id_0, 1),
+            mkBundleItem(nft.address, token_id_3, 1)
+        ];
+        const bundle = mkPackedBundle(bundle_items);
+        await sales.buy_bundle({
+            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair 2 (Pair {} {}))))))`,
+            amount: `${sale_amount*2}utz`,
+            as: bob.pkh
+        });
+        const post_storage = await sales_storage.getStorage();
+        const post_buy_sale = await getValueFromBigMap(
+            parseInt(post_storage.bundle_sales),
+            exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+            exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+        );
+        assert(post_buy_sale == null)
     });
 });
