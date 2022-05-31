@@ -38,8 +38,8 @@ describe('Contract deployment', async () => {
 
 describe('Signature tests', async () => {
     it('Checking a good signature should succeed', async () => {
-        const payload_to_sign = mk_payload("message to sign")
-        const sig = await sign(payload_to_sign, { as : alice.name})
+        const payload_to_sign = "message to sign"
+        const sig = await sign(mk_payload(payload_to_sign), { as : alice.name})
         const payload = {
             "chain_id": "NetXnHfVqm9iesp",
             "contract": signature_checker.address,
@@ -52,7 +52,7 @@ describe('Signature tests', async () => {
                 }, {
                     "prim": "Pair",
                     "args": [{
-                        "bytes": payload_to_sign
+                        "string": payload_to_sign
                     }, {
                         "string": sig.prefixSig
                     }]
@@ -67,8 +67,8 @@ describe('Signature tests', async () => {
     });
 
     it('Checking a bad signature should fail', async () => {
-        const payload_to_sign = mk_payload("message to sign")
-        const sig = await sign(payload_to_sign, { as : alice.name})
+        const payload_to_sign = "message to sign"
+        const sig = await sign(mk_payload(payload_to_sign), { as : alice.name})
         const payload = {
             "chain_id": "NetXnHfVqm9iesp",
             "contract": signature_checker.address,
@@ -81,7 +81,7 @@ describe('Signature tests', async () => {
                 }, {
                     "prim": "Pair",
                     "args": [{
-                        "bytes": payload_to_sign
+                        "string": payload_to_sign
                     }, {
                         "string": sig.prefixSig
                     }]
@@ -96,8 +96,8 @@ describe('Signature tests', async () => {
     });
 
     it('Checking a bad signature payload should fail', async () => {
-        const payload_to_sign = mk_payload("message to sign")
-        const sig = await sign(payload_to_sign, { as : alice.name})
+        const payload_to_sign = "message to sign"
+        const sig = await sign(mk_payload(payload_to_sign), { as : alice.name})
         const payload = {
             "chain_id": "NetXnHfVqm9iesp",
             "contract": signature_checker.address,
@@ -107,7 +107,7 @@ describe('Signature tests', async () => {
                  {
                     "prim": "Pair",
                     "args": [{
-                        "bytes": payload_to_sign
+                        "string": payload_to_sign
                     }, {
                         "string": sig.prefixSig
                     }]
@@ -119,12 +119,12 @@ describe('Signature tests', async () => {
         try{
             await axios.post(node+'/chains/main/blocks/head/helpers/scripts/run_view', payload)
         } catch (e) {
-            assert(e.status == 500)
+            assert(e.response.status == 500)
         }
     });
 
     it('Checking an incorrect signature payload should fail', async () => {
-        const payload_to_sign = mk_payload("message to sign")
+        const payload_to_sign = "message to sign"
         const payload = {
             "chain_id": "NetXnHfVqm9iesp",
             "contract": signature_checker.address,
@@ -137,7 +137,7 @@ describe('Signature tests', async () => {
                 }, {
                     "prim": "Pair",
                     "args": [{
-                        "bytes": payload_to_sign
+                        "string": payload_to_sign
                     }, {
                         "string": ""
                     }]
@@ -150,7 +150,7 @@ describe('Signature tests', async () => {
         try{
             await axios.post(node+'/chains/main/blocks/head/helpers/scripts/run_view', payload)
         } catch (e) {
-            assert(e.status == 400)
+            assert(e.response.status == 500)
         }
     });
 });
