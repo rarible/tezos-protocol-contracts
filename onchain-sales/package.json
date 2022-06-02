@@ -1,5 +1,5 @@
 {
-    "name": "rarible-tezos-sales",
+    "name": "@rarible/rarible-tezos-sales",
     "version": "1.0.0",
     "description": "Rarible Tezos sales contract",
     "main": "index.js",
