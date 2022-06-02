@@ -1,5 +1,5 @@
 {
-    "name": "tezos-signature-checker",
+    "name": "@rarible/tezos-signature-checker",
     "version": "1.0.0",
     "description": "Tezos Signature Checker Contract",
     "main": "index.js",

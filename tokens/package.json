@@ -1,5 +1,5 @@
 {
-    "name": "tezos-fa2",
+    "name": "@rarible/tezos-fa2",
     "version": "1.0.0",
     "description": "Tezos FA2 contract templates",
     "main": "index.js",

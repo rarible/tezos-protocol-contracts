@@ -1,5 +1,5 @@
 {
-  "name": "tezos-rarible-contract",
+  "name": "@rarible/tezos-exchange-v2-contract",
   "version": "1.0.0",
   "description": "A tezos portage for rarible.",
   "directories": {
