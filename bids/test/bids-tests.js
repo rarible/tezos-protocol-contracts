@@ -5,7 +5,8 @@ const {
     setQuiet,
     expectToThrow,
     exprMichelineToJson,
-    getBalance
+    getBalance,
+    setMockupNow
 } = require('@completium/completium-cli');
 const {
     errors,
@@ -486,7 +487,6 @@ describe('(Transfer manager)Authorize Bids, and Bids storage contract tests', as
         assert(
             post_test_storage.authorized_contracts.includes(bids.address) &&
             post_test_storage.authorized_contracts.includes(bids_storage.address)
-
         );
 
     });
@@ -680,7 +680,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -696,7 +696,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -712,7 +712,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -728,7 +728,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -744,7 +744,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -760,7 +760,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -776,7 +776,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -792,7 +792,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -808,7 +808,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -824,7 +824,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -842,7 +842,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -858,7 +858,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -874,7 +874,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -890,7 +890,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -906,7 +906,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -922,7 +922,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -938,7 +938,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -954,7 +954,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -970,7 +970,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -986,7 +986,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -1007,7 +1007,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1017,7 +1017,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1029,7 +1029,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1042,7 +1042,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1052,7 +1052,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -1064,7 +1064,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1077,7 +1077,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1087,7 +1087,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1099,7 +1099,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1112,7 +1112,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1122,7 +1122,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1132,7 +1132,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1144,7 +1144,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1157,7 +1157,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1167,7 +1167,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -1179,7 +1179,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1192,7 +1192,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1202,7 +1202,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1214,7 +1214,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1227,7 +1227,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1237,7 +1237,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1247,7 +1247,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1259,7 +1259,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1272,7 +1272,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1282,7 +1282,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -1294,7 +1294,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1307,7 +1307,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1317,7 +1317,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1329,7 +1329,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1342,7 +1342,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1352,7 +1352,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1362,7 +1362,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1374,7 +1374,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1387,7 +1387,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1397,7 +1397,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -1409,7 +1409,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1422,7 +1422,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1432,7 +1432,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1444,7 +1444,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1457,7 +1457,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1519,7 +1519,8 @@ describe('Put bid tests', async () => {
                                         (Pair {}
                                             (Pair ${bid_amount}
                                                 (Pair ${qty}
-                                                    (Pair None None)))))))))`,
+                                                    (Pair None
+                                                        (Pair None None))))))))))`,
                 as: bob.pkh,
             });
 
@@ -1540,6 +1541,14 @@ describe('Put bid tests', async () => {
                             "int": "${bid_amount}"
                         }, {
                             "int": "${qty}"
+                        },
+                        {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
                         }, {
                             "prim": "None"
                         }, {
@@ -1567,7 +1576,7 @@ describe('Put bid tests', async () => {
             const custody_ft_balance = await getFA2Balance(fa2_ft, token_id_1, bids_storage.address);
 
             await bids.put_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_1} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                 as: bob.pkh,
             });
 
@@ -1606,6 +1615,14 @@ describe('Put bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
+                   {
                       "prim":"None"
                    },
                    {
@@ -1641,8 +1658,8 @@ describe('Put bid tests', async () => {
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${bid_amount}
                                                 (Pair ${qty}
-                                                    (Pair None None)
-                                                ))))))))`,
+                                                    (Pair None
+                                                        (Pair None None))))))))))`,
                 as: bob.pkh,
             });
 
@@ -1698,6 +1715,14 @@ describe('Put bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
+                   {
                       "prim":"None"
                    },
                    {
@@ -1735,8 +1760,8 @@ describe('Put bid tests', async () => {
                                     (Pair {}
                                         (Pair ${bid_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None None))))))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -1765,6 +1790,14 @@ describe('Put bid tests', async () => {
                    {
                       "int": "${qty}"
                    },
+                   {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
                    {
                       "prim":"None"
                    },
@@ -1800,8 +1833,8 @@ describe('Put bid tests', async () => {
                                     (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            ))))))))`,
+                                                (Pair None
+                                                    (Pair None None))))))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -1840,6 +1873,14 @@ describe('Put bid tests', async () => {
                    {
                       "int": "${qty}"
                    },
+                   {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
                    {
                       "prim":"None"
                    },
@@ -1876,8 +1917,8 @@ describe('Put bid tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${bid_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None None))))))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -1933,6 +1974,14 @@ describe('Put bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
+                   {
                       "prim":"None"
                    },
                    {
@@ -1962,7 +2011,7 @@ describe('Put bid tests', async () => {
             const custody_ft_balance = await getFA12Balance(fa12_ft_0, bids_storage.address);
 
             await bids.put_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_6} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_6} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                 as: bob.pkh,
             });
 
@@ -1984,6 +2033,14 @@ describe('Put bid tests', async () => {
                             "int": "${bid_amount}"
                         }, {
                             "int": "${qty}"
+                        },
+                       {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
                         }, {
                             "prim": "None"
                         }, {
@@ -2011,7 +2068,7 @@ describe('Put bid tests', async () => {
             const custody_ft_balance = await getFA12Balance(fa12_ft_1, bids_storage.address);
 
             await bids.put_bid({
-                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_7} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                argMichelson: `(Pair "${nft.address}" (Pair ${token_id_7} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                 as: bob.pkh,
             });
 
@@ -2050,6 +2107,14 @@ describe('Put bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
+                   {
                       "prim":"None"
                    },
                    {
@@ -2085,8 +2150,8 @@ describe('Put bid tests', async () => {
                                         (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${bid_amount}
                                                 (Pair ${qty}
-                                                    (Pair None None)
-                                                ))))))))`,
+                                                    (Pair None
+                                                        (Pair None None))))))))))`,
                 as: bob.pkh,
             });
 
@@ -2141,6 +2206,14 @@ describe('Put bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
+                   {
                       "prim":"None"
                    },
                    {
@@ -2161,7 +2234,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_pb3")');
@@ -2171,7 +2244,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -2181,7 +2254,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -2189,12 +2262,12 @@ describe('Put bid tests', async () => {
 
         it('Put bid with wrong buy asset payload (XTZ) should fail', async () => {
             await expectToThrow(async () => {
-                    const bid_asset = mkFA12Asset(fa12_ft_0.address);
-                    await bids.put_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
-                        as: bob.pkh,
-                        amount: `${bid_amount}utz`,
-                    });
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                await bids.put_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
+                    as: bob.pkh,
+                    amount: `${bid_amount}utz`,
+                });
             }, '"WRONG_XTZ_PAYLOAD"');
         });
 
@@ -2202,9 +2275,9 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None None)))))))))`,
-                        as: bob.pkh,
-                    });
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None (Pair None None))))))))))`,
+                    as: bob.pkh,
+                });
             }, '(Pair "InvalidCondition" "r_pb0")');
         });
 
@@ -2212,9 +2285,9 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None)))))))))`,
-                        as: bob.pkh,
-                    });
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None (Pair None None))))))))))`,
+                    as: bob.pkh,
+                });
             }, '(Pair "InvalidCondition" "r_pb2")');
         });
 
@@ -2222,7 +2295,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "BID_AMOUNT_MISMATCH" (Pair 0 1000000))');
@@ -2233,7 +2306,7 @@ describe('Put bid tests', async () => {
                 await expectToThrow(async () => {
                     const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
                     await bids.put_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                         as: carl.pkh,
                     });
                 }, '(Pair "AssetNotFound" "ledger")');
@@ -2246,7 +2319,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
@@ -2256,7 +2329,7 @@ describe('Put bid tests', async () => {
             try {
                 const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
             } catch (error) {
@@ -2268,7 +2341,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
             }, '"NotEnoughBalance"');
@@ -2278,7 +2351,7 @@ describe('Put bid tests', async () => {
             try {
                 const bid_asset = mkXTZAsset();
                 await bids.put_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None None)))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 99999999999999999 (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                     amount: `99999999999999999utz`
 
@@ -2289,35 +2362,35 @@ describe('Put bid tests', async () => {
         });
 
         it('Put bid with bid that already exists should update it and succeed', async () => {
-                const bid_asset = mkXTZAsset();
-                const storage = await bids_storage.getStorage();
+            const bid_asset = mkXTZAsset();
+            const storage = await bids_storage.getStorage();
 
-                const carl_ft_balance = await getBalance(carl.pkh);
-                const custody_ft_balance = await getBalance(bids_storage.address);
+            const carl_ft_balance = await getBalance(carl.pkh);
+            const custody_ft_balance = await getBalance(bids_storage.address);
 
-                var bid = await getValueFromBigMap(
-                    parseInt(storage.bids),
-                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
-                    exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
-                );
-                assert(bid == null);
+            var bid = await getValueFromBigMap(
+                parseInt(storage.bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
+            assert(bid == null);
 
-                await bids.put_bid({
-                    argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount/10} (Pair ${qty} (Pair None None)))))))))`,
-                    as: carl.pkh,
-                    amount: `${bid_amount/10}utz`
-                });
+            await bids.put_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount / 10} (Pair ${qty} (Pair None (Pair None None))))))))))`,
+                as: carl.pkh,
+                amount: `${bid_amount / 10}utz`
+            });
 
-                var post_tx_bid = await getValueFromBigMap(
-                    parseInt(storage.bids),
-                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
-                    exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
-                );
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
 
-                const post_tx_carl_ft_balance = await getBalance(carl.pkh);
-                const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+            const post_tx_carl_ft_balance = await getBalance(carl.pkh);
+            const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
 
-                const expected_result = JSON.parse(`{
+            const expected_result = JSON.parse(`{
                     "prim":"Pair",
                     "args":[
                        [
@@ -2327,10 +2400,18 @@ describe('Put bid tests', async () => {
 
                        ],
                        {
-                          "int": "${bid_amount/10}"
+                          "int": "${bid_amount / 10}"
                        },
                        {
                           "int": "${qty}"
+                       },
+                       {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
                        },
                        {
                           "prim":"None"
@@ -2340,26 +2421,26 @@ describe('Put bid tests', async () => {
                        }
                     ]
                  }`);
-                assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-                assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount/10))));
-                assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount/10))));
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount / 10))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount / 10))));
 
-                await bids.put_bid({
-                    argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None)))))))))`,
-                    as: carl.pkh,
-                    amount: `${bid_amount}utz`
-                });
+            await bids.put_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
+                as: carl.pkh,
+                amount: `${bid_amount}utz`
+            });
 
-                var new_post_tx_bid = await getValueFromBigMap(
-                    parseInt(storage.bids),
-                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
-                    exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
-                );
+            var new_post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair ${token_id_9} (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
 
-                const new_post_tx_carl_ft_balance = await getBalance(carl.pkh);
-                const new_post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+            const new_post_tx_carl_ft_balance = await getBalance(carl.pkh);
+            const new_post_tx_custody_ft_balance = await getBalance(bids_storage.address);
 
-                const new_expected_result = JSON.parse(`{
+            const new_expected_result = JSON.parse(`{
                     "prim":"Pair",
                     "args":[
                        [
@@ -2374,6 +2455,14 @@ describe('Put bid tests', async () => {
                        {
                           "int": "${qty}"
                        },
+                      {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
+                       },
                        {
                           "prim":"None"
                        },
@@ -2382,9 +2471,9 @@ describe('Put bid tests', async () => {
                        }
                     ]
                  }`);
-                assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
-                assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount))));
-                assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
+            assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
+            assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount))));
+            assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
     });
 });
@@ -2405,7 +2494,7 @@ describe('Put floor bid tests', async () => {
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids_storage.address);
 
             await bids.put_floor_bid({
-                argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                 as: bob.pkh,
             });
 
@@ -2426,6 +2515,14 @@ describe('Put floor bid tests', async () => {
                             "int": "${bid_amount}"
                         }, {
                             "int": "${qty}"
+                       },
+                       {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
                         }, {
                             "prim": "None"
                         }, {
@@ -2453,7 +2550,7 @@ describe('Put floor bid tests', async () => {
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_1, bids_storage.address);
 
             await bids.put_floor_bid({
-                argMichelson: `(Pair "${nft_2.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                argMichelson: `(Pair "${nft_2.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                 as: bob.pkh,
             });
 
@@ -2492,6 +2589,14 @@ describe('Put floor bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                   },
+                   {
                       "prim":"None"
                    },
                    {
@@ -2526,8 +2631,9 @@ describe('Put floor bid tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))`,
+                                                (Pair None
+                                                    (Pair None None)
+                                            ))))))))`,
                 as: bob.pkh,
             });
 
@@ -2583,6 +2689,14 @@ describe('Put floor bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                   },
+                   {
                       "prim":"None"
                    },
                    {
@@ -2619,8 +2733,9 @@ describe('Put floor bid tests', async () => {
                                 (Pair {}
                                     (Pair ${bid_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        )))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                                        ))))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -2648,6 +2763,14 @@ describe('Put floor bid tests', async () => {
                    },
                    {
                       "int": "${qty}"
+                   },
+                   {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
                    },
                    {
                       "prim":"None"
@@ -2683,8 +2806,9 @@ describe('Put floor bid tests', async () => {
                                 (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${bid_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        ))))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                                        )))))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -2722,6 +2846,14 @@ describe('Put floor bid tests', async () => {
                    },
                    {
                       "int": "${qty}"
+                   },
+                   {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
                    },
                    {
                       "prim":"None"
@@ -2758,8 +2890,9 @@ describe('Put floor bid tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair ${bid_amount}
                                         (Pair ${qty}
-                                            (Pair None None)
-                                        )))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                                        ))))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -2815,6 +2948,14 @@ describe('Put floor bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                   },
+                   {
                       "prim":"None"
                    },
                    {
@@ -2844,7 +2985,7 @@ describe('Put floor bid tests', async () => {
             const custody_ft_balance = await getFA12Balance(fa12_ft_3, bids_storage.address);
 
             await bids.put_floor_bid({
-                argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                 as: bob.pkh,
             });
 
@@ -2866,7 +3007,15 @@ describe('Put floor bid tests', async () => {
                             "int": "${bid_amount}"
                         }, {
                             "int": "${qty}"
-                        }, {
+                        },
+                       {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
+                       }, {
                             "prim": "None"
                         }, {
                             "prim": "None"
@@ -2893,7 +3042,7 @@ describe('Put floor bid tests', async () => {
             const custody_ft_balance = await getFA12Balance(fa12_ft_4, bids_storage.address);
 
             await bids.put_floor_bid({
-                argMichelson: `(Pair "${nft_2.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                argMichelson: `(Pair "${nft_2.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair { Pair "${carl.pkh}" ${payout_value}} (Pair { Pair "${daniel.pkh}" ${payout_value}} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                 as: bob.pkh,
             });
 
@@ -2932,6 +3081,14 @@ describe('Put floor bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                   },
+                   {
                       "prim":"None"
                    },
                    {
@@ -2966,8 +3123,9 @@ describe('Put floor bid tests', async () => {
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
                                             (Pair ${qty}
-                                                (Pair None None)
-                                            )))))))`,
+                                                (Pair None
+                                                    (Pair None None)
+                                            ))))))))`,
                 as: bob.pkh,
             });
 
@@ -3022,6 +3180,14 @@ describe('Put floor bid tests', async () => {
                       "int": "${qty}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                   },
+                   {
                       "prim":"None"
                    },
                    {
@@ -3041,7 +3207,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_pfb3")');
@@ -3051,7 +3217,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -3061,7 +3227,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -3069,12 +3235,12 @@ describe('Put floor bid tests', async () => {
 
         it('Put floor bid with wrong buy asset payload (XTZ) should fail', async () => {
             await expectToThrow(async () => {
-                    const bid_asset = mkFA12Asset(fa12_ft_0.address);
-                    await bids.put_floor_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
-                        as: bob.pkh,
-                        amount: `${bid_amount}utz`,
-                    });
+                const bid_asset = mkFA12Asset(fa12_ft_0.address);
+                await bids.put_floor_bid({
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
+                    as: bob.pkh,
+                    amount: `${bid_amount}utz`,
+                });
             }, '"WRONG_XTZ_PAYLOAD"');
         });
 
@@ -3082,9 +3248,9 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None None))))))))`,
-                        as: bob.pkh,
-                    });
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None (Pair None None)))))))))`,
+                    as: bob.pkh,
+                });
             }, '(Pair "InvalidCondition" "r_pfb0")');
         });
 
@@ -3092,9 +3258,9 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None None))))))))`,
-                        as: bob.pkh,
-                    });
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None (Pair None None)))))))))`,
+                    as: bob.pkh,
+                });
             }, '(Pair "InvalidCondition" "r_pfb2")');
         });
 
@@ -3102,7 +3268,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkXTZAsset();
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "BID_AMOUNT_MISMATCH" (Pair 0 1000000))');
@@ -3113,7 +3279,7 @@ describe('Put floor bid tests', async () => {
                 await expectToThrow(async () => {
                     const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
                     await bids.put_floor_bid({
-                        argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                        argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                         as: carl.pkh,
                     });
                 }, '(Pair "AssetNotFound" "ledger")');
@@ -3126,7 +3292,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
@@ -3136,7 +3302,7 @@ describe('Put floor bid tests', async () => {
             try {
                 const bid_asset = mkFungibleFA2Asset(fa2_ft_floor.address, token_id_0.toString());
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None None))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
             } catch (error) {
@@ -3148,7 +3314,7 @@ describe('Put floor bid tests', async () => {
             await expectToThrow(async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None None))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
             }, '"NotEnoughBalance"');
@@ -3158,7 +3324,7 @@ describe('Put floor bid tests', async () => {
             try {
                 const bid_asset = mkXTZAsset();
                 await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None None))))))))`,
+                    argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                     amount: "999999999999999utz",
                 });
@@ -3168,35 +3334,35 @@ describe('Put floor bid tests', async () => {
         });
 
         it('Put floor bid with bid that already exists should update it and succeed', async () => {
-                const bid_asset = mkXTZAsset();
-                const storage = await bids_storage.getStorage();
+            const bid_asset = mkXTZAsset();
+            const storage = await bids_storage.getStorage();
 
-                const carl_ft_balance = await getBalance(carl.pkh);
-                const custody_ft_balance = await getBalance(bids_storage.address);
+            const carl_ft_balance = await getBalance(carl.pkh);
+            const custody_ft_balance = await getBalance(bids_storage.address);
 
-                var bid = await getValueFromBigMap(
-                    parseInt(storage.floor_bids),
-                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
-                    exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
-                );
-                assert(bid == null);
+            var bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
+            assert(bid == null);
 
-                await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount/10} (Pair ${qty} (Pair None None))))))))`,
-                    as: carl.pkh,
-                    amount: `${bid_amount/10}utz`
-                });
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount / 10} (Pair ${qty} (Pair None (Pair None None)))))))))`,
+                as: carl.pkh,
+                amount: `${bid_amount / 10}utz`
+            });
 
-                var post_tx_bid = await getValueFromBigMap(
-                    parseInt(storage.floor_bids),
-                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
-                    exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
-                );
+            var post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
 
-                const post_tx_carl_ft_balance = await getBalance(carl.pkh);
-                const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+            const post_tx_carl_ft_balance = await getBalance(carl.pkh);
+            const post_tx_custody_ft_balance = await getBalance(bids_storage.address);
 
-                const expected_result = JSON.parse(`{
+            const expected_result = JSON.parse(`{
                     "prim":"Pair",
                     "args":[
                        [
@@ -3206,11 +3372,19 @@ describe('Put floor bid tests', async () => {
 
                        ],
                        {
-                          "int": "${bid_amount/10}"
+                          "int": "${bid_amount / 10}"
                        },
                        {
                           "int": "${qty}"
                        },
+                       {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
+                        },
                        {
                           "prim":"None"
                        },
@@ -3219,26 +3393,26 @@ describe('Put floor bid tests', async () => {
                        }
                     ]
                  }`);
-                assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-                assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount/10))));
-                assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount/10))));
+            assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
+            assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount / 10))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount / 10))));
 
-                await bids.put_floor_bid({
-                    argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None None))))))))`,
-                    as: carl.pkh,
-                    amount: `${bid_amount}utz`
-                });
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
+                as: carl.pkh,
+                amount: `${bid_amount}utz`
+            });
 
-                var new_post_tx_bid = await getValueFromBigMap(
-                    parseInt(storage.floor_bids),
-                    exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
-                    exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
-                );
+            var new_post_tx_bid = await getValueFromBigMap(
+                parseInt(storage.floor_bids),
+                exprMichelineToJson(`(Pair "${nft_1.address}" (Pair "${carl.pkh}" (Pair ${parseInt(XTZ)} 0x${bid_asset}))))`),
+                exprMichelineToJson(`(pair address (pair address (pair int bytes)))'`)
+            );
 
-                const new_post_tx_carl_ft_balance = await getBalance(carl.pkh);
-                const new_post_tx_custody_ft_balance = await getBalance(bids_storage.address);
+            const new_post_tx_carl_ft_balance = await getBalance(carl.pkh);
+            const new_post_tx_custody_ft_balance = await getBalance(bids_storage.address);
 
-                const new_expected_result = JSON.parse(`{
+            const new_expected_result = JSON.parse(`{
                     "prim":"Pair",
                     "args":[
                        [
@@ -3253,6 +3427,14 @@ describe('Put floor bid tests', async () => {
                        {
                           "int": "${qty}"
                        },
+                      {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
+                        },
                        {
                           "prim":"None"
                        },
@@ -3261,9 +3443,9 @@ describe('Put floor bid tests', async () => {
                        }
                     ]
                  }`);
-                assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
-                assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount))));
-                assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
+            assert(JSON.stringify(new_post_tx_bid) === JSON.stringify(new_expected_result));
+            assert(new_post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount))));
+            assert(new_post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount))));
         });
     });
 });
@@ -3290,7 +3472,7 @@ describe('Put bundle bid tests', async () => {
             const custody_ft_balance = await getFA2Balance(fa2_ft_floor, token_id_0, bids_storage.address);
 
             await bids.put_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                 as: bob.pkh,
             });
 
@@ -3310,6 +3492,14 @@ describe('Put bundle bid tests', async () => {
                         [],
                         [], {
                             "int": "${bid_amount}"
+                        },
+                        {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
                         }, {
                             "prim": "None"
                         }, {
@@ -3350,8 +3540,9 @@ describe('Put bundle bid tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}}
                                     (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
-                                            (Pair None None)
-                    ))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                    )))))))`,
                 as: bob.pkh,
             });
 
@@ -3386,6 +3577,14 @@ describe('Put bundle bid tests', async () => {
                    {
                       "int": "${bid_amount}"
                    },
+                  {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
                    {
                       "prim":"None"
                    },
@@ -3427,8 +3626,9 @@ describe('Put bundle bid tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
-                                            (Pair None None)
-                    ))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                    )))))))`,
                 as: bob.pkh,
             });
 
@@ -3480,6 +3680,14 @@ describe('Put bundle bid tests', async () => {
                    {
                       "int": "${bid_amount}"
                    },
+                  {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
                    {
                       "prim":"None"
                    },
@@ -3516,7 +3724,7 @@ describe('Put bundle bid tests', async () => {
             const custody_ft_balance = await getBalance(bids_storage.address);
 
             await bids.put_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -3542,6 +3750,14 @@ describe('Put bundle bid tests', async () => {
                    {
                       "int": "${bid_amount}"
                    },
+                  {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                    },
                    {
                       "prim":"None"
                    },
@@ -3582,8 +3798,9 @@ describe('Put bundle bid tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}}
                                     (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
-                                            (Pair None None)
-                    ))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                    )))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -3618,6 +3835,14 @@ describe('Put bundle bid tests', async () => {
                     }],
                    {
                       "int": "${bid_amount}"
+                   },
+                   {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
                    },
                    {
                       "prim":"None"
@@ -3660,8 +3885,9 @@ describe('Put bundle bid tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
-                                            (Pair None None)
-                    ))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                    )))))))`,
                 amount: `${bid_amount}utz`,
                 as: bob.pkh,
             });
@@ -3714,6 +3940,14 @@ describe('Put bundle bid tests', async () => {
                       "int": "${bid_amount}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                   },
+                   {
                       "prim":"None"
                    },
                    {
@@ -3749,7 +3983,7 @@ describe('Put bundle bid tests', async () => {
             const custody_ft_balance = await getFA12Balance(fa12_ft_3, bids_storage.address);
 
             await bids.put_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                 as: bob.pkh,
             });
 
@@ -3769,7 +4003,16 @@ describe('Put bundle bid tests', async () => {
                         [],
                         [], {
                             "int": "${bid_amount}"
-                        }, {
+                        },
+                       {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
+                       },
+                        {
                             "prim": "None"
                         }, {
                             "prim": "None"
@@ -3809,8 +4052,9 @@ describe('Put bundle bid tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}}
                                     (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
-                                            (Pair None None)
-                    ))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                    )))))))`,
                 as: bob.pkh,
             });
 
@@ -3844,6 +4088,14 @@ describe('Put bundle bid tests', async () => {
                     }],
                    {
                       "int": "${bid_amount}"
+                   },
+                   {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
                    },
                    {
                       "prim":"None"
@@ -3886,8 +4138,9 @@ describe('Put bundle bid tests', async () => {
                                 (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                     (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
                                         (Pair ${bid_amount}
-                                            (Pair None None)
-                    ))))))`,
+                                            (Pair None
+                                                (Pair None None)
+                    )))))))`,
                 as: bob.pkh,
             });
 
@@ -3939,6 +4192,14 @@ describe('Put bundle bid tests', async () => {
                       "int": "${bid_amount}"
                    },
                    {
+                      "prim": "Some",
+                      "args": [
+                        {
+                          "string": "1970-01-08T00:00:01Z"
+                        }
+                      ]
+                   },
+                   {
                       "prim":"None"
                    },
                    {
@@ -3962,7 +4223,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${XTZ} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${XTZ} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '"BUNDLE_CANT_BE_EMPTY"');
@@ -3978,7 +4239,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_pbb1")');
@@ -3994,7 +4255,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '"CANT_UNPACK_FA2_ASSET"');
@@ -4010,7 +4271,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '"CANT_UNPACK_FA12_ASSET"');
@@ -4026,7 +4287,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '"WRONG_XTZ_PAYLOAD"');
@@ -4042,7 +4303,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "InvalidCondition" "r_pbb0")');
@@ -4058,7 +4319,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '"INVALID_BUNDLE_ITEM_QTY"');
@@ -4074,7 +4335,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '(Pair "BID_AMOUNT_MISMATCH" (Pair 0 1000000))');
@@ -4091,7 +4352,7 @@ describe('Put bundle bid tests', async () => {
 
                     const bundle = mkPackedBundle(bundle_items);
                     await bids.put_bundle_bid({
-                        argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                        argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                         as: carl.pkh,
                     });
                 }, '(Pair "AssetNotFound" "ledger")');
@@ -4110,7 +4371,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: carl.pkh,
                 });
             }, '(Pair "AssetNotFound" "ledger")');
@@ -4127,7 +4388,7 @@ describe('Put bundle bid tests', async () => {
 
             try {
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             } catch (error) {
@@ -4145,7 +4406,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
             }, '"NotEnoughBalance"');
@@ -4161,7 +4422,7 @@ describe('Put bundle bid tests', async () => {
             const bundle = mkPackedBundle(bundle_items);
             try {
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 999999999999999 (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                     amount: "999999999999999utz"
                 });
@@ -4190,7 +4451,7 @@ describe('Put bundle bid tests', async () => {
 
                 const bundle = mkPackedBundle(bundle_items);
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: carl.pkh,
                 });
             }, '(Pair "MAX_BUNDLE_SIZE" 10)');
@@ -4201,7 +4462,7 @@ describe('Put bundle bid tests', async () => {
                 const bid_asset = mkFA12Asset(fa12_ft_0.address);
 
                 await bids.put_bundle_bid({
-                    argMichelson: `(Pair 0x1234 (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                    argMichelson: `(Pair 0x1234 (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: carl.pkh,
                 });
             }, '"CANT_UNPACK_BUNDLE"');
@@ -4228,8 +4489,8 @@ describe('Put bundle bid tests', async () => {
             assert(bid == null);
 
             await bids.put_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount / 10} (Pair None None)))))))`,
-                amount: `${bid_amount/10}utz`,
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount / 10} (Pair None (Pair None None))))))))`,
+                amount: `${bid_amount / 10}utz`,
                 as: carl.pkh,
             });
 
@@ -4256,6 +4517,14 @@ describe('Put bundle bid tests', async () => {
                           "int": "${bid_amount / 10}"
                        },
                        {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
+                       },
+                       {
                           "prim":"None"
                        },
                        {
@@ -4264,11 +4533,11 @@ describe('Put bundle bid tests', async () => {
                     ]
                  }`);
             assert(JSON.stringify(post_tx_bid) === JSON.stringify(expected_result));
-            assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount/10))));
-            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount/10))));
+            assert(post_tx_carl_ft_balance.isLessThan(carl_ft_balance.minus(BigNumber(bid_amount / 10))));
+            assert(post_tx_custody_ft_balance.isEqualTo(custody_ft_balance.plus(BigNumber(bid_amount / 10))));
 
             await bids.put_bundle_bid({
-                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None None)))))))`,
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                 amount: `${bid_amount}utz`,
                 as: carl.pkh,
             });
@@ -4293,6 +4562,14 @@ describe('Put bundle bid tests', async () => {
                        ],
                        {
                           "int": "${bid_amount}"
+                       },
+                       {
+                          "prim": "Some",
+                          "args": [
+                            {
+                              "string": "1970-01-08T00:00:01Z"
+                            }
+                          ]
                        },
                        {
                           "prim":"None"
@@ -4364,7 +4641,7 @@ describe('Accept bid tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4422,7 +4699,7 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = bid_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
@@ -4626,7 +4903,7 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = bid_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
@@ -4771,7 +5048,7 @@ describe('Accept bid tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -4830,7 +5107,7 @@ describe('Accept bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = bid_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
@@ -4995,7 +5272,7 @@ describe('Accept floor bid tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5053,7 +5330,7 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = bid_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
@@ -5256,7 +5533,7 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = bid_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance.isEqualTo(custody_ft_balance.minus(bid_amount)));
@@ -5265,7 +5542,7 @@ describe('Accept floor bid tests', async () => {
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties)));
             assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(payout * 2)));
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5333,7 +5610,7 @@ describe('Accept floor bid tests', async () => {
             assert(post_bob_ft_balance.isEqualTo(bob_ft_balance));
             assert(post_carl_ft_balance.isEqualTo(carl_ft_balance.plus(fee_value * 2 + royalties + payout * 2)));
             assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees).plus(fee_value * 2 + royalties + payout * 2)));
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5400,7 +5677,7 @@ describe('Accept floor bid tests', async () => {
             assert(post_bob_ft_balance == bob_ft_balance);
             assert(post_carl_ft_balance == carl_ft_balance);
             assert(post_daniel_ft_balance == daniel_ft_balance + protocol_fees);
-            assert(post_custody_nft_balance == custody_nft_balance  && post_custody_nft_balance == 0);
+            assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
             assert(post_alice_nft_balance == alice_nft_balance - 1);
             assert(post_bob_nft_balance == bob_nft_balance + 1);
 
@@ -5459,7 +5736,7 @@ describe('Accept floor bid tests', async () => {
             const protocol_fees = bid_amount * (fee / 10000);
             const royalties = bid_amount * (payout_value / 10000);
             const fee_value = bid_amount * (payout_value / 10000);
-            const rest = bid_amount - protocol_fees - royalties -  fee_value * 2;
+            const rest = bid_amount - protocol_fees - royalties - fee_value * 2;
             const payout = rest * (payout_value / 10000);
 
             assert(post_custody_ft_balance == custody_ft_balance - bid_amount);
@@ -6394,5 +6671,108 @@ describe('Cancel bundle bid tests', async () => {
             exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
         );
         assert(post_tx_bid == null);
+    });
+});
+
+describe('Expiry tests', async () => {
+
+    it('Accept an expired bid should fail', async () => {
+        await expectToThrow(async () => {
+
+            const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
+            const start_date = Date.now()/1000
+
+            await setMockupNow(start_date);
+            await bids.put_bid({
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${bid_asset}
+                                    (Pair {}
+                                        (Pair {}
+                                            (Pair ${bid_amount}
+                                                (Pair ${qty}
+                                                    (Pair None
+                                                        (Pair None None))))))))))`,
+                as: bob.pkh,
+            });
+
+            await setMockupNow(start_date + 907200);
+
+
+            await bids.accept_bid({
+                argMichelson: `
+                    (Pair "${nft.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${bid_asset} (Pair {} {}))))))`,
+                as: alice.pkh,
+            });
+        }, '"EXPIRED_BID"');
+    });
+
+    it('Accept an expired floor bid should fail', async () => {
+        await expectToThrow(async () => {
+
+            const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
+            const start_date = Date.now()/1000
+
+            await setMockupNow(start_date);
+
+            await bids.put_floor_bid({
+                argMichelson: `(Pair "${nft_1.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
+                as: bob.pkh,
+            });
+
+            await setMockupNow(start_date + 907200);
+
+
+            await bids.accept_floor_bid({
+                argMichelson: `
+                    (Pair "${nft_1.address}"
+                        (Pair ${token_id_0}
+                            (Pair "${bob.pkh}"
+                                (Pair ${parseInt(FA2)}
+                                    (Pair 0x${bid_asset}
+                                        (Pair {} {}))))))`,
+                as: alice.pkh,
+            });
+        }, '"EXPIRED_BID"');
+    });
+
+    it('Accept an expired bundle bid should fail', async () => {
+        await expectToThrow(async () => {
+            const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
+            const bundle_items = [
+                mkBundleItem(nft_2.address, token_id_1, 1),
+                mkBundleItem(nft_3.address, token_id_4, 1),
+            ];
+
+            const bundle = mkPackedBundle(bundle_items);
+
+            const start_date = Date.now()/1000
+
+            await setMockupNow(start_date);
+
+            await bids.put_bundle_bid({
+                argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
+                as: bob.pkh,
+            });
+
+            await setMockupNow(start_date + 907200);
+
+
+            await bids.accept_bundle_bid({
+                argMichelson: `
+                    (Pair 0x${bundle}
+                        (Pair "${bob.pkh}"
+                            (Pair ${parseInt(FA2)}
+                                (Pair 0x${bid_asset}
+                                    (Pair {} {})))))`,
+                as: alice.pkh,
+            });
+        }, '"EXPIRED_BID"');
     });
 });
