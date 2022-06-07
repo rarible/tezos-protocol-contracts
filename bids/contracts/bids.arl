@@ -65,6 +65,22 @@ entry set_max_bundle_items(smbi_number : nat) {
     max_bundle_items := smbi_number;
   }
 }
+
+entry set_transfer_manager(stm_contract : address) {
+  called by owner
+  effect {
+    transfer_manager := stm_contract;
+  }
+}
+
+entry set_default_bid_duration(dbd : duration) {
+  called by owner
+  effect {
+    default_bid_duration := dbd;
+  }
+}
+
+
 //----------------------------------------------------------------------------
 // Types
 //----------------------------------------------------------------------------
