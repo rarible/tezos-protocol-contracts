@@ -16,6 +16,7 @@ constant CANT_UNPACK_BUNDLE: string = "CANT_UNPACK_BUNDLE"
 constant MAX_BUNDLE_SIZE: string = "MAX_BUNDLE_SIZE"
 constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
 constant BUNDLE_CANT_BE_EMPTY: string = "BUNDLE_CANT_BE_EMPTY"
+constant EXPIRED_BID: string = "EXPIRED_BID"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -23,6 +24,7 @@ constant BUNDLE_CANT_BE_EMPTY: string = "BUNDLE_CANT_BE_EMPTY"
 
 variable owner_candidate : option<address> = none
 variable max_bundle_items : nat = 10
+variable default_bid_duration: duration = 1w
 
 entry declare_ownership(candidate : address) {
   called by owner
@@ -63,6 +65,22 @@ entry set_max_bundle_items(smbi_number : nat) {
     max_bundle_items := smbi_number;
   }
 }
+
+entry set_transfer_manager(stm_contract : address) {
+  called by owner
+  effect {
+    transfer_manager := stm_contract;
+  }
+}
+
+entry set_default_bid_duration(dbd : duration) {
+  called by owner
+  effect {
+    default_bid_duration := dbd;
+  }
+}
+
+
 //----------------------------------------------------------------------------
 // Types
 //----------------------------------------------------------------------------
@@ -110,6 +128,7 @@ record bid {
   bid_payouts : list<part>;
   bid_amount : nat;
   bid_asset_qty: nat;
+  bid_expiry_date : option<date>;
   bid_data_type  : option<bytes>;
   bid_data       : option<bytes>;
 }
@@ -124,6 +143,7 @@ record bundle_bid {
   bundle_bid_origin_fees : list<part>;
   bundle_bid_payouts : list<part>;
   bundle_bid_amount : nat;
+  bundle_bid_expiry_date : option<date>;
   bundle_bid_data_type  : option<bytes>;
   bundle_bid_data       : option<bytes>;
 }
@@ -147,6 +167,10 @@ entry put_bid(
       var current_bid = get_bid(pb_asset_contract, pb_asset_token_id, caller, pb_bid_type, pb_bid_asset);
       var is_xtz = (pb_bid_type = XTZ);
       var unpack_result = verify_and_unpack_asset(pb_bid_type, pb_bid_asset);
+
+      if(isnone(pb_bid.bid_expiry_date)) then (
+        pb_bid.bid_expiry_date := some((now + default_bid_duration));
+      );
 
       var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
@@ -205,6 +229,10 @@ entry put_floor_bid(
       var is_xtz = (pfb_bid_type = XTZ);
       var unpack_result = verify_and_unpack_asset(pfb_bid_type, pfb_bid_asset);
 
+      if(isnone(pfb_bid.bid_expiry_date)) then (
+        pfb_bid.bid_expiry_date := some((now + default_bid_duration));
+      );
+
       var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
           var current_bid_data = opt_get(current_bid);
@@ -261,6 +289,10 @@ entry put_bundle_bid(
       var bundle = verify_and_unpack_bundle(pbb_bundle);
       dorequire(length(bundle) <= max_bundle_items, (MAX_BUNDLE_SIZE, max_bundle_items));
 
+      if(isnone(pbb_bid.bundle_bid_expiry_date)) then (
+        pbb_bid.bundle_bid_expiry_date := some((now + default_bid_duration));
+      );
+
       var all_operations: list<process_transfer_param> = [];
       if(issome(current_bid)) then (
           var current_bid_data = opt_get(current_bid);
@@ -308,6 +340,10 @@ entry accept_bid(
     effect {
       var current_bid = require_some(get_bid(ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset), MISSING_BID);
 
+      if(issome(current_bid.bid_expiry_date)) then (
+        dorequire(opt_get(current_bid.bid_expiry_date) > now, EXPIRED_BID);
+      );
+
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
           [{
@@ -345,6 +381,10 @@ entry accept_floor_bid(
     effect {
       var current_bid = require_some(get_floor_bid(afb_asset_contract, afb_bidder, afb_bid_type, afb_bid_asset), MISSING_BID);
 
+      if(issome(current_bid.bid_expiry_date)) then (
+        dorequire(opt_get(current_bid.bid_expiry_date) > now, EXPIRED_BID);
+      );
+
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
           [{
@@ -381,6 +421,10 @@ entry accept_bundle_bid(
     effect {
       var current_bid = require_some(get_bundle_bid(abb_bundle, abb_bidder, abb_bid_type, abb_bid_asset), MISSING_BID);
       var unpacked_bundle = verify_and_unpack_bundle(abb_bundle);
+
+      if(issome(current_bid.bundle_bid_expiry_date)) then (
+        dorequire(opt_get(current_bid.bundle_bid_expiry_date) > now, EXPIRED_BID);
+      );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (

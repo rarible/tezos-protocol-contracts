@@ -103,6 +103,13 @@ entry set_fees_limit(sfl : nat) {
   }
 }
 
+entry set_transfer_manager(stm_contract : address) {
+  called by owner
+  effect {
+    transfer_manager := stm_contract;
+  }
+}
+
 //----------------------------------------------------------------------------
 // Types
 //----------------------------------------------------------------------------

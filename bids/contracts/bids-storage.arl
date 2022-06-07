@@ -88,6 +88,7 @@ record bid {
   bid_payouts : list<part>;
   bid_amount : nat;
   bid_asset_qty: nat;
+  bid_expiration_date : option<date>;
   bid_data_type  : option<bytes>;
   bid_data       : option<bytes>;
 }
@@ -96,6 +97,7 @@ record bundle_bid {
   bundle_bid_origin_fees : list<part>;
   bundle_bid_payouts : list<part>;
   bundle_bid_amount : nat;
+  bundle_bid_expiration_date : option<date>;
   bundle_bid_data_type  : option<bytes>;
   bundle_bid_data       : option<bytes>;
 }
