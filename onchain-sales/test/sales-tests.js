@@ -228,7 +228,6 @@ describe('(Transfer manager)Authorize Sales, and Sales storage contract tests', 
         assert(
             post_test_storage.authorized_contracts.includes(sales_storage.address) &&
             post_test_storage.authorized_contracts.includes(sales.address)
-
         );
 
     });
@@ -492,7 +491,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -508,7 +507,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -524,7 +523,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -540,7 +539,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -556,7 +555,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -572,7 +571,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -588,7 +587,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -604,7 +603,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -620,7 +619,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -636,7 +635,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
@@ -657,7 +656,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -667,7 +666,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -679,7 +678,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -692,7 +691,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -702,7 +701,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -714,7 +713,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -727,7 +726,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -737,7 +736,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -749,7 +748,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -762,7 +761,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{ key: '', value: '0x' }],
+                    itokenMetadata: [{key: '', value: '0x'}],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1523,7 +1522,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s4")');
+            }, '(Pair "InvalidCondition" "r_s3")');
         });
 
         it('Set sale with wrong buy asset payload (FA2) should fail', async () => {
@@ -1693,7 +1692,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s3")');
+            }, '(Pair "InvalidCondition" "r_s2")');
         });
 
         it('Set sale with max fees amount > max limit should fail', async () => {
@@ -1714,7 +1713,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s3")');
+            }, '(Pair "InvalidCondition" "r_s2")');
         });
 
         it('Set sale with max fees amount < protocol fees should fail', async () => {
@@ -1735,7 +1734,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s3")');
+            }, '(Pair "InvalidCondition" "r_s2")');
         });
 
         it('Set sale with max fees amount > protocol fees + origin fees should fail', async () => {
@@ -1756,28 +1755,77 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s3")');
+            }, '(Pair "InvalidCondition" "r_s2")');
         });
 
-        it('Set sale buying with a sale that already exists should fail', async () => {
-            await expectToThrow(async () => {
-                const sale_asset = mkFA12Asset(fa12_ft_1.address);
-                await sales.sell({
-                    argMichelson: `(Pair "${nft.address}"
-                    (Pair ${token_id_7}
-                        (Pair ${parseInt(FA12)}
-                            (Pair 0x${sale_asset}
-                                (Pair { Pair "${carl.pkh}" ${payout_value}}
-                                    (Pair { Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair ${sale_amount}
-                                            (Pair ${qty}
+        it('Set sale buying with a sale that already exists should update the previous order and succeed', async () => {
+            const sale_asset = mkFA12Asset(fa12_ft_1.address);
+            await sales.sell({
+                argMichelson: `(Pair "${nft.address}"
+                (Pair ${token_id_7}
+                    (Pair ${parseInt(FA12)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${sale_amount}
+                                        (Pair ${qty * 2}
+                                            (Pair None
                                                 (Pair None
-                                                    (Pair None
-                                                        (Pair ${max_fees}
-                                                            (Pair None None))))))))))))`,
-                    as: alice.pkh,
-                });
-            }, '(Pair "InvalidCondition" "r_s2")');
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
+                as: alice.pkh,
+            });
+            const storage = await sales_storage.getStorage();
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.sales),
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_7} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "int": "${qty * 2}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                    "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
+                }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
         });
     });
 });
@@ -2594,7 +2642,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb3")');
+            }, '(Pair "InvalidCondition" "r_sb2")');
         });
 
         it('Set bundle sale with wrong buy asset payload (FA2) should fail', async () => {
@@ -2817,7 +2865,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb2")');
+            }, '(Pair "InvalidCondition" "r_sb1")');
         });
 
         it('Set bundle sale with max fees > max fees limit should fail', async () => {
@@ -2842,7 +2890,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb2")');
+            }, '(Pair "InvalidCondition" "r_sb1")');
         });
 
         it('Set bundle sale with max fees < protocol fees should fail', async () => {
@@ -2867,7 +2915,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb2")');
+            }, '(Pair "InvalidCondition" "r_sb1")');
         });
 
         it('Set bundle sale with max fees < protocol fees + origin fees should fail', async () => {
@@ -2892,32 +2940,83 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb2")');
+            }, '(Pair "InvalidCondition" "r_sb1")');
         });
 
-        it('Set bundle sale buying with a sale that already exists should fail', async () => {
-            await expectToThrow(async () => {
-                const sale_asset = mkXTZAsset();
-                const bundle_items = [
-                    mkBundleItem(nft.address, token_id_1, 1),
-                    mkBundleItem(nft.address, token_id_4, 1),
-                ];
-                const bundle = mkPackedBundle(bundle_items);
-                await sales.sell_bundle({
-                    argMichelson: `(Pair 0x${bundle}
+        it('Set bundle sale buying with a sale that already exists should update the previous order and succeed', async () => {
+            const sale_asset = mkXTZAsset();
+            const bundle_items = [
+                mkBundleItem(nft.address, token_id_1, 1),
+                mkBundleItem(nft.address, token_id_4, 1),
+            ];
+            const bundle = mkPackedBundle(bundle_items);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle}
                             (Pair ${parseInt(XTZ)}
                                 (Pair 0x${sale_asset}
-                                    (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
-                                        (Pair { Pair "${carl.pkh}" ${payout_value}; Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                        (Pair { Pair "${daniel.pkh}" ${payout_value}}
                                             (Pair ${sale_amount}
                                                 (Pair None
                                                     (Pair None
-                                                        (Pair ${qty}
+                                                        (Pair ${qty * 2}
                                                             (Pair ${max_fees}
                                                                 (Pair None None)))))))))))))`,
-                    as: alice.pkh,
-                });
-            }, '(Pair "InvalidCondition" "r_sb1")');
+                as: alice.pkh,
+            });
+
+            const storage = await sales_storage.getStorage();
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "int": "${qty * 2}"
+                   },
+                   {
+                    "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
+                }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+
         });
     });
 });
@@ -4895,9 +4994,9 @@ describe('Miscelleanous tests', async () => {
     });
 
     it('Buy with multiple items should succeed', async () => {
-            const sale_asset = mkXTZAsset();
-            await sales.buy({
-                argMichelson: `
+        const sale_asset = mkXTZAsset();
+        await sales.buy({
+            argMichelson: `
                     (Pair "${nft.address}"
                         (Pair ${token_id_0}
                             (Pair "${alice.pkh}"
@@ -4905,9 +5004,9 @@ describe('Miscelleanous tests', async () => {
                                     (Pair 0x${sale_asset}
                                         (Pair 2
                                             (Pair {} {})))))))`,
-                as: bob.pkh,
-                amount: `${sale_amount*2}utz`,
-            });
+            as: bob.pkh,
+            amount: `${sale_amount * 2}utz`,
+        });
         const post_storage = await sales_storage.getStorage();
         const post_buy_sale = await getValueFromBigMap(
             parseInt(post_storage.sales),
@@ -5072,7 +5171,7 @@ describe('Miscelleanous tests', async () => {
         const bundle = mkPackedBundle(bundle_items);
         await sales.buy_bundle({
             argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair 2 (Pair {} {}))))))`,
-            amount: `${sale_amount*2}utz`,
+            amount: `${sale_amount * 2}utz`,
             as: bob.pkh
         });
         const post_storage = await sales_storage.getStorage();
