@@ -173,12 +173,11 @@ entry sell (
     require {
         r_s0: s_sale.sale_amount > 0;
         r_s1: s_sale.sale_asset_qty > 0;
-        r_s2: sale_exists(s_asset_contract, s_asset_token_id, caller, s_sale_type, s_sale_asset) = false;
-        r_s3: s_sale.sale_max_fees_base_boint > 0
+        r_s2: s_sale.sale_max_fees_base_boint > 0
                 and s_sale.sale_max_fees_base_boint <= max_fees_limit
                 and s_sale.sale_max_fees_base_boint > protocol_fee
                 and process_sum_fees(s_sale.sale_origin_fees) + protocol_fee <= s_sale.sale_max_fees_base_boint;
-        r_s4: s_sale_type = FA2
+        r_s3: s_sale_type = FA2
             or
             s_sale_type = FA12
             or
@@ -215,12 +214,11 @@ entry sell_bundle (
   sb_sale : bundle_sale) {
     require {
         r_sb0: sb_sale.bundle_sale_amount > 0;
-        r_sb1: bundle_sale_exists(sb_bundle, caller, sb_sale_type, sb_sale_asset) = false;
-        r_sb2: sb_sale.bundle_sale_max_fees_base_boint > 0
+        r_sb1: sb_sale.bundle_sale_max_fees_base_boint > 0
               and sb_sale.bundle_sale_max_fees_base_boint <= max_fees_limit
               and sb_sale.bundle_sale_max_fees_base_boint > protocol_fee
               and process_sum_fees(sb_sale.bundle_sale_origin_fees) + protocol_fee <= sb_sale.bundle_sale_max_fees_base_boint;
-        r_sb3: sb_sale_type = FA2
+        r_sb2: sb_sale_type = FA2
             or
             sb_sale_type = FA12
             or
