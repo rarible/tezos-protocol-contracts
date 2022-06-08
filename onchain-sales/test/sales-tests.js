@@ -1762,7 +1762,74 @@ describe('Set sales tests', async () => {
             const sale_asset = mkFA12Asset(fa12_ft_1.address);
             await sales.sell({
                 argMichelson: `(Pair "${nft.address}"
-                (Pair ${token_id_7}
+                (Pair ${token_id_9}
+                    (Pair ${parseInt(FA12)}
+                        (Pair 0x${sale_asset}
+                            (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                    (Pair ${sale_amount}
+                                        (Pair ${qty}
+                                            (Pair None
+                                                (Pair None
+                                                    (Pair ${max_fees}
+                                                        (Pair None None))))))))))))`,
+                as: alice.pkh,
+            });
+            const storage = await sales_storage.getStorage();
+
+            var post_tx_sale = await getValueFromBigMap(
+                parseInt(storage.sales),
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))))`),
+                exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
+            );
+
+            const expected_result = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                    "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
+                }
+                ]
+             }`);
+            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+
+            await sales.sell({
+                argMichelson: `(Pair "${nft.address}"
+                (Pair ${token_id_9}
                     (Pair ${parseInt(FA12)}
                         (Pair 0x${sale_asset}
                             (Pair { Pair "${carl.pkh}" ${payout_value}}
@@ -1775,15 +1842,15 @@ describe('Set sales tests', async () => {
                                                         (Pair None None))))))))))))`,
                 as: alice.pkh,
             });
-            const storage = await sales_storage.getStorage();
+            const post_storage = await sales_storage.getStorage();
 
-            var post_tx_sale = await getValueFromBigMap(
-                parseInt(storage.sales),
-                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_7} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))))`),
+            var post_update_sale = await getValueFromBigMap(
+                parseInt(post_storage.sales),
+                exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_9} (Pair "${alice.pkh}" (Pair ${parseInt(FA12)} 0x${sale_asset})))))`),
                 exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
             );
 
-            const expected_result = JSON.parse(`{
+            const post_update_expected_result = JSON.parse(`{
                 "prim":"Pair",
                 "args":[
                     [{
@@ -1825,7 +1892,7 @@ describe('Set sales tests', async () => {
                 }
                 ]
              }`);
-            assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
+            assert(JSON.stringify(post_update_sale) === JSON.stringify(post_update_expected_result));
         });
     });
 });
@@ -2946,10 +3013,77 @@ describe('Set bundle sales tests', async () => {
         it('Set bundle sale buying with a sale that already exists should update the previous order and succeed', async () => {
             const sale_asset = mkXTZAsset();
             const bundle_items = [
-                mkBundleItem(nft.address, token_id_1, 1),
-                mkBundleItem(nft.address, token_id_4, 1),
+                mkBundleItem(nft.address, token_id_9, 1),
+                mkBundleItem(nft.address, token_id_9, 1),
             ];
             const bundle = mkPackedBundle(bundle_items);
+            await sales.sell_bundle({
+                argMichelson: `(Pair 0x${bundle}
+                            (Pair ${parseInt(XTZ)}
+                                (Pair 0x${sale_asset}
+                                    (Pair { Pair "${carl.pkh}" ${payout_value}}
+                                        (Pair { Pair "${daniel.pkh}" ${payout_value}}
+                                            (Pair ${sale_amount}
+                                                (Pair None
+                                                    (Pair None
+                                                        (Pair ${qty}
+                                                            (Pair ${max_fees}
+                                                                (Pair None None)))))))))))))`,
+                as: alice.pkh,
+            });
+
+            const storage = await sales_storage.getStorage();
+
+            var tx_sale = await getValueFromBigMap(
+                parseInt(storage.bundle_sales),
+                exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
+                exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
+            );
+
+            const expected_tx = JSON.parse(`{
+                "prim":"Pair",
+                "args":[
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${carl.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                    [{
+                        "prim": "Pair",
+                        "args": [{
+                            "string": "${daniel.pkh}"
+                        }, {
+                            "int": "${payout_value}"
+                        }]
+                    }],
+                   {
+                      "int": "${sale_amount}"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "prim":"None"
+                   },
+                   {
+                      "int": "${qty}"
+                   },
+                   {
+                    "int": "${max_fees}"
+                },
+                {
+                   "prim":"None"
+                },
+                {
+                   "prim":"None"
+                }
+                ]
+             }`);
+            assert(JSON.stringify(tx_sale) === JSON.stringify(expected_tx));
+
             await sales.sell_bundle({
                 argMichelson: `(Pair 0x${bundle}
                             (Pair ${parseInt(XTZ)}
@@ -2965,10 +3099,10 @@ describe('Set bundle sales tests', async () => {
                 as: alice.pkh,
             });
 
-            const storage = await sales_storage.getStorage();
+            const storage_post_tx = await sales_storage.getStorage();
 
             var post_tx_sale = await getValueFromBigMap(
-                parseInt(storage.bundle_sales),
+                parseInt(storage_post_tx.bundle_sales),
                 exprMichelineToJson(`(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))`),
                 exprMichelineToJson(`(pair bytes (pair address (pair int bytes)))`)
             );
@@ -3016,7 +3150,6 @@ describe('Set bundle sales tests', async () => {
                 ]
              }`);
             assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
-
         });
     });
 });
