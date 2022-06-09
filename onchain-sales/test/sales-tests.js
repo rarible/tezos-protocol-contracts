@@ -4972,13 +4972,16 @@ describe('Miscelleanous tests', async () => {
     it('Buy with partial fill should succeed', async () => {
         const storage = await sales_storage.getStorage();
         const sale_asset = mkXTZAsset();
-        const test_qty = 3;
+        const buy_qty = 3;
+        const initial_qty = 5;
+
         var sale = await getValueFromBigMap(
             parseInt(storage.sales),
             exprMichelineToJson(`(Pair "${nft.address}" (Pair ${token_id_0} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} 0x${sale_asset})))))`),
             exprMichelineToJson(`(pair address (pair nat (pair address (pair int bytes))))'`)
         );
         assert(sale == null);
+
         await sales.sell({
             argMichelson: `(Pair "${nft.address}"
             (Pair ${token_id_0}
@@ -4987,13 +4990,23 @@ describe('Miscelleanous tests', async () => {
                         (Pair {}
                             (Pair {}
                                 (Pair ${sale_amount}
-                                    (Pair ${test_qty}
+                                    (Pair ${initial_qty}
                                         (Pair None
                                             (Pair None
                                                 (Pair ${max_fees}
                                                     (Pair None None))))))))))))`,
             as: alice.pkh,
         });
+
+        const custody_ft_balance = await getBalance(sales_storage.address);
+        const sales_ft_balance = await getBalance(sales.address);
+        const alice_ft_balance = await getBalance(alice.pkh);
+        const bob_ft_balance = await getBalance(bob.pkh);
+        const carl_ft_balance = await getBalance(carl.pkh);
+        const daniel_ft_balance = await getBalance(daniel.pkh);
+        const custody_nft_balance = await getFA2Balance(nft, token_id_0, sales_storage.address);
+        const alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
+        const bob_nft_balance = await getFA2Balance(nft, token_id_0, bob.pkh);
 
         var post_tx_sale = await getValueFromBigMap(
             parseInt(storage.sales),
@@ -5014,7 +5027,7 @@ describe('Miscelleanous tests', async () => {
                     "int": "${sale_amount}"
                 },
                 {
-                    "int": "${test_qty}"
+                    "int": "${initial_qty}"
                 },
                 {
                     "prim":"None"
@@ -5042,10 +5055,10 @@ describe('Miscelleanous tests', async () => {
                         (Pair "${alice.pkh}"
                             (Pair ${parseInt(XTZ)}
                                 (Pair 0x${sale_asset}
-                                    (Pair 1
+                                    (Pair ${buy_qty}
                                         (Pair {} {})))))))`,
             as: bob.pkh,
-            amount: `${sale_amount}utz`,
+            amount: `${sale_amount * buy_qty}utz`,
         });
 
         const post_storage = await sales_storage.getStorage();
@@ -5068,7 +5081,7 @@ describe('Miscelleanous tests', async () => {
                     "int": "${sale_amount}"
                 },
                 {
-                    "int": "${test_qty - 1}"
+                    "int": "${initial_qty - buy_qty}"
                 },
                 {
                     "prim":"None"
@@ -5088,6 +5101,29 @@ describe('Miscelleanous tests', async () => {
             ]
             }`);
         assert(JSON.stringify(post_buy_sale) === JSON.stringify(post_buy_result));
+
+        const post_custody_ft_balance = await getBalance(sales_storage.address);
+        const post_sales_ft_balance = await getBalance(sales.address);
+        const post_alice_ft_balance = await getBalance(alice.pkh);
+        const post_bob_ft_balance = await getBalance(bob.pkh);
+        const post_carl_ft_balance = await getBalance(carl.pkh);
+        const post_daniel_ft_balance = await getBalance(daniel.pkh);
+        const post_custody_nft_balance = await getFA2Balance(nft, token_id_0, sales_storage.address);
+        const post_alice_nft_balance = await getFA2Balance(nft, token_id_0, alice.pkh);
+        const post_bob_nft_balance = await getFA2Balance(nft, token_id_0, bob.pkh);
+
+        const protocol_fees = sale_amount * buy_qty * (fee / 10000);
+        const rest = sale_amount * buy_qty - protocol_fees;
+
+        assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
+        assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
+        assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
+        assert(post_bob_ft_balance.isLessThan(bob_ft_balance - sale_amount * buy_qty));
+        assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
+        assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees)));
+        assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
+        assert(post_alice_nft_balance == alice_nft_balance - buy_qty);
+        assert(post_bob_nft_balance == bob_nft_balance + buy_qty);
     });
 
     it('Buy with amount = 0 should fail', async () => {
@@ -5158,7 +5194,8 @@ describe('Miscelleanous tests', async () => {
         ];
         const bundle = mkPackedBundle(bundle_items);
 
-        const test_qty = 3;
+        const buy_qty = 3;
+        const initial_qty = 5;
 
         await sales.sell_bundle({
             argMichelson: `(Pair 0x${bundle}
@@ -5169,7 +5206,7 @@ describe('Miscelleanous tests', async () => {
                                 (Pair ${sale_amount}
                                     (Pair None
                                         (Pair None
-                                            (Pair ${test_qty}
+                                            (Pair ${initial_qty}
                                                 (Pair ${max_fees}
                                                     (Pair None None)))))))))))`,
             as: alice.pkh,
@@ -5200,7 +5237,7 @@ describe('Miscelleanous tests', async () => {
                     "prim":"None"
                 },
                 {
-                    "int": "${test_qty}"
+                    "int": "${initial_qty}"
                 },
                 {
                     "int": "${max_fees}"
@@ -5215,9 +5252,21 @@ describe('Miscelleanous tests', async () => {
         }`);
         assert(JSON.stringify(post_tx_sale) === JSON.stringify(expected_result));
 
+        const custody_ft_balance = await getBalance(sales_storage.address);
+        const sales_ft_balance = await getBalance(sales.address);
+        const alice_ft_balance = await getBalance(alice.pkh);
+        const bob_ft_balance = await getBalance(bob.pkh);
+        const carl_ft_balance = await getBalance(carl.pkh);
+        const daniel_ft_balance = await getBalance(daniel.pkh);
+        const custody_nft_balance = await getFA2Balance(nft, token_id_3, sales_storage.address);
+        const alice_nft_balance_0 = await getFA2Balance(nft, token_id_0, alice.pkh);
+        const alice_nft_balance_1 = await getFA2Balance(nft, token_id_3, alice.pkh);
+        const bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
+        const bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
+
         await sales.buy_bundle({
-            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair 1 (Pair {} {}))))))`,
-            amount: `${sale_amount}utz`,
+            argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair ${buy_qty} (Pair {} {}))))))`,
+            amount: `${sale_amount * buy_qty}utz`,
             as: bob.pkh
         });
 
@@ -5247,7 +5296,7 @@ describe('Miscelleanous tests', async () => {
                     "prim":"None"
                 },
                 {
-                    "int": "${test_qty - 1}"
+                    "int": "${initial_qty - buy_qty}"
                 },
                 {
                     "int": "${max_fees}"
@@ -5261,6 +5310,33 @@ describe('Miscelleanous tests', async () => {
             ]
         }`);
         assert(JSON.stringify(post_buy_sale) === JSON.stringify(post_buy_result));
+
+        const post_custody_ft_balance = await getBalance(sales_storage.address);
+        const post_sales_ft_balance = await getBalance(sales.address);
+        const post_alice_ft_balance = await getBalance(alice.pkh);
+        const post_bob_ft_balance = await getBalance(bob.pkh);
+        const post_carl_ft_balance = await getBalance(carl.pkh);
+        const post_daniel_ft_balance = await getBalance(daniel.pkh);
+        const post_custody_nft_balance = await getFA2Balance(nft, token_id_3, sales_storage.address);
+        const post_alice_nft_balance_0 = await getFA2Balance(nft, token_id_0, alice.pkh);
+        const post_alice_nft_balance_1 = await getFA2Balance(nft, token_id_3, alice.pkh);
+        const post_bob_nft_balance_0 = await getFA2Balance(nft, token_id_0, bob.pkh);
+        const post_bob_nft_balance_1 = await getFA2Balance(nft, token_id_3, bob.pkh);
+
+        const protocol_fees = sale_amount * buy_qty * (fee / 10000);
+        const rest = sale_amount * buy_qty - protocol_fees;
+
+        assert(post_custody_ft_balance.isEqualTo(custody_ft_balance));
+        assert(post_sales_ft_balance.isEqualTo(sales_ft_balance));
+        assert(post_alice_ft_balance.isEqualTo(alice_ft_balance.plus(rest)));
+        assert(post_bob_ft_balance.isLessThan(bob_ft_balance - sale_amount * buy_qty));
+        assert(post_carl_ft_balance.isEqualTo(carl_ft_balance));
+        assert(post_daniel_ft_balance.isEqualTo(daniel_ft_balance.plus(protocol_fees)));
+        assert(post_custody_nft_balance == custody_nft_balance && post_custody_nft_balance == 0);
+        assert(post_alice_nft_balance_0 == alice_nft_balance_0 - 1);
+        assert(post_alice_nft_balance_1 == alice_nft_balance_1 - 1);
+        assert(post_bob_nft_balance_0 == bob_nft_balance_0 + 1);
+        assert(post_bob_nft_balance_1 == bob_nft_balance_1 + 1);
     });
 
     it('Buy bundle with qty = 0 should fail', async () => {

@@ -286,7 +286,7 @@ entry buy(
           [{
             bundle_item_contract = b_asset_contract;
             bundle_item_id = b_asset_token_id ;
-            bundle_item_qty = current_sale.sale_asset_qty
+            bundle_item_qty = b_amount
           }],
           b_seller,
           caller,
@@ -354,7 +354,7 @@ entry buy_bundle(
           unpacked_bundle,
           bb_seller,
           caller,
-          current_sale.bundle_sale_amount,
+          current_sale.bundle_sale_amount * bb_amount,
           bb_sale_type,
           bb_sale_asset,
           caller,
