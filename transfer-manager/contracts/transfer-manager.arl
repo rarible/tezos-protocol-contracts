@@ -5,22 +5,22 @@ archetype transfer_manager(
 )
 with metadata ""
 
-constant MISSING_ASSET_ID: string = "MISSING_ASSET_ID"
-constant MISSING_ASSET_CONTRACT: string = "MISSING_ASSET_CONTRACT"
-constant ROYALTIES_TOO_HIGH: string = "ROYALTIES_TOO_HIGH"
-constant TOTAL_AMOUNT_NEGATIVE: string = "TOTAL_AMOUNT_NEGATIVE"
-constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
-constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
-constant NOT_AUTHORIZED: string = "NOT_AUTHORIZED"
+constant MISSING_ASSET_ID       : string = "MISSING_ASSET_ID"
+constant MISSING_ASSET_CONTRACT : string = "MISSING_ASSET_CONTRACT"
+constant ROYALTIES_TOO_HIGH     : string = "ROYALTIES_TOO_HIGH"
+constant TOTAL_AMOUNT_NEGATIVE  : string = "TOTAL_AMOUNT_NEGATIVE"
+constant CANT_UNPACK_FA2_ASSET  : string = "CANT_UNPACK_FA2_ASSET"
+constant CANT_UNPACK_FA12_ASSET : string = "CANT_UNPACK_FA12_ASSET"
+constant NOT_AUTHORIZED         : string = "NOT_AUTHORIZED"
 
-variable fee_receivers   : map<address, address> = []
+variable fee_receivers          : map<address, address> = []
 variable authorized_contracts   : set<address> = []
 
 function get_fee_receiver(gfr_token : option<address>) : address {
   return
     match gfr_token with
     | some (v) ->
-        match fee_receivers.getopt(v) with
+        match fee_receivers[v] with
         | some (wallet) -> wallet
         | none -> default_fee_receiver
         end
@@ -64,7 +64,7 @@ entry revoke_contract(ac_contract : address) {
 }
 
 function isAuthorized() : bool {
-  if (authorized_contracts.contains(caller) or caller = selfaddress)
+  if (authorized_contracts.contains(caller) or caller = self_address)
   then return true
   else fail(NOT_AUTHORIZED)
 }
@@ -115,7 +115,7 @@ record fees {
 }
 
 function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part> {
-    return match callview<list<part>>(
+    return match call_view<list<part>>(
         royalties_provider,
         "get_royalties",
         (
@@ -125,7 +125,7 @@ function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part
     )
     with
         | some(v) -> v
-        | none -> emptylist<part>()
+        | none -> make_list<part>([])
     end
 }
 
@@ -156,7 +156,7 @@ entry manage_transfers(
       var ft_operations: list<process_transfer_param> = [];
 
       if (transferred > 0tz and mt_ft_asset_type = XTZ) then (
-        ft_origin := selfaddress;
+        ft_origin := self_address;
       );
 
 
@@ -242,7 +242,7 @@ entry manage_transfers(
       total_after_all_fees -= all_payouts[0];
       ft_operations := all_payouts[1];
 
-      dorequire(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
+      do_require(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
 
       //Now that we have processed all the fees, we need to process the operations
       //transfer protocol fees
@@ -267,11 +267,14 @@ entry manage_transfers(
         });
       );
 
-      if(ft_origin = mt_rarible_custody) then (
-        rarible_custody_operations.concat(ft_operations);
-      ) else (
-        transfer_manager_operations.concat(ft_operations);
-      );
+      // TODO: use concat when it will by available
+      for ft_op in ft_operations do
+        if(ft_origin = mt_rarible_custody) then (
+          rarible_custody_operations.prepend(ft_op);
+        ) else (
+          transfer_manager_operations.prepend(ft_op);
+        )
+      done;
 
       for pt_transfer in transfer_manager_operations do
           match pt_transfer.ptp_asset_type with
@@ -358,7 +361,7 @@ function process_royalties(
     var rest_royalties = process_fees(pr_buy_asset, pr_buy_asset_type, pr_amount, royalties_fees, pr_from, pr_operations);
     var royalties = rest_royalties[0];
     var transactions = rest_royalties[1];
-    dorequire((royalties / pr_amount) < 0.5 , ROYALTIES_TOO_HIGH);
+    do_require((royalties / pr_amount) < 0.5 , ROYALTIES_TOO_HIGH);
     return ((royalties, transactions))
 }
 
