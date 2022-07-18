@@ -4,6 +4,7 @@ archetype sales_storage(
 with metadata ""
 
 constant MISSING_SALES_CONTRACT: string = "MISSING_SALES_CONTRACT"
+constant MISSING_CANDIDATE: string = "MISSING_CANDIDATE"
 constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
 constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
 
@@ -52,9 +53,14 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    candidate ?is owner_candidate otherwise "MISSING_CANDIDATE"
+  }
+  require {
+    r0: caller = candidate otherwise "INVALID_CALLER"
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := candidate;
     owner_candidate := none
   }
 }
@@ -130,9 +136,14 @@ entry set_sale(
   ss_sale_type: asset_type,
   ss_sale_asset: bytes,
   ss_sale: sale) {
-  called by require_some(sales_contract, MISSING_SALES_CONTRACT)
+  constant {
+    authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
+  }
+  require {
+    r_ss0: caller = authorized_contract otherwise "INVALID_CALLER"
+  }
   effect {
-    sales.addupdate(
+    sales.add_update(
       (
         ss_asset_contract,
         ss_asset_token_id,
@@ -153,9 +164,14 @@ entry set_bundle_sale(
   sbs_sale_type: asset_type,
   sbs_sale_asset: bytes,
   sbs_sale: bundle_sale) {
-  called by require_some(sales_contract, MISSING_SALES_CONTRACT)
+  constant {
+    authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
+  }
+  require {
+    r_sbs0: caller = authorized_contract otherwise "INVALID_CALLER"
+  }
   effect {
-    bundle_sales.addupdate(
+    bundle_sales.add_update(
       (
         sbs_bundle,
         sbs_seller,
@@ -175,7 +191,12 @@ entry remove_sale(
   rs_seller: address,
   rs_sale_type: asset_type,
   rs_sale_asset: bytes) {
-  called by require_some(sales_contract, MISSING_SALES_CONTRACT)
+  constant {
+    authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
+  }
+  require {
+    r_rs0: caller = authorized_contract otherwise "INVALID_CALLER"
+  }
   effect {
     sales.remove((rs_asset_contract, rs_asset_token_id, rs_seller, rs_sale_type, rs_sale_asset));
   }
@@ -186,8 +207,13 @@ entry remove_bundle_sale(
   rbs_seller: address,
   rbs_sale_type: asset_type,
   rbs_sale_asset: bytes) {
-  called by require_some(sales_contract, MISSING_SALES_CONTRACT)
-  effect {
+  constant {
+    authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
+  }
+  require {
+    r_rbs0: caller = authorized_contract otherwise "INVALID_CALLER"
+  }
+    effect {
     bundle_sales.remove((rbs_bundle, rbs_seller, rbs_sale_type, rbs_sale_asset));
   }
 }
