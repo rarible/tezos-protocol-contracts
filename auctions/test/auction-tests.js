@@ -663,9 +663,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_0, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_0} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -679,9 +677,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_1, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_1} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -695,9 +691,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_2, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_2} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -711,9 +705,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_3, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_3} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -727,9 +719,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_4, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_4} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -743,9 +733,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_5, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_5} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -759,9 +747,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_6, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_6} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -775,9 +761,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_7, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_7} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -791,9 +775,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_8, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_8} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -807,9 +789,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_9, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_9} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
         });

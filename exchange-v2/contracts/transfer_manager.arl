@@ -372,6 +372,21 @@ function doTransfersWithFees(
     return ((totalAmount, ops))
 }
 
+function get_option_u (input : option<contract<unit>>, error : string) : contract<unit> {
+  const res ?= input : error;
+  return res
+}
+
+function get_option_fa12 (input : option<contract<address * address * nat>>, error : string) : contract<address * address * nat> {
+  const res ?= input : error;
+  return res
+}
+
+function get_option_fa2 (input : option<contract<list<address * list<address * nat * nat>>>>, error : string) : contract<list<address * list<address * nat * nat>>> {
+  const res ?= input : error;
+  return res
+}
+
 entry do_transfers(
   order_left        : order,
   order_right       : order,
@@ -435,25 +450,26 @@ entry do_transfers(
           begin
             match x[1] with
              | hd::tail -> left<list<operation>>((
-              (prepend(x[0],
+              prepend(x[0],
                 match hd with
                 | XTZ_ARG(amount, %to) ->
-                  mkoperation(amount, address_to_contract<unit>(%to), ())
+                  make_operation(amount, get_option_u(address_to_contract<unit>(%to), "NOT_FOUND"), Unit)
                 | FA_1_2_ARG(c, %from, %to, amount) ->
-                  mkoperation(0tz, get_entrypoint<address * address * nat>(("%transfer", c, "ENTRY_FA_1_2_NOT_FOUND"), (%from, %to, amount)))
+                  make_operation(0tz, get_option_fa12 (get_entrypoint<address * address * nat>("%transfer", c), "ENTRY_FA_1_2_NOT_FOUND"), (%from, %to, amount))
                 | FA_2_ARG(c, txs) ->
-                  mkoperation(0tz, get_entrypoint<list<address * list<address * nat * nat>>>(("%transfer", c, "ENTRY_FA_2_NOT_FOUND"), txs))
-                end)), tail))
+                  make_operation(0tz, get_option_fa2 (get_entrypoint<list<address * list<address * nat * nat>>>("%transfer", c), "ENTRY_FA_2_NOT_FOUND"), txs)
+                end), tail))
              | [] -> right<list<operation> * list<transfer_arg>>(x[0])
             end
           end)
       );
 
-      var lambdaops = apply_lambda(mkops, transfer_args);
+      // var mkops = lambda<list<operation>>((p : list<transfer_arg> * unit) -> make_list<operation>([]));
+
+      const lambdaops = apply_lambda(mkops, transfer_args);
 
       const transfer_proxy_addr ?= transfer_proxy : NOT_FOUND;
       transfer transferred to transfer_proxy_addr call do_transfers<lambda<unit,list<operation>>>(lambdaops);
       do_require(operations.length() > 0, NO_OPERATION_TO_SEND)
     }
 }
-

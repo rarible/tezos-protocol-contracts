@@ -680,160 +680,140 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_0, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_0} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_1, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_1} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_2, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_2} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_3, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_3} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_4, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_4} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_5, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_5} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_6, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_6} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_7, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_7} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_8, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_8} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_9, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_9} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
 
@@ -842,160 +822,140 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_0, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_0} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_1, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_1} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_2, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_2} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_3, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_3} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_4, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_4} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_5, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_5} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_6, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_6} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_7, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_7} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_8, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_8} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft_floor.mint({
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_fa2_ft_amount,
                     iroyalties: [],
                 },
                 as: alice.pkh,
             });
             await fa2_ft_floor.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_9, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_9} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
         });
@@ -1007,7 +967,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1017,7 +977,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1029,7 +989,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1042,7 +1002,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1052,7 +1012,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -1064,7 +1024,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1077,7 +1037,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1087,7 +1047,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1099,7 +1059,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1112,7 +1072,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1122,7 +1082,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1132,7 +1092,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1144,7 +1104,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1157,7 +1117,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1167,7 +1127,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -1179,7 +1139,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1192,7 +1152,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1202,7 +1162,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1214,7 +1174,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1227,7 +1187,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1237,7 +1197,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1247,7 +1207,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1259,7 +1219,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1272,7 +1232,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1282,7 +1242,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -1294,7 +1254,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1307,7 +1267,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1317,7 +1277,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1329,7 +1289,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1342,7 +1302,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1352,7 +1312,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_0,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1362,7 +1322,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_1,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1374,7 +1334,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_2,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1387,7 +1347,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_3,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1397,7 +1357,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_4,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value]
@@ -1409,7 +1369,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_5,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1422,7 +1382,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_6,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -1432,7 +1392,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_7,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1444,7 +1404,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_8,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [
                         [carl.pkh, payout_value],
@@ -1457,7 +1417,7 @@ describe('Tokens setup', async () => {
                 arg: {
                     itokenid: token_id_9,
                     iowner: alice.pkh,
-                    itokenMetadata: [{key: '', value: '0x'}],
+                    itokenMetadata: [{ key: '', value: '0x' }],
                     iamount: initial_nft_amount,
                     iroyalties: [],
                 },
@@ -6680,7 +6640,7 @@ describe('Expiry tests', async () => {
         await expectToThrow(async () => {
 
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
-            const start_date = Date.now()/1000
+            const start_date = Date.now() / 1000
 
             await setMockupNow(start_date);
             await bids.put_bid({
@@ -6717,7 +6677,7 @@ describe('Expiry tests', async () => {
         await expectToThrow(async () => {
 
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
-            const start_date = Date.now()/1000
+            const start_date = Date.now() / 1000
 
             await setMockupNow(start_date);
 
@@ -6752,7 +6712,7 @@ describe('Expiry tests', async () => {
 
             const bundle = mkPackedBundle(bundle_items);
 
-            const start_date = Date.now()/1000
+            const start_date = Date.now() / 1000
 
             await setMockupNow(start_date);
 

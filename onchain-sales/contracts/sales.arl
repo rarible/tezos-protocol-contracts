@@ -6,24 +6,25 @@ archetype sales(
 )
 with metadata ""
 
-constant SALE_ALREADY_EXISTS: string = "SALE_ALREADY_EXISTS"
-constant MISSING_SALE: string = "MISSING_SALE"
-constant MISSING_BUNDLE_SALE: string = "MISSING_BUNDLE_SALE"
-constant MISSING_CANDIDATE: string = "MISSING_CANDIDATE"
-constant AMOUNT_MISMATCH: string = "AMOUNT_MISMATCH"
-constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
-constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
-constant CANT_UNPACK_BUNDLE: string = "CANT_UNPACK_BUNDLE"
-constant WRONG_XTZ_PAYLOAD: string = "WRONG_XTZ_PAYLOAD"
-constant MAX_BUNDLE_SIZE: string = "MAX_BUNDLE_SIZE"
-constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
-constant BUNDLE_CANT_BE_EMPTY: string = "BUNDLE_CANT_BE_EMPTY"
-constant FEES_OVER_SELLER_LIMIT: string = "FEES_OVER_SELLER_LIMIT"
-constant INVALID_SALE_END_DATE: string = "INVALID_SALE_END_DATE"
-constant INVALID_SALE_START_DATE: string = "INVALID_SALE_START_DATE"
-constant SALE_CLOSED: string = "SALE_CLOSED"
-constant SALE_NOT_STARTED: string = "SALE_NOT_STARTED"
-constant INVALID_BUY_AMOUNT: string = "INVALID_BUY_AMOUNT"
+constant AMOUNT_MISMATCH         : string = "AMOUNT_MISMATCH"
+constant BUNDLE_CANT_BE_EMPTY    : string = "BUNDLE_CANT_BE_EMPTY"
+constant CANT_UNPACK_BUNDLE      : string = "CANT_UNPACK_BUNDLE"
+constant CANT_UNPACK_FA12_ASSET  : string = "CANT_UNPACK_FA12_ASSET"
+constant CANT_UNPACK_FA2_ASSET   : string = "CANT_UNPACK_FA2_ASSET"
+constant FEES_OVER_SELLER_LIMIT  : string = "FEES_OVER_SELLER_LIMIT"
+constant INVALID_BUNDLE_ITEM_QTY : string = "INVALID_BUNDLE_ITEM_QTY"
+constant INVALID_BUY_AMOUNT      : string = "INVALID_BUY_AMOUNT"
+constant INVALID_CALLER          : string = "INVALID_CALLER"
+constant INVALID_SALE_END_DATE   : string = "INVALID_SALE_END_DATE"
+constant INVALID_SALE_START_DATE : string = "INVALID_SALE_START_DATE"
+constant MAX_BUNDLE_SIZE         : string = "MAX_BUNDLE_SIZE"
+constant MISSING_BUNDLE_SALE     : string = "MISSING_BUNDLE_SALE"
+constant MISSING_CANDIDATE       : string = "MISSING_CANDIDATE"
+constant MISSING_SALE            : string = "MISSING_SALE"
+constant SALE_ALREADY_EXISTS     : string = "SALE_ALREADY_EXISTS"
+constant SALE_CLOSED             : string = "SALE_CLOSED"
+constant SALE_NOT_STARTED        : string = "SALE_NOT_STARTED"
+constant WRONG_XTZ_PAYLOAD       : string = "WRONG_XTZ_PAYLOAD"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -42,10 +43,10 @@ entry declare_ownership(candidate : address) {
 
 entry claim_ownership() {
   constant {
-    candidate ?is owner_candidate otherwise "MISSING_CANDIDATE"
+    candidate ?is owner_candidate otherwise MISSING_CANDIDATE
   }
   require {
-    r0: caller = candidate otherwise "INVALID_CALLER"
+    r0: caller = candidate otherwise INVALID_CALLER
   }
   effect {
     owner := candidate;
@@ -195,7 +196,7 @@ entry sell (
       | some(end_date) -> begin
         do_require(end_date > now, INVALID_SALE_END_DATE);
         const start_date = s_sale.sale_start ? the: now;
-        do_require(end_date > start_date, INVALID_SALE_END_DATE);
+        do_require(end_date > start_date, INVALID_SALE_START_DATE);
       end
       | none -> ()
       end;
@@ -236,7 +237,7 @@ entry sell_bundle (
       | some(end_date) -> begin
         do_require(end_date > now, INVALID_SALE_END_DATE);
         const start_date = sb_sale.bundle_sale_start ? the: now;
-        do_require(end_date > start_date, INVALID_SALE_END_DATE);
+        do_require(end_date > start_date, INVALID_SALE_START_DATE);
       end
       | none -> ()
       end;
