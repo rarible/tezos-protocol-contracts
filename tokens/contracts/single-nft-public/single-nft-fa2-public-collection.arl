@@ -10,14 +10,17 @@ with metadata ""
 //----------------------------------------------------------------------------
 
 constant CALLER_NOT_OWNER         : string = "CALLER_NOT_OWNER"
-constant CONTRACT_PAUSED          : string = "CONTRACT_PAUSED"
 constant CONTRACT_NOT_PAUSED      : string = "CONTRACT_NOT_PAUSED"
+constant CONTRACT_PAUSED          : string = "CONTRACT_PAUSED"
 constant EXPIRY_TOO_BIG           : string = "EXPIRY_TOO_BIG"
 constant FA2_INSUFFICIENT_BALANCE : string = "FA2_INSUFFICIENT_BALANCE"
 constant FA2_INVALID_AMOUNT       : string = "FA2_INVALID_AMOUNT"
 constant FA2_NOT_OPERATOR         : string = "FA2_NOT_OPERATOR"
+constant INVALID_CALLER           : string = "INVALID_CALLER"
 constant MISSIGNED                : string = "MISSIGNED"
+constant MISSING_OWNER_CANDIDATE  : string = "MISSING_OWNER_CANDIDATE"
 constant NO_ENTRY_FOR_USER        : string = "NO_ENTRY_FOR_USER"
+constant NOT_FOUND                : string = "NOT_FOUND"
 constant PERMIT_EXPIRED           : string = "PERMIT_EXPIRED"
 constant PERMIT_NOT_FOUND         : string = "PERMIT_NOT_FOUND"
 constant PERMIT_USER_NOT_FOUND    : string = "PERMIT_USER_NOT_FOUND"
@@ -46,12 +49,21 @@ entry declare_ownership(candidate : address) {
 * Note: fails if caller is not declared candidate
 */
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
+  }
+  require {
+    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := owner_candidate_addr;
     owner_candidate := none
   }
 }
+
+//----------------------------------------------------------------------------
+// Contract execution pause/resume
+//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 // Contract execution pause/resume
@@ -64,8 +76,10 @@ variable paused : bool = false
  */
 entry pause() {
   called by owner
+  require {
+    pausable_r1: is_not_paused()
+  }
   effect {
-    dorequire(not paused, CONTRACT_PAUSED);
     paused := true
   }
 }
@@ -75,8 +89,10 @@ entry pause() {
  */
 entry unpause() {
   called by owner
+  require {
+    pausable_r2: paused otherwise CONTRACT_NOT_PAUSED
+  }
   effect {
-    dorequire(paused, CONTRACT_NOT_PAUSED);
     paused := false
   }
 }
@@ -85,9 +101,8 @@ entry unpause() {
  * Asserts that the contract execution is not paused
  */
 function is_not_paused() : bool {
-  if (not paused)
-  then return true
-  else fail(CONTRACT_PAUSED)
+  do_fail_if(paused, CONTRACT_PAUSED);
+  return true
 }
 
 //----------------------------------------------------------------------------
@@ -190,10 +205,10 @@ entry update_operators (upl : list<or<operator_param, operator_param>>) {
     for up in upl do
       match up with
       | left(param)  -> (* add *)
-        dorequire(param.opp_owner = caller , CALLER_NOT_OWNER);
-        operators.addupdate((param.opp_operator, param.opp_token_id, param.opp_owner), {})
+        do_require(param.opp_owner = caller , CALLER_NOT_OWNER);
+        operators.add_update((param.opp_operator, param.opp_token_id, param.opp_owner), {})
       | right(param) -> (* remove *)
-        dorequire(param.opp_owner = caller , CALLER_NOT_OWNER);
+        do_require(param.opp_owner = caller , CALLER_NOT_OWNER);
         operators.remove((param.opp_operator, param.opp_token_id, param.opp_owner))
       end;
     done;
@@ -210,7 +225,7 @@ entry update_operators_for_all (upl : list<or<address, address>>) {
     for up in upl do
       match up with
       | left(op)  -> (* add *)
-        operators_for_all.addupdate((op, caller), {})
+        operators_for_all.add_update((op, caller), {})
       | right(op) -> (* remove *)
         operators_for_all.remove((op, caller))
       end;
@@ -221,8 +236,8 @@ entry update_operators_for_all (upl : list<or<address, address>>) {
 function check_owner_and_operator(txs : list<address * list<transfer_destination>>) : bool {
   var res = true;
   for tx in txs do
-    var %from = tx[0];
-    var tds = tx[1];
+    const %from = tx[0];
+    const tds = tx[1];
     for td in tds do begin
       res &=
         if caller <> %from then
@@ -249,15 +264,10 @@ function get_default_expiry(addr : address) : nat {
   return res
 }
 
-function get_expiry(addr : address, ipermitkey : bytes) : nat {
-  var res : nat = get_default_expiry(addr);
-  if permits.contains(addr)
-  then if permits[addr].user_permits.contains(ipermitkey)
-      then match permits[addr].user_permits[ipermitkey].expiry with
-           | some (v) -> res := v
-           | none -> ()
-           end;
-  return res
+function get_expiry(addr : address, permit_key : bytes) : nat {
+  return (permits[addr] ? let d = (the.user_expiry ? the : default_expiry) in
+    (the.user_permits[permit_key] ? (the.expiry ? the : default_expiry) : d) : default_expiry
+  )
 }
 
 function has_expired(iuser_permit : user_permit, iexpiry: nat) : bool {
@@ -285,7 +295,7 @@ entry set_expiry(v : option<nat>, p : option<bytes>) {
   effect {
     match v with
       | some v_expiry ->
-          dofailif(v_expiry >= default_expiry, EXPIRY_TOO_BIG)
+          do_fail_if(v_expiry >= default_expiry, EXPIRY_TOO_BIG)
       | none -> ()
     end;
     if permits.contains(caller)
@@ -308,7 +318,7 @@ entry set_expiry(v : option<nat>, p : option<bytes>) {
           end;
           if need_update then
           begin
-            var up : user_permit = permits[caller].user_permits[lpermit];
+            const up : user_permit ?= permits[caller].user_permits[lpermit] : NOT_FOUND;
             permits[caller].user_permits.update(lpermit, some({up with expiry = v}))
           end
         end
@@ -334,18 +344,18 @@ entry set_expiry(v : option<nat>, p : option<bytes>) {
 entry permit(pk : key, sig : signature, data : bytes) {
   require { r5: is_not_paused() }
   effect {
-    var user : address = key_address(pk);
-    var empty : map<bytes, user_permit> = [];
-    var pcounter_user_permits : (nat * map<bytes, user_permit>) =
+    const user : address = key_to_address(pk);
+    const empty : map<bytes, user_permit> = [];
+    const pcounter_user_permits : (nat * map<bytes, user_permit>) =
       if permits.contains(user) then
         (permits[user].counter, permits[user].user_permits)
       else (0, empty);
-    var pcounter = pcounter_user_permits[0];
-    var puser_permits = pcounter_user_permits[1];
-    var tosign : bytes = pack(((selfaddress, chainid), (pcounter, data)));
-    dorequire(check_signature(pk, sig, tosign), (MISSIGNED, tosign));
-    var lexpiry = get_default_expiry(user);
-    permits.addupdate(user, { counter += 1; user_permits = put(puser_permits, data, { expiry = some(lexpiry); created_at = now})});
+    const pcounter = pcounter_user_permits[0];
+    const puser_permits = pcounter_user_permits[1];
+    const tosign : bytes = pack(((self_address, self_chain_id), (pcounter, data)));
+    do_require(check_signature(pk, sig, tosign), (MISSIGNED, tosign));
+    const lexpiry = get_default_expiry(user);
+    permits.add_update(user, { counter += 1; user_permits = put(puser_permits, data, { expiry = some(lexpiry); created_at = now})});
     for (k, v) in permits[user].user_permits do
       if has_expired(v, lexpiry)
       then permits[user].user_permits.remove(k)
@@ -365,25 +375,25 @@ entry permit(pk : key, sig : signature, data : bytes) {
 */
 entry transfer_gasless (batch : list<list<address * list<transfer_destination>> * (key * signature)>) {
   for b in batch do
-    var pk  = b[1][0];
-    var sig = b[1][1];
-    var pkh = key_address(pk);
+    const pk  = b[1][0];
+    const sig = b[1][1];
+    const pkh = key_to_address(pk);
 
-    var lcounter = if permits.contains(pkh) then permits[pkh].counter else 0;
-    var data : bytes = pack((selfaddress, lcounter, blake2b(pack(b[0]))));
+    const lcounter = if permits.contains(pkh) then permits[pkh].counter else 0;
+    const data : bytes = pack((self_address, lcounter, blake2b(pack(b[0]))));
     if not check_signature(pk, sig, data) then fail((MISSIGNED, data));
-    permits.addupdate(pkh, { counter = (lcounter + 1)});
+    permits.add_update(pkh, { counter = (lcounter + 1)});
 
     for tx in b[0] do
-      var %from = tx[0];
-      var tds = tx[1];
-      dorequire(pkh = %from, (SIGNER_NOT_FROM, (pkh, %from)));
+      const %from = tx[0];
+      const tds = tx[1];
+      do_require(pkh = %from, (SIGNER_NOT_FROM, (pkh, %from)));
       for td in tds do begin
-        var %to = td.to_dest;
+        const %to = td.to_dest;
         (* set token ownership *)
-        var tokenid = td.token_id_dest;
+        const tokenid = td.token_id_dest;
         if ledger.contains(tokenid) then
-          dorequire(ledger[tokenid].lowner = %from, FA2_INSUFFICIENT_BALANCE)
+          do_require(ledger[tokenid].lowner = %from, FA2_INSUFFICIENT_BALANCE)
         else fail(TOKEN_NOT_FOUND);
         if td.token_amount_dest <> 1 then
           fail(FA2_INVALID_AMOUNT)
@@ -401,9 +411,9 @@ entry transfer_gasless (batch : list<list<address * list<transfer_destination>> 
 function get_from_address(txs : list<address * list<transfer_destination>>) : option<address> {
   match txs with
   | hd::tl -> begin
-    var %from = hd[0];
+    const %from = hd[0];
     for tx in tl do
-      dorequire(%from = tx[0], FA2_NOT_OPERATOR)
+      do_require(%from = tx[0], FA2_NOT_OPERATOR)
     done;
     return some(%from)
   end
@@ -423,14 +433,14 @@ entry %transfer (txs : list<address * list<transfer_destination>>) {
     if not check_owner_and_operator(txs) then begin
       match get_from_address(txs) with
       | some(%from) -> begin
-          var permit_key = blake2b(pack(txs));
+          const permit_key = blake2b(pack(txs));
           if not permits.contains(%from)
           then fail(NO_ENTRY_FOR_USER)
           else if not permits[%from].user_permits.contains(permit_key)
           then fail(FA2_NOT_OPERATOR)
           else (
-            var iuser_permit = permits[%from].user_permits[permit_key];
-            var iexpiry = get_expiry(%from, permit_key);
+            const iuser_permit ?= permits[%from].user_permits[permit_key];
+            const iexpiry = get_expiry(%from, permit_key);
             if has_expired(iuser_permit, iexpiry)
             then fail(PERMIT_EXPIRED)
             else permits[%from].user_permits.remove(permit_key)
@@ -441,13 +451,13 @@ entry %transfer (txs : list<address * list<transfer_destination>>) {
     end;
 
     for tx in txs do
-      var %from = tx[0];
-      var tds = tx[1];
+      const %from = tx[0];
+      const tds = tx[1];
       for td in tds do begin
-        dorequire(td.token_amount_dest = 1, FA2_INVALID_AMOUNT);
-        var tokenid = td.token_id_dest;
+        do_require(td.token_amount_dest = 1, FA2_INVALID_AMOUNT);
+        const tokenid = td.token_id_dest;
         if ledger.contains(tokenid) then
-          dorequire(ledger[tokenid].lowner = %from, FA2_INSUFFICIENT_BALANCE)
+          do_require(ledger[tokenid].lowner = %from, FA2_INSUFFICIENT_BALANCE)
         else fail(TOKEN_NOT_FOUND);
         ledger.update(tokenid, { lowner = td.to_dest });
       end done;
@@ -480,12 +490,7 @@ getter balance_of (requests : list<balance_of_request>) : list<balance_of_respon
 * Note: returns empty list if token does not exist in royalties map
 */
 view get_royalties(tokenId : nat) : list<part> {
-  return (
-    if royalties.contains(tokenId) then
-      royalties[tokenId].rvalue
-    else
-      emptylist<part>()
-  )
+  return (royalties[tokenId]?.rvalue ? the : [])
 }
 
 //----------------------------------------------------------------------------

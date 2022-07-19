@@ -10,7 +10,7 @@
     "deploy": "mocha ./scripts/deploy.js --timeout 0 --slow 9999999999"
   },
   "dependencies": {
-    "@completium/completium-cli": "^0.3.35",
+    "@completium/completium-cli": "^0.4.6",
     "@taquito/taquito": "^12.0.0",
     "chai": "^4.3.4",
     "mocha": "^9.1.2"
