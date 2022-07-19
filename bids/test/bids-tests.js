@@ -2237,7 +2237,7 @@ describe('Put bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pb3")');
+            }, '(Pair "INVALID_CONDITION" "r_pb3")');
         });
 
         it('Put bid with wrong buy asset payload (FA2) should fail', async () => {
@@ -2278,7 +2278,7 @@ describe('Put bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pb0")');
+            }, '(Pair "INVALID_CONDITION" "r_pb0")');
         });
 
         it('Put bid with asset qty = 0 duration should fail', async () => {
@@ -2288,7 +2288,7 @@ describe('Put bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None (Pair None None))))))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pb2")');
+            }, '(Pair "INVALID_CONDITION" "r_pb2")');
         });
 
         it('Put bid with wrong amount of XTZ should fail', async () => {
@@ -2309,7 +2309,7 @@ describe('Put bid tests', async () => {
                         argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                         as: carl.pkh,
                     });
-                }, '(Pair "AssetNotFound" "ledger")');
+                }, '(Pair "ASSET_NOT_FOUND" "ledger")');
             } catch (error) {
                 assert(error.toString().includes("NO_ENTRY_FOR_USER"))
             }
@@ -2322,7 +2322,7 @@ describe('Put bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${token_id_0} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None))))))))))`,
                     as: carl.pkh,
                 });
-            }, '(Pair "AssetNotFound" "ledger")');
+            }, '(Pair "ASSET_NOT_FOUND" "ledger")');
         });
 
         it('Put bid with not enough balance (FA2) should fail', async () => {
@@ -3210,7 +3210,7 @@ describe('Put floor bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pfb3")');
+            }, '(Pair "INVALID_CONDITION" "r_pfb3")');
         });
 
         it('Put floor bid with wrong buy asset payload (FA2) should fail', async () => {
@@ -3251,7 +3251,7 @@ describe('Put floor bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pfb0")');
+            }, '(Pair "INVALID_CONDITION" "r_pfb0")');
         });
 
         it('Put bid with asset qty = 0 should fail', async () => {
@@ -3261,7 +3261,7 @@ describe('Put floor bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair 0 (Pair None (Pair None None)))))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pfb2")');
+            }, '(Pair "INVALID_CONDITION" "r_pfb2")');
         });
 
         it('Put floor bid with wrong amount of XTZ should fail', async () => {
@@ -3282,7 +3282,7 @@ describe('Put floor bid tests', async () => {
                         argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                         as: carl.pkh,
                     });
-                }, '(Pair "AssetNotFound" "ledger")');
+                }, '(Pair "ASSET_NOT_FOUND" "ledger")');
             } catch (error) {
                 assert(error.toString().includes("NO_ENTRY_FOR_USER"))
             }
@@ -3295,7 +3295,7 @@ describe('Put floor bid tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair ${qty} (Pair None (Pair None None)))))))))`,
                     as: carl.pkh,
                 });
-            }, '(Pair "AssetNotFound" "ledger")');
+            }, '(Pair "ASSET_NOT_FOUND" "ledger")');
         });
 
         it('Put floor bid with not enough balance (FA2) should fail', async () => {
@@ -4242,7 +4242,7 @@ describe('Put bundle bid tests', async () => {
                     argMichelson: `(Pair 0x${bundle} (Pair 99 (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pbb1")');
+            }, '(Pair "INVALID_CONDITION" "r_pbb1")');
         });
 
         it('Put bundle bid with wrong buy asset payload (FA2) should fail', async () => {
@@ -4306,7 +4306,7 @@ describe('Put bundle bid tests', async () => {
                     argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair 0 (Pair None (Pair None None))))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pbb0")');
+            }, '(Pair "INVALID_CONDITION" "r_pbb0")');
         });
 
         it('Put bundle with asset qty = 0 should fail', async () => {
@@ -4355,7 +4355,7 @@ describe('Put bundle bid tests', async () => {
                         argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA2)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                         as: carl.pkh,
                     });
-                }, '(Pair "AssetNotFound" "ledger")');
+                }, '(Pair "ASSET_NOT_FOUND" "ledger")');
             } catch (error) {
                 assert(error.toString().includes("NO_ENTRY_FOR_USER"))
             }
@@ -4374,7 +4374,7 @@ describe('Put bundle bid tests', async () => {
                     argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} (Pair 0x${bid_asset} (Pair {} (Pair {} (Pair ${bid_amount} (Pair None (Pair None None))))))))`,
                     as: carl.pkh,
                 });
-            }, '(Pair "AssetNotFound" "ledger")');
+            }, '(Pair "ASSET_NOT_FOUND" "ledger")');
         });
 
         it('Put bundle bid with not enough balance (FA2) should fail', async () => {
