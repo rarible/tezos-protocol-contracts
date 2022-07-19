@@ -4202,7 +4202,7 @@ describe('Put bid tests', async () => {
             await expectToThrow(async () => {
 
                 if (isMockup()) {
-                    await setMockupNow((Date.now() / 1000) - 400);
+                    await setMockupNow((Date.now() / 1000) - 4000);
                 }
 
                 await auction.put_bid({
