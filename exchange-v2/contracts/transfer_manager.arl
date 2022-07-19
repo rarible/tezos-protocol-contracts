@@ -372,21 +372,6 @@ function doTransfersWithFees(
     return ((totalAmount, ops))
 }
 
-function get_option_u (input : option<contract<unit>>, error : string) : contract<unit> {
-  const res ?= input : error;
-  return res
-}
-
-function get_option_fa12 (input : option<contract<address * address * nat>>, error : string) : contract<address * address * nat> {
-  const res ?= input : error;
-  return res
-}
-
-function get_option_fa2 (input : option<contract<list<address * list<address * nat * nat>>>>, error : string) : contract<list<address * list<address * nat * nat>>> {
-  const res ?= input : error;
-  return res
-}
-
 entry do_transfers(
   order_left        : order,
   order_right       : order,
@@ -402,9 +387,9 @@ entry do_transfers(
       var totalMakeValue = ifill.make_value;
       var totalTakeValue = ifill.take_value;
 
-      const left_order_maker_key : key = order_left.maker ? the : NOT_FOUND;
+      const left_order_maker_key : key ?= order_left.maker : NOT_FOUND;
       var left_order_maker  : address = key_to_address(left_order_maker_key);
-      const right_order_maker_key : key = order_right.maker ? the : NOT_FOUND;
+      const right_order_maker_key : key ?= order_right.maker : NOT_FOUND;
       var right_order_maker : address = key_to_address(right_order_maker_key);
 
       var ops1 : list<transfer_arg> = [];
@@ -453,11 +438,11 @@ entry do_transfers(
               prepend(x[0],
                 match hd with
                 | XTZ_ARG(amount, %to) ->
-                  make_operation(amount, get_option_u(address_to_contract<unit>(%to), "NOT_FOUND"), Unit)
+                  make_operation(amount, require_entrypoint<unit>("%default", %to, "NOT_FOUND"), Unit)
                 | FA_1_2_ARG(c, %from, %to, amount) ->
-                  make_operation(0tz, get_option_fa12 (get_entrypoint<address * address * nat>("%transfer", c), "ENTRY_FA_1_2_NOT_FOUND"), (%from, %to, amount))
+                  make_operation(0tz, require_entrypoint<address * address * nat>("%transfer", c, "ENTRY_FA_1_2_NOT_FOUND"), (%from, %to, amount))
                 | FA_2_ARG(c, txs) ->
-                  make_operation(0tz, get_option_fa2 (get_entrypoint<list<address * list<address * nat * nat>>>("%transfer", c), "ENTRY_FA_2_NOT_FOUND"), txs)
+                  make_operation(0tz, require_entrypoint<list<address * list<address * nat * nat>>>("%transfer", c, "ENTRY_FA_2_NOT_FOUND"), txs)
                 end), tail))
              | [] -> right<list<operation> * list<transfer_arg>>(x[0])
             end

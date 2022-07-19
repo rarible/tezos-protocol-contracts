@@ -267,14 +267,11 @@ entry manage_transfers(
         });
       );
 
-      // TODO: use concat when it will by available
-      for ft_op in ft_operations do
-        if(ft_origin = mt_rarible_custody) then (
-          rarible_custody_operations.prepend(ft_op);
-        ) else (
-          transfer_manager_operations.prepend(ft_op);
-        )
-      done;
+      if(ft_origin = mt_rarible_custody) then (
+        rarible_custody_operations.concat(ft_operations);
+      ) else (
+        transfer_manager_operations.concat(ft_operations);
+      );
 
       for pt_transfer in transfer_manager_operations do
           match pt_transfer.ptp_asset_type with
