@@ -6,27 +6,30 @@ archetype auction(
 )
 with metadata ""
 
-constant AUCTION_ALREADY_EXISTS: string = "AUCTION_ALREADY_EXISTS"
-constant AUCTION_NOT_IN_PROGRESS: string = "AUCTION_NOT_IN_PROGRESS"
-constant AUCTION_NOT_FINISHABLE: string = "AUCTION_NOT_FINISHABLE"
-constant AUCTION_FINISHED: string = "AUCTION_FINISHED"
-constant AUCTION_START_DATE_IN_THE_PAST: string = "AUCTION_START_DATE_IN_THE_PAST"
-constant MISSING_AUCTION: string = "MISSING_AUCTION"
-constant AUCTION_BID_TOO_LOW: string = "AUCTION_BID_TOO_LOW"
-constant AUCTION_BID_ALREADY_EXISTS: string = "AUCTION_BID_ALREADY_EXISTS"
-constant AUCTION_BID_AMOUNT_MISMATCH: string = "AUCTION_BID_AMOUNT_MISMATCH"
-constant NO_BID_FOR_AUCTION: string = "NO_BID_FOR_AUCTION"
-constant AUCTION_WITH_BID_NON_CANCELLABLE: string = "AUCTION_WITH_BID_NON_CANCELLABLE"
-constant AUCTION_NON_CANCELLABLE: string = "AUCTION_NON_CANCELLABLE"
-constant ONLY_SELLER_CAN_CANCEL_AUCTION: string = "ONLY_SELLER_CAN_CANCEL_AUCTION"
-constant CANT_UNPACK_FA2_BUY_ASSET: string = "CANT_UNPACK_FA2_BUY_ASSET"
-constant CANT_UNPACK_FA12_BUY_ASSET: string = "CANT_UNPACK_FA12_BUY_ASSET"
-constant WRONG_BUY_ASSET_PAYLOAD: string = "WRONG_BUY_ASSET_PAYLOAD"
-constant CANT_UNPACK_BUNDLE: string = "CANT_UNPACK_BUNDLE"
-constant MAX_BUNDLE_SIZE: string = "MAX_BUNDLE_SIZE"
-constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
-constant FEES_OVER_SELLER_LIMIT: string = "FEES_OVER_SELLER_LIMIT"
-constant BUNDLE_CANT_BE_EMPTY: string = "BUNDLE_CANT_BE_EMPTY"
+constant AUCTION_ALREADY_EXISTS           : string = "AUCTION_ALREADY_EXISTS"
+constant AUCTION_BID_ALREADY_EXISTS       : string = "AUCTION_BID_ALREADY_EXISTS"
+constant AUCTION_BID_AMOUNT_MISMATCH      : string = "AUCTION_BID_AMOUNT_MISMATCH"
+constant AUCTION_BID_TOO_LOW              : string = "AUCTION_BID_TOO_LOW"
+constant AUCTION_FINISHED                 : string = "AUCTION_FINISHED"
+constant AUCTION_NON_CANCELLABLE          : string = "AUCTION_NON_CANCELLABLE"
+constant AUCTION_NOT_FINISHABLE           : string = "AUCTION_NOT_FINISHABLE"
+constant AUCTION_NOT_IN_PROGRESS          : string = "AUCTION_NOT_IN_PROGRESS"
+constant AUCTION_START_DATE_IN_THE_PAST   : string = "AUCTION_START_DATE_IN_THE_PAST"
+constant AUCTION_WITH_BID_NON_CANCELLABLE : string = "AUCTION_WITH_BID_NON_CANCELLABLE"
+constant BUNDLE_CANT_BE_EMPTY             : string = "BUNDLE_CANT_BE_EMPTY"
+constant CANT_UNPACK_BUNDLE               : string = "CANT_UNPACK_BUNDLE"
+constant CANT_UNPACK_FA12_BUY_ASSET       : string = "CANT_UNPACK_FA12_BUY_ASSET"
+constant CANT_UNPACK_FA2_BUY_ASSET        : string = "CANT_UNPACK_FA2_BUY_ASSET"
+constant FEES_OVER_SELLER_LIMIT           : string = "FEES_OVER_SELLER_LIMIT"
+constant INVALID_BUNDLE_ITEM_QTY          : string = "INVALID_BUNDLE_ITEM_QTY"
+constant INVALID_CALLER                   : string = "INVALID_CALLER"
+constant MAX_BUNDLE_SIZE                  : string = "MAX_BUNDLE_SIZE"
+constant MISSING_AUCTION                  : string = "MISSING_AUCTION"
+constant MISSING_OWNER_CANDIDATE          : string = "MISSING_OWNER_CANDIDATE"
+constant NO_BID_FOR_AUCTION               : string = "NO_BID_FOR_AUCTION"
+constant NOT_FOUND                        : string = "NOT_FOUND"
+constant ONLY_SELLER_CAN_CANCEL_AUCTION   : string = "ONLY_SELLER_CAN_CANCEL_AUCTION"
+constant WRONG_BUY_ASSET_PAYLOAD          : string = "WRONG_BUY_ASSET_PAYLOAD"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -44,9 +47,14 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
+  }
+  require {
+    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := owner_candidate_addr;
     owner_candidate := none
   }
 }
@@ -259,20 +267,20 @@ entry start_auction(
                 and process_sum_fees(sa_auction.auction_args_origin_fees) + protocol_fee <= sa_auction.auction_args_max_seller_fees;
     }
     effect {
-        var processed_asset = verify_and_unpack_asset(sa_auction.auction_args_buy_asset_type, sa_auction.auction_args_buy_asset);
+        const processed_asset = verify_and_unpack_asset(sa_auction.auction_args_buy_asset_type, sa_auction.auction_args_buy_asset);
 
         var start_time: date = now;
         var end_time: date = now;
         if (sa_auction.auction_args_start_time <> none<date>) then (
-            start_time := opt_get(sa_auction.auction_args_start_time);
-            dorequire(start_time >= now, AUCTION_START_DATE_IN_THE_PAST);
+            start_time ?:= sa_auction.auction_args_start_time : NOT_FOUND;
+            do_require(start_time >= now, AUCTION_START_DATE_IN_THE_PAST);
             end_time := start_time + sa_auction.auction_args_duration;
         ) else (
             start_time := now;
             end_time := now + sa_auction.auction_args_duration;
         );
 
-        var storage_auction: auction_record = {
+        const storage_auction: auction_record = {
             auction_sell_asset_amount = sa_auction.auction_args_sell_asset_amount;
             auction_buy_asset = sa_auction.auction_args_buy_asset;
             auction_buy_asset_type = sa_auction.auction_args_buy_asset_type;
@@ -327,22 +335,22 @@ entry start_bundle_auction(
                 and process_sum_fees(sba_bundle_auction.bundle_auction_args_origin_fees) + protocol_fee <= sba_bundle_auction.bundle_auction_max_seller_fees;
     }
     effect {
-        var processed_asset = verify_and_unpack_asset(sba_bundle_auction.bundle_auction_args_buy_asset_type, sba_bundle_auction.bundle_auction_args_buy_asset);
-        var unpacked_bundle = verify_and_unpack_bundle(sba_bundle);
-        dorequire(length(unpacked_bundle) <= max_bundle_items, (MAX_BUNDLE_SIZE, max_bundle_items));
+        const processed_asset = verify_and_unpack_asset(sba_bundle_auction.bundle_auction_args_buy_asset_type, sba_bundle_auction.bundle_auction_args_buy_asset);
+        const unpacked_bundle = verify_and_unpack_bundle(sba_bundle);
+        do_require(length(unpacked_bundle) <= max_bundle_items, (MAX_BUNDLE_SIZE, max_bundle_items));
 
         var start_time: date = now;
         var end_time: date = now;
         if (sba_bundle_auction.bundle_auction_args_start_time <> none<date>) then (
-            start_time := opt_get(sba_bundle_auction.bundle_auction_args_start_time);
-            dorequire(start_time >= now, AUCTION_START_DATE_IN_THE_PAST);
+            start_time ?:= sba_bundle_auction.bundle_auction_args_start_time : NOT_FOUND;
+            do_require(start_time >= now, AUCTION_START_DATE_IN_THE_PAST);
             end_time := start_time + sba_bundle_auction.bundle_auction_args_duration;
         ) else (
             start_time := now;
             end_time := now + sba_bundle_auction.bundle_auction_args_duration;
         );
 
-        var storage_auction: bundle_auction_record = {
+        const storage_auction: bundle_auction_record = {
             bar_buy_asset = sba_bundle_auction.bundle_auction_args_buy_asset;
             bar_buy_asset_type = sba_bundle_auction.bundle_auction_args_buy_asset_type;
             bar_last_bid = none;
@@ -384,33 +392,33 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
         r_pb1: pb_bid.bid_bidder = caller;
     }
     effect {
-      var auction = require_some(get_auction_record(pb_asset_contract, pb_asset_id, pb_asset_seller), MISSING_AUCTION);
-      var is_xtz = (auction.auction_buy_asset_type = XTZ);
-      var previous_bid = auction.auction_last_bid;
-      var is_buyout = auction.auction_buy_out_price > 0 and pb_bid.bid_amount >= auction.auction_buy_out_price;
+      const auction ?= get_auction_record(pb_asset_contract, pb_asset_id, pb_asset_seller) : MISSING_AUCTION;
+      const is_xtz = (auction.auction_buy_asset_type = XTZ);
+      const previous_bid = auction.auction_last_bid;
+      const is_buyout = auction.auction_buy_out_price > 0 and pb_bid.bid_amount >= auction.auction_buy_out_price;
       var buy_asset_contract: option<address> = none;
       var buy_asset_token_id: option<nat> = none;
 
-      dorequire(auction.auction_start_time < now, AUCTION_NOT_IN_PROGRESS);
-      dorequire(auction.auction_end_time > now, AUCTION_FINISHED);
-      dorequire(process_sum_fees(auction.auction_origin_fees) + process_sum_fees(pb_bid.bid_origin_fees) + protocol_fee <= auction.auction_max_seller_fees, FEES_OVER_SELLER_LIMIT);
+      do_require(auction.auction_start_time < now, AUCTION_NOT_IN_PROGRESS);
+      do_require(auction.auction_end_time > now, AUCTION_FINISHED);
+      do_require(process_sum_fees(auction.auction_origin_fees) + process_sum_fees(pb_bid.bid_origin_fees) + protocol_fee <= auction.auction_max_seller_fees, FEES_OVER_SELLER_LIMIT);
 
-      var processed_asset = verify_and_unpack_asset(auction.auction_buy_asset_type, auction.auction_buy_asset);
+      const processed_asset = verify_and_unpack_asset(auction.auction_buy_asset_type, auction.auction_buy_asset);
       buy_asset_contract := processed_asset[0];
       buy_asset_token_id := processed_asset[1];
 
       if(is_xtz) then (
-        dorequire(transferred = (pb_bid.bid_amount * 1utz), (AUCTION_BID_AMOUNT_MISMATCH, transferred, pb_bid.bid_amount * 1utz));
+        do_require(transferred = (pb_bid.bid_amount * 1utz), (AUCTION_BID_AMOUNT_MISMATCH, transferred, pb_bid.bid_amount * 1utz));
       );
 
-      if(isnone(previous_bid)) then (
-        dorequire(auction.auction_minimal_price <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
-        dorequire(auction.auction_minimal_step <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
+      if(is_none(previous_bid)) then (
+        do_require(auction.auction_minimal_price <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
+        do_require(auction.auction_minimal_step <= pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
       ) else (
-        var last_bid = opt_get(previous_bid);
-        dorequire(last_bid.bid_amount < pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
-        dorequire(auction.auction_minimal_step <= pb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
-        dorequire(last_bid.bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
+        const last_bid ?= previous_bid : NOT_FOUND;
+        do_require(last_bid.bid_amount < pb_bid.bid_amount, AUCTION_BID_TOO_LOW);
+        do_require(auction.auction_minimal_step <= pb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
+        do_require(last_bid.bid_bidder <> pb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
         transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = auction.auction_buy_asset_type;
             ptp_asset = auction.auction_buy_asset;
@@ -422,7 +430,7 @@ entry put_bid(pb_asset_contract: address, pb_asset_id: nat, pb_asset_seller: add
       );
 
       if(is_buyout = true) then (
-        var origin = pb_asset_seller;
+        const origin = pb_asset_seller;
         transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
           [{
@@ -474,34 +482,34 @@ entry put_bundle_bid(pbb_bundle: bytes, pbb_asset_seller: address, pbb_bid: bid)
         r_pbb1: pbb_bid.bid_bidder = caller;
     }
     effect {
-      var auction = require_some(get_bundle_auction_record(pbb_bundle, pbb_asset_seller), MISSING_AUCTION);
-      var is_xtz = (auction.bar_buy_asset_type = XTZ);
-      var previous_bid = auction.bar_last_bid;
-      var is_buyout = auction.bar_buy_out_price > 0 and pbb_bid.bid_amount >= auction.bar_buy_out_price;
+      const auction ?= get_bundle_auction_record(pbb_bundle, pbb_asset_seller) : MISSING_AUCTION;
+      const is_xtz = (auction.bar_buy_asset_type = XTZ);
+      const previous_bid = auction.bar_last_bid;
+      const is_buyout = auction.bar_buy_out_price > 0 and pbb_bid.bid_amount >= auction.bar_buy_out_price;
       var buy_asset_contract: option<address> = none;
       var buy_asset_token_id: option<nat> = none;
-      var bundle = verify_and_unpack_bundle(pbb_bundle);
+      const bundle = verify_and_unpack_bundle(pbb_bundle);
 
-      dorequire(auction.bar_start_time < now, AUCTION_NOT_IN_PROGRESS);
-      dorequire(auction.bar_end_time > now, AUCTION_FINISHED);
-      dorequire(process_sum_fees(auction.bar_origin_fees) + process_sum_fees(pbb_bid.bid_origin_fees) + protocol_fee <= auction.bar_max_seller_fees, FEES_OVER_SELLER_LIMIT);
+      do_require(auction.bar_start_time < now, AUCTION_NOT_IN_PROGRESS);
+      do_require(auction.bar_end_time > now, AUCTION_FINISHED);
+      do_require(process_sum_fees(auction.bar_origin_fees) + process_sum_fees(pbb_bid.bid_origin_fees) + protocol_fee <= auction.bar_max_seller_fees, FEES_OVER_SELLER_LIMIT);
 
-      var processed_asset = verify_and_unpack_asset(auction.bar_buy_asset_type, auction.bar_buy_asset);
+      const processed_asset = verify_and_unpack_asset(auction.bar_buy_asset_type, auction.bar_buy_asset);
       buy_asset_contract := processed_asset[0];
       buy_asset_token_id := processed_asset[1];
 
       if(is_xtz) then (
-        dorequire(transferred = (pbb_bid.bid_amount * 1utz), (AUCTION_BID_AMOUNT_MISMATCH, transferred, pbb_bid.bid_amount * 1utz));
+        do_require(transferred = (pbb_bid.bid_amount * 1utz), (AUCTION_BID_AMOUNT_MISMATCH, transferred, pbb_bid.bid_amount * 1utz));
       );
 
-      if(isnone(previous_bid)) then (
-        dorequire(auction.bar_minimal_price <= pbb_bid.bid_amount, AUCTION_BID_TOO_LOW);
-        dorequire(auction.bar_minimal_step <= pbb_bid.bid_amount, AUCTION_BID_TOO_LOW);
+      if(is_none(previous_bid)) then (
+        do_require(auction.bar_minimal_price <= pbb_bid.bid_amount, AUCTION_BID_TOO_LOW);
+        do_require(auction.bar_minimal_step <= pbb_bid.bid_amount, AUCTION_BID_TOO_LOW);
       ) else (
-        var last_bid = opt_get(previous_bid);
-        dorequire(last_bid.bid_amount < pbb_bid.bid_amount, AUCTION_BID_TOO_LOW);
-        dorequire(auction.bar_minimal_step <= pbb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
-        dorequire(last_bid.bid_bidder <> pbb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
+        const last_bid ?= previous_bid : NOT_FOUND;
+        do_require(last_bid.bid_amount < pbb_bid.bid_amount, AUCTION_BID_TOO_LOW);
+        do_require(auction.bar_minimal_step <= pbb_bid.bid_amount - last_bid.bid_amount, AUCTION_BID_TOO_LOW);
+        do_require(last_bid.bid_bidder <> pbb_bid.bid_bidder, AUCTION_BID_ALREADY_EXISTS);
         transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = auction.bar_buy_asset_type;
             ptp_asset = auction.bar_buy_asset;
@@ -513,7 +521,7 @@ entry put_bundle_bid(pbb_bundle: bytes, pbb_asset_seller: address, pbb_bid: bid)
       );
 
       if(is_buyout = true) then (
-        var origin = pbb_asset_seller;
+        const origin = pbb_asset_seller;
         transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
           bundle,
@@ -558,11 +566,11 @@ entry put_bundle_bid(pbb_bundle: bytes, pbb_asset_seller: address, pbb_bid: bid)
 
 entry finish_auction(fa_asset_contract: address, fa_asset_id: nat, fa_asset_seller: address){
     effect {
-      var auction = require_some(get_auction_record(fa_asset_contract, fa_asset_id, fa_asset_seller), MISSING_AUCTION);
+      const auction ?= get_auction_record(fa_asset_contract, fa_asset_id, fa_asset_seller) : MISSING_AUCTION;
 
-      dorequire(auction.auction_start_time < auction.auction_end_time < now, AUCTION_NOT_FINISHABLE);
+      do_require(auction.auction_start_time < auction.auction_end_time < now, AUCTION_NOT_FINISHABLE);
 
-      var last_bid = require_some(auction.auction_last_bid, NO_BID_FOR_AUCTION);
+      const last_bid ?= auction.auction_last_bid : NO_BID_FOR_AUCTION;
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
@@ -591,12 +599,12 @@ entry finish_auction(fa_asset_contract: address, fa_asset_id: nat, fa_asset_sell
 
 entry finish_bundle_auction(fba_bundle: bytes, fba_seller: address){
     effect {
-      var auction = require_some(get_bundle_auction_record(fba_bundle, fba_seller), MISSING_AUCTION);
-      var bundle = verify_and_unpack_bundle(fba_bundle);
+      const auction ?= get_bundle_auction_record(fba_bundle, fba_seller) : MISSING_AUCTION;
+      const bundle = verify_and_unpack_bundle(fba_bundle);
 
-      dorequire(auction.bar_start_time < auction.bar_end_time < now, AUCTION_NOT_FINISHABLE);
+      do_require(auction.bar_start_time < auction.bar_end_time < now, AUCTION_NOT_FINISHABLE);
 
-      var last_bid = require_some(auction.bar_last_bid, NO_BID_FOR_AUCTION);
+      const last_bid ?= auction.bar_last_bid : NO_BID_FOR_AUCTION;
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
@@ -621,9 +629,9 @@ entry finish_bundle_auction(fba_bundle: bytes, fba_seller: address){
 
 entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat){
     effect {
-      var auction = require_some(get_auction_record(ca_asset_contract, ca_asset_id, caller), MISSING_AUCTION);
+      const auction ?= get_auction_record(ca_asset_contract, ca_asset_id, caller) : MISSING_AUCTION;
 
-      dorequire(isnone(auction.auction_last_bid), AUCTION_WITH_BID_NON_CANCELLABLE);
+      do_require(is_none(auction.auction_last_bid), AUCTION_WITH_BID_NON_CANCELLABLE);
 
       transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
         ptp_asset_type = FA2;
@@ -641,10 +649,10 @@ entry cancel_auction(ca_asset_contract: address, ca_asset_id: nat){
 
 entry cancel_bundle_auction(cba_bundle: bytes){
     effect {
-      var auction = require_some(get_bundle_auction_record(cba_bundle, caller), MISSING_AUCTION);
-      var bundle = verify_and_unpack_bundle(cba_bundle);
+      const auction ?= get_bundle_auction_record(cba_bundle, caller) : MISSING_AUCTION;
+      const bundle = verify_and_unpack_bundle(cba_bundle);
 
-      dorequire(isnone(auction.bar_last_bid), AUCTION_WITH_BID_NON_CANCELLABLE);
+      do_require(is_none(auction.bar_last_bid), AUCTION_WITH_BID_NON_CANCELLABLE);
 
       for item in bundle do
         transfer 0tz to auction_storage call process_transfers<list<process_transfer_param>>([{
@@ -664,7 +672,7 @@ entry cancel_bundle_auction(cba_bundle: bytes){
 }
 
 function auction_exists(ae_asset_contract: address, ae_asset_id: nat, ae_asset_seller: address) : bool {
-    return match callview<bool>(
+    return match call_view<bool>(
         auction_storage,
         "auction_exists",
         (
@@ -680,7 +688,7 @@ function auction_exists(ae_asset_contract: address, ae_asset_id: nat, ae_asset_s
 }
 
 function bundle_auction_exists(bae_bundle: bytes, bae_seller: address) : bool {
-    return match callview<bool>(
+    return match call_view<bool>(
         auction_storage,
         "bundle_auction_exists",
         (
@@ -695,7 +703,7 @@ function bundle_auction_exists(bae_bundle: bytes, bae_seller: address) : bool {
 }
 
 function get_auction_record(gar_asset_contract: address, gar_asset_id: nat, gar_asset_seller: address) : option<auction_record> {
-    return opt_get(callview<option<auction_record>>(
+    const res ?= call_view<option<auction_record>>(
         auction_storage,
         "get_auction",
         (
@@ -703,18 +711,20 @@ function get_auction_record(gar_asset_contract: address, gar_asset_id: nat, gar_
             gar_asset_id,
             gar_asset_seller
         )
-    ))
+    ) : NOT_FOUND;
+    return res
 }
 
 function get_bundle_auction_record(gbar_bundle: bytes, gbar_seller: address) : option<bundle_auction_record> {
-    return opt_get(callview<option<bundle_auction_record>>(
+    const res ?= call_view<option<bundle_auction_record>>(
         auction_storage,
         "get_bundle_auction",
         (
             gbar_bundle,
             gbar_seller
         )
-    ))
+    ) : NOT_FOUND;
+    return res
 }
 
 function bp(bp_value : nat, bp_op_value : nat) : nat {
@@ -759,9 +769,9 @@ function verify_and_unpack_bundle(vaub_data: bytes) : (list<bundle_item>) {
     )
     | none -> fail(CANT_UNPACK_BUNDLE)
     end;
-    dorequire(length(bundle) > 0, BUNDLE_CANT_BE_EMPTY);
+    do_require(length(bundle) > 0, BUNDLE_CANT_BE_EMPTY);
     for item in bundle do
-      dorequire(item.bundle_item_qty > 0, INVALID_BUNDLE_ITEM_QTY);
+      do_require(item.bundle_item_qty > 0, INVALID_BUNDLE_ITEM_QTY);
     done;
     return (bundle)
 }
@@ -775,3 +785,11 @@ function process_sum_fees(psf_fees: list<part>): nat {
 }
 
 entry default() {}
+
+// Just in case ...
+entry collect(addr : address, a : tez) {
+  called by owner
+  effect {
+    transfer a to addr
+  }
+}

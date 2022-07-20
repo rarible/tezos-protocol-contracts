@@ -35,6 +35,9 @@ constant ROUNDING_ERROR                 : string = "ROUNDING_ERROR"
 constant CANNOT_USE_0_SALT              : string = "CANNOT_USE_0_SALT"
 constant CONTRACT_PAUSED                : string = "CONTRACT_PAUSED"
 constant CONTRACT_NOT_PAUSED            : string = "CONTRACT_NOT_PAUSED"
+constant MISSING_OWNER_CANDIDATE        : string = "MISSING_OWNER_CANDIDATE"
+constant INVALID_CALLER                 : string = "INVALID_CALLER"
+constant NOT_FOUND                      : string = "NOT_FOUND"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -50,9 +53,14 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
+  }
+  require {
+    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := owner_candidate_addr;
     owner_candidate := none
   }
 }
@@ -86,26 +94,38 @@ entry set_metadata_uri(idata : bytes) {
 
 variable paused : bool = false
 
+/**
+ * Pause the contract execution
+ */
 entry pause() {
   called by owner
+  require {
+    pausable_r1: is_not_paused()
+  }
   effect {
-    dorequire(not paused, CONTRACT_PAUSED);
     paused := true
   }
 }
 
+/**
+ * Resume the contract execution
+ */
 entry unpause() {
   called by owner
+  require {
+    pausable_r2: paused otherwise CONTRACT_NOT_PAUSED
+  }
   effect {
-    dorequire(paused, CONTRACT_NOT_PAUSED);
     paused := false
   }
 }
 
-function isNotPaused() : bool {
-  if (not paused)
-  then return true
-  else fail(CONTRACT_PAUSED)
+/**
+ * Asserts that the contract execution is not paused
+ */
+function is_not_paused() : bool {
+  do_fail_if(paused, CONTRACT_PAUSED);
+  return true
 }
 
 //----------------------------------------------------------------------------
@@ -131,12 +151,12 @@ record rec_asset_type {
 
 record %asset {
   asset_type : rec_asset_type;
-  asset_value : nat;
+  %asset_value : nat;
 }
 
 record order {
   maker      : option<key>;
-  make_asset : %asset;
+  %make_asset : %asset;
   taker      : option<key>;
   take_asset : %asset;
   salt       : nat;
@@ -161,8 +181,8 @@ record part {
   part_value   : nat;
 }
 
-constant V1 : bytes = keccak(pack("V1"))
-constant V2 : bytes = keccak(pack("V2"))
+constant V1 : bytes = 0x3067ce64f894654e49d3c9c06f57d901e811f0ef0c5818fdcaf73b16a683f200 // TODO: replace by keccak(pack("V1"))
+constant V2 : bytes = 0x66c4287e20f49d8160bbf89f88972b3545568b60cd77081f38cded95949ee9c8 // TODO: replace by keccak(pack("V2"))
 
 record DataV1 {
   v1_payouts : list<part>;
@@ -187,9 +207,12 @@ entry set_fill(f : address) {
 }
 
 entry cancel(iorder : order) {
-  called by owner or key_address(opt_get(iorder.maker))
+  constant {
+    maker_key ?is iorder.maker otherwise NOT_FOUND;
+  }
   require {
-    r0: isNotPaused();
+    c1: owner = caller or key_to_address(maker_key) = caller otherwise INVALID_CALLER;
+    r0: is_not_paused();
     r1: iorder.salt <> 0 otherwise CANNOT_USE_0_SALT;
   }
   effect {
@@ -202,14 +225,14 @@ function hashKeyOrder(iorder : order) : bytes {
   if (iorder.data_type = V2) then
     return keccak(concat([
       pack(iorder.maker);
-      keccak(pack(iorder.make_asset.asset_type));
+      keccak(pack(iorder.%make_asset.asset_type));
       keccak(pack(iorder.take_asset.asset_type));
       pack(iorder.salt);
       pack(iorder.data)])
     )
   else return keccak(concat([
     pack(iorder.maker);
-    keccak(pack(iorder.make_asset.asset_type));
+    keccak(pack(iorder.%make_asset.asset_type));
     keccak(pack(iorder.take_asset.asset_type));
     pack(iorder.salt)]))
 }
@@ -221,7 +244,7 @@ function safeGetPartialAmountFloor(
   var num = numerator * target;
   match num /% denominator with
   | some(p) -> begin
-    if (num <> 0) then dofailif (p[1] * 1_000 >= num, ROUNDING_ERROR);
+    if (num <> 0) then do_fail_if (p[1] * 1_000 >= num, ROUNDING_ERROR);
     return p[0]
     end
   | none -> fail(DIVISION_BY_ZERO)
@@ -230,31 +253,31 @@ function safeGetPartialAmountFloor(
 
 function calculateRemaining(iorder : order, ifill : nat, isMakeFill : bool) : (nat * nat) {
   if not isMakeFill then begin
-    if (iorder.take_asset.asset_value < ifill) then (
-      fail((CALCULATE_REMAINING_FAILED, iorder.take_asset.asset_value, ifill))
+    if (iorder.take_asset.%asset_value < ifill) then (
+      fail((CALCULATE_REMAINING_FAILED, iorder.take_asset.%asset_value, ifill))
     );
-    var takeValue = sub_nat(iorder.take_asset.asset_value, ifill);
-    var makeValue = safeGetPartialAmountFloor(iorder.make_asset.asset_value, iorder.take_asset.asset_value, takeValue);
+    const takeValue ?= sub_nat(iorder.take_asset.%asset_value, ifill) : NOT_FOUND;
+    const makeValue = safeGetPartialAmountFloor(iorder.%make_asset.%asset_value, iorder.take_asset.%asset_value, takeValue);
     return ((makeValue, takeValue))
   end else begin
-    if (iorder.make_asset.asset_value < ifill) then (
-      fail((CALCULATE_REMAINING_FAILED, iorder.make_asset.asset_value, ifill))
+    if (iorder.%make_asset.%asset_value < ifill) then (
+      fail((CALCULATE_REMAINING_FAILED, iorder.%make_asset.%asset_value, ifill))
     );
-    var makeValue = sub_nat(iorder.make_asset.asset_value, ifill);
-    var takeValue = safeGetPartialAmountFloor(iorder.take_asset.asset_value, iorder.make_asset.asset_value, makeValue);
+    const makeValue ?= sub_nat(iorder.%make_asset.%asset_value, ifill) : NOT_FOUND;
+    const takeValue = safeGetPartialAmountFloor(iorder.take_asset.%asset_value, iorder.%make_asset.%asset_value, makeValue);
     return ((makeValue, takeValue))
   end
 }
 
 function fillLeft(leftMakeValue : nat, leftTakeValue : nat, rightMakeValue : nat, rightTakeValue : nat) : fill_result {
   var rightTake = safeGetPartialAmountFloor(leftTakeValue, rightMakeValue, rightTakeValue);
-  dorequire(rightTake <= leftMakeValue, CANNOT_FILL_LEFT);
+  do_require(rightTake <= leftMakeValue, CANNOT_FILL_LEFT);
   return ({leftMakeValue; leftTakeValue})
 }
 
 function fillRight(leftMakeValue : nat, leftTakeValue : nat, rightMakeValue : nat, rightTakeValue : nat) : fill_result {
   var makerValue = safeGetPartialAmountFloor(rightTakeValue, leftMakeValue, leftTakeValue);
-  dorequire(makerValue <= rightMakeValue, CANNOT_FILL_RIGHT);
+  do_require(makerValue <= rightMakeValue, CANNOT_FILL_RIGHT);
   return ({rightTakeValue; makerValue})
 }
 
@@ -269,15 +292,15 @@ function fillOrder(leftOrder : order, rightOrder : order, leftOrderFill : nat, r
 
   return
   (if (rightTakeValue > leftMakeValue)
-  then fillLeft(leftMakeValue, leftTakeValue, rightOrder.make_asset.asset_value, rightOrder.take_asset.asset_value)
-  else fillRight(leftOrder.make_asset.asset_value, leftOrder.take_asset.asset_value, rightMakeValue, rightTakeValue))
+  then fillLeft(leftMakeValue, leftTakeValue, rightOrder.%make_asset.%asset_value, rightOrder.take_asset.%asset_value)
+  else fillRight(leftOrder.%make_asset.%asset_value, leftOrder.take_asset.%asset_value, rightMakeValue, rightTakeValue))
 }
 
 function getOrderFill(iorder : order, ihash : bytes) : nat {
   var res : nat = 0;
-  var fillcontains = match callview<bool>(fill, "contains", ihash) with | some(v) -> v | none -> false end;
+  var fillcontains = match call_view<bool>(fill, "contains", ihash) with | some(v) -> v | none -> false end;
   if (iorder.salt <> 0 and fillcontains) then
-    match callview<option<nat>>(fill, "get", ihash) with
+    match call_view<option<nat>>(fill, "get", ihash) with
       | some(optv) ->
         match optv with
         | some(v) -> res := v
@@ -329,7 +352,7 @@ function getRoyaltiesByAssetType(matchNft : rec_asset_type, idata : bytes, s : a
     | some (v) ->
       var token : address = v[0];
       var tokenId : nat   = v[1];
-      match callview<list<part>>(royalties, "get_royalties", (token,tokenId)) with
+      match call_view<list<part>>(royalties, "get_royalties", (token,tokenId)) with
       | some(roy) -> res := roy
       | none -> fail(CANNOT_GET_ROYALTIES)
       end
@@ -352,7 +375,7 @@ function getFillSetNew(
   var leftOrderFill = getOrderFill(orderLeft, leftOrderKeyHash);
   var rightOrderFill = getOrderFill(orderRight, rightOrderKeyHash);
   var newFill = fillOrder(orderLeft, orderRight, leftOrderFill, rightOrderFill, leftOrderData.v2_is_make_fill, rightOrderData.v2_is_make_fill);
-  dorequire(newFill.take_value > 0 and newFill.make_value > 0, NOTHING_TO_FILL);
+  do_require(newFill.take_value > 0 and newFill.make_value > 0, NOTHING_TO_FILL);
   var leftOrderNewFill : option<nat> = none;
   if (orderLeft.salt <> 0) then
     if leftOrderData.v2_is_make_fill then
@@ -375,7 +398,8 @@ function payoutSet(orderAddress : address, dataOrderOnePayoutIn : DataV2) : Data
 }
 
 function parse(iorder : order) : DataV2 {
-  var addr_maker : address = key_address(opt_get(iorder.maker));
+  const make_key ?= iorder.maker : NOT_FOUND;
+  var addr_maker : address = key_to_address(make_key);
   if (iorder.data_type = V1) then (
     match unpack<DataV1>(iorder.data) with
     | some(dataOrder) -> begin
@@ -411,10 +435,10 @@ function parse(iorder : order) : DataV2 {
 }
 
 entry match_and_transfer(order_left : order, order_right : order, imake_match : option<rec_asset_type>, itake_match : option<rec_asset_type>) {
-  called by selfaddress
+  called by self_address
   effect {
-    var makeMatch = require_some(imake_match, MAKE_MATCH_NONE);
-    var takeMatch = require_some(itake_match, TAKE_MATCH_NONE);
+    const makeMatch ?= imake_match : MAKE_MATCH_NONE;
+    const takeMatch ?= itake_match : TAKE_MATCH_NONE;
     var leftOrderKeyHash  = hashKeyOrder(order_left);
     var rightOrderKeyHash = hashKeyOrder(order_right);
     var leftOrderData     = parse(order_left);
@@ -439,8 +463,8 @@ entry match_and_transfer(order_left : order, order_right : order, imake_match : 
     var empty_royalties : list<part> = [];
     var roy : list<part> =
       match feeSide with
-      | MAKE -> getRoyaltiesByAssetType(takeMatch, packedData, selfaddress)
-      | TAKE -> getRoyaltiesByAssetType(makeMatch, packedData, selfaddress)
+      | MAKE -> getRoyaltiesByAssetType(takeMatch, packedData, self_address)
+      | TAKE -> getRoyaltiesByAssetType(makeMatch, packedData, self_address)
       | NONE -> empty_royalties
       end;
 
@@ -465,14 +489,14 @@ function validateDate(d : option<date>, pos : time_pos) : bool {
 }
 
 function validate (iorder : order, isig : option<signature>) : bool {
-  var key_maker : key = opt_get(iorder.maker);
-  var addr_maker : address = key_address(key_maker);
+  const key_maker : key ?= iorder.maker : NOT_FOUND;
+  var addr_maker : address = key_to_address(key_maker);
   if (iorder.salt = 0) then (
-    dorequire(source = addr_maker, MAKER_NOT_TX_SENDER);
+    do_require(source = addr_maker, MAKER_NOT_TX_SENDER);
     return true
   ) else (
     if (source <> addr_maker) then (
-      var s = require_some(isig, SIGNATURE_NONE);
+      const s ?= isig : SIGNATURE_NONE;
       return check_signature(key_maker, s, pack(iorder))
     ) else (
       return true
@@ -482,15 +506,16 @@ function validate (iorder : order, isig : option<signature>) : bool {
 
 function is_caller(k : option<key>) : bool {
   match k with
-    | some(k) -> return (key_address(k) = caller)
+    | some(k) -> return (key_to_address(k) = caller)
     | none -> return false
   end
 }
 
 function validateFull(iorder : order, isignature : option<signature>) : bool {
-  dorequire(validateDate(iorder.start, PAST), ORDER_START_VALID_FAILED);
-  dorequire(validateDate(iorder.%end, FUTURE), ORDER_END_VALID_FAILED);
-  dorequire(validate(iorder, isignature), (BAD_SIGNATURE, opt_get(iorder.maker), pack(iorder), isignature));
+  const make_key ?= iorder.maker : NOT_FOUND;
+  do_require(validateDate(iorder.start, PAST), ORDER_START_VALID_FAILED);
+  do_require(validateDate(iorder.%end, FUTURE), ORDER_END_VALID_FAILED);
+  do_require(validate(iorder, isignature), (BAD_SIGNATURE, make_key, pack(iorder), isignature));
   return true
 }
 
@@ -548,18 +573,18 @@ entry match_orders(
   order_right : order,
   signature_right : option<signature>) {
   require {
-    r2 : isNotPaused()
+    r2 : is_not_paused()
   }
   effect {
     var a_ = validateFull(order_left, signature_left);
     var b_ = validateFull(order_right, signature_right);
-    if (issome(order_left.taker))
-    then dorequire(order_right.maker = order_left.taker, LEFT_ORDER_TAKER_VALID_FAILED);
-    if (issome(order_right.taker))
-    then dorequire(order_right.taker = order_left.maker, RIGHT_ORDER_TAKER_VALID_FAILED);
+    if (is_some(order_left.taker))
+    then do_require(order_right.maker = order_left.taker, LEFT_ORDER_TAKER_VALID_FAILED);
+    if (is_some(order_right.taker))
+    then do_require(order_right.taker = order_left.maker, RIGHT_ORDER_TAKER_VALID_FAILED);
 
-    var makeMatch = matchAssetTypes(order_left.make_asset.asset_type, order_right.take_asset.asset_type);
-    var takeMatch = matchAssetTypes(order_left.take_asset.asset_type, order_right.make_asset.asset_type);
+    var makeMatch = matchAssetTypes(order_left.%make_asset.asset_type, order_right.take_asset.asset_type);
+    var takeMatch = matchAssetTypes(order_left.take_asset.asset_type, order_right.%make_asset.asset_type);
     transfer transferred to entry self.match_and_transfer(order_left, order_right, makeMatch, takeMatch)
   }
 }

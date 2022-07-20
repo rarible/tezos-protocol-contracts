@@ -519,9 +519,7 @@ describe('[Multiple Public NFT] Transfers', async () => {
     it('Transfer a token not owned should fail', async () => {
         await expectToThrow(async () => {
             await fa2.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, 666, 1]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair 666 1) } }`,
                 as: alice.pkh,
             });
         }, errors.FA2_NOT_OPERATOR);
@@ -530,9 +528,7 @@ describe('[Multiple Public NFT] Transfers', async () => {
     it('Transfer a token from another user without a permit or an operator should fail', async () => {
         await expectToThrow(async () => {
             await fa2.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, tokenId, 1]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${tokenId} 1) } }`,
                 as: bob.pkh,
             });
         }, errors.FA2_NOT_OPERATOR);
@@ -541,9 +537,7 @@ describe('[Multiple Public NFT] Transfers', async () => {
     it('Transfer more tokens that owned should fail', async () => {
         await expectToThrow(async () => {
             await fa2.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, tokenId, 666]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${tokenId} 666) } }`,
                 as: alice.pkh,
             });
         }, errors.FA2_INSUFFICIENT_BALANCE);
@@ -579,9 +573,7 @@ describe('[Multiple Public NFT] Transfers', async () => {
 
         await expectToThrow(async () => {
             await fa2.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, tokenId, amount]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${tokenId} ${amount}) } }`,
                 as: carl.pkh,
             });
         }, errors.EXPIRED_PERMIT);
@@ -633,9 +625,7 @@ describe('[Multiple Public NFT] Transfers', async () => {
         assert(bobBalances == null);
 
         await fa2.transfer({
-            arg: {
-                txs: [[alice.pkh, [[bob.pkh, tokenId, amount]]]],
-            },
+            argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${tokenId} ${amount}) } }`,
             as: carl.pkh,
         });
 
@@ -724,9 +714,7 @@ describe('[Multiple Public NFT] Transfers', async () => {
         });
 
         await fa2.transfer({
-            arg: {
-                txs: [[alice.pkh, [[bob.pkh, tokenId + 10, amount]]]],
-            },
+            argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${tokenId + 10} ${amount}) } }`,
             as: bob.pkh,
         });
 
@@ -1274,9 +1262,7 @@ describe('[Multiple Public NFT] Pause', async () => {
     it('Transfer is not possible when contract is paused should fail', async () => {
         await expectToThrow(async () => {
             await fa2.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, tokenId, 666]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${tokenId} 666) } }`,
                 as: alice.pkh,
             });
         }, errors.CONTRACT_PAUSED);

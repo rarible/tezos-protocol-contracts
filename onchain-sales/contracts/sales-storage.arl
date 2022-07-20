@@ -3,10 +3,10 @@ archetype sales_storage(
 )
 with metadata ""
 
-constant MISSING_SALES_CONTRACT: string = "MISSING_SALES_CONTRACT"
-constant MISSING_CANDIDATE: string = "MISSING_CANDIDATE"
-constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
-constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
+constant CANT_UNPACK_FA12_ASSET : string = "CANT_UNPACK_FA12_ASSET"
+constant CANT_UNPACK_FA2_ASSET  : string = "CANT_UNPACK_FA2_ASSET"
+constant MISSING_CANDIDATE      : string = "MISSING_CANDIDATE"
+constant MISSING_SALES_CONTRACT : string = "MISSING_SALES_CONTRACT"
 
 enum asset_type =
 | XTZ

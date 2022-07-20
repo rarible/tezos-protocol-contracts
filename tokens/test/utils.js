@@ -736,9 +736,9 @@ exports.getTokenId = (archetypeid, serial) => {
 
 exports.errors = {
     CALLER_NOT_OWNER: '"CALLER_NOT_OWNER"',
-    NOT_FOUND: '"NotFound"',
-    LEDGER_NOT_FOUND: '(Pair "AssetNotFound" "ledger")',
-    INVALID_CALLER: '"InvalidCaller"',
+    NOT_FOUND: '"NOT_FOUND"',
+    LEDGER_NOT_FOUND: '(Pair "ASSET_NOT_FOUND" "ledger")',
+    INVALID_CALLER: '"INVALID_CALLER"',
     INVALID_AMOUNT: '"FA2_INVALID_AMOUNT"',
     FA2_INSUFFICIENT_BALANCE: '"FA2_INSUFFICIENT_BALANCE"',
     FA2_NOT_OPERATOR: '"FA2_NOT_OPERATOR"',
@@ -778,6 +778,6 @@ exports.errors = {
     EXPIRY_TOO_BIG: '"EXPIRY_TOO_BIG"',
     NOT_PERMIT_ISSUER: '"NOT_PERMIT_ISSUER"',
     CONTRACT_PAUSED: '"CONTRACT_PAUSED"',
-    KEY_EXISTS: '(Pair "KeyExists" "ledger")',
-    TOKEN_METADATA_KEY_EXISTS: '(Pair "KeyExists" "token_metadata")',
+    KEY_EXISTS: '(Pair "KEY_EXISTS" "ledger")',
+    TOKEN_METADATA_KEY_EXISTS: '(Pair "KEY_EXISTS" "token_metadata")',
 };
