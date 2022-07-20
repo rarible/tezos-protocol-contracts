@@ -3,11 +3,13 @@ archetype auction_storage(
 )
 with metadata ""
 
-constant MISSING_AUCTION_CONTRACT: string = "MISSING_AUCTION_CONTRACT"
-constant MISSING_TRANSFER_MANAGER: string = "MISSING_TRANSFER_MANAGER"
-constant MISSING_AUCTION: string = "MISSING_AUCTION"
-constant CANT_UNPACK_FA2_BUY_ASSET: string = "CANT_UNPACK_FA2_BUY_ASSET"
-constant CANT_UNPACK_FA12_BUY_ASSET: string = "CANT_UNPACK_FA12_BUY_ASSET"
+constant CANT_UNPACK_FA12_BUY_ASSET : string = "CANT_UNPACK_FA12_BUY_ASSET"
+constant CANT_UNPACK_FA2_BUY_ASSET  : string = "CANT_UNPACK_FA2_BUY_ASSET"
+constant INVALID_CALLER             : string = "INVALID_CALLER"
+constant MISSING_AUCTION            : string = "MISSING_AUCTION"
+constant MISSING_AUCTION_CONTRACT   : string = "MISSING_AUCTION_CONTRACT"
+constant MISSING_OWNER_CANDIDATE    : string = "MISSING_OWNER_CANDIDATE"
+constant MISSING_TRANSFER_MANAGER   : string = "MISSING_TRANSFER_MANAGER"
 
 enum asset_type =
 | XTZ
@@ -42,9 +44,14 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
+  }
+  require {
+    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := owner_candidate_addr;
     owner_candidate := none
   }
 }
@@ -142,9 +149,14 @@ record transfer_param {
 } as ((%to, (token_id, amount)))
 
 entry set_auction(sa_asset_contract: address, sa_asset_id: nat, sa_asset_seller: address, sa_auction : auction_record) {
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  constant {
+    auction_contract_addr ?is auction_contract otherwise MISSING_AUCTION_CONTRACT;
+  }
+  require {
+    sa1: auction_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    auctions.addupdate(
+    auctions.add_update(
       (
         sa_asset_contract,
         sa_asset_id,
@@ -158,9 +170,14 @@ entry set_auction(sa_asset_contract: address, sa_asset_id: nat, sa_asset_seller:
 }
 
 entry set_bundle_auction(sba_bundle: bytes, sba_seller: address, sba_auction : bundle_auction_record) {
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  constant {
+    auction_contract_addr ?is auction_contract otherwise MISSING_AUCTION_CONTRACT;
+  }
+  require {
+    sba1: auction_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    bundle_auctions.addupdate(
+    bundle_auctions.add_update(
       (
         sba_bundle,
         sba_seller
@@ -173,14 +190,24 @@ entry set_bundle_auction(sba_bundle: bytes, sba_seller: address, sba_auction : b
 }
 
 entry remove_auction(ra_asset : address, ra_asset_id : nat, ra_asset_seller: address) {
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  constant {
+    auction_contract_addr ?is auction_contract otherwise MISSING_AUCTION_CONTRACT;
+  }
+  require {
+    ra1: auction_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
     auctions.remove((ra_asset, ra_asset_id, ra_asset_seller));
   }
 }
 
 entry remove_bundle_auction(rba_bundle : bytes, rba_seller: address) {
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT)
+  constant {
+    auction_contract_addr ?is auction_contract otherwise MISSING_AUCTION_CONTRACT;
+  }
+  require {
+    rba1: auction_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
     bundle_auctions.remove((rba_bundle, rba_seller));
   }
@@ -195,23 +222,21 @@ view bundle_auction_exists(bae_bundle : bytes, bae_seller: address) : bool {
 }
 
 view get_auction(ga_asset : address, ga_asset_id : nat, ga_asset_seller: address) : option<auction_record> {
-  if(auctions.contains((ga_asset, ga_asset_id, ga_asset_seller))) then (
-    return some(auctions[(ga_asset, ga_asset_id, ga_asset_seller)].auction);
-   ) else (
-    return none;
-   )
+  return auctions[(ga_asset, ga_asset_id, ga_asset_seller)]?.auction
 }
 
 view get_bundle_auction(gba_bundle : bytes, gba_seller: address) : option<bundle_auction_record> {
-  if(bundle_auctions.contains((gba_bundle, gba_seller))) then (
-    return some(bundle_auctions[(gba_bundle, gba_seller)].bundle_auction);
-   ) else (
-    return none;
-   )
+  return (bundle_auctions[(gba_bundle, gba_seller)]?.bundle_auction)
 }
 
 entry process_transfers(pt_transfers: list<process_transfer_param>){
-  called by require_some(auction_contract, MISSING_AUCTION_CONTRACT) or require_some(transfer_manager, MISSING_TRANSFER_MANAGER)
+  constant {
+    auction_contract_addr ?is auction_contract otherwise MISSING_AUCTION_CONTRACT;
+    transfer_manager_addr ?is transfer_manager otherwise MISSING_TRANSFER_MANAGER;
+  }
+  require {
+    pt1: auction_contract_addr = caller or transfer_manager_addr = caller otherwise INVALID_CALLER
+  }
   effect {
     for pt_transfer in pt_transfers do
       match pt_transfer.ptp_asset_type with

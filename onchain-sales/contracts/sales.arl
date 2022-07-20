@@ -6,23 +6,25 @@ archetype sales(
 )
 with metadata ""
 
-constant SALE_ALREADY_EXISTS: string = "SALE_ALREADY_EXISTS"
-constant MISSING_SALE: string = "MISSING_SALE"
-constant MISSING_BUNDLE_SALE: string = "MISSING_BUNDLE_SALE"
-constant AMOUNT_MISMATCH: string = "AMOUNT_MISMATCH"
-constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_ASSET"
-constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_ASSET"
-constant CANT_UNPACK_BUNDLE: string = "CANT_UNPACK_BUNDLE"
-constant WRONG_XTZ_PAYLOAD: string = "WRONG_XTZ_PAYLOAD"
-constant MAX_BUNDLE_SIZE: string = "MAX_BUNDLE_SIZE"
-constant INVALID_BUNDLE_ITEM_QTY: string = "INVALID_BUNDLE_ITEM_QTY"
-constant BUNDLE_CANT_BE_EMPTY: string = "BUNDLE_CANT_BE_EMPTY"
-constant FEES_OVER_SELLER_LIMIT: string = "FEES_OVER_SELLER_LIMIT"
-constant INVALID_SALE_END_DATE: string = "INVALID_SALE_END_DATE"
-constant INVALID_SALE_START_DATE: string = "INVALID_SALE_START_DATE"
-constant SALE_CLOSED: string = "SALE_CLOSED"
-constant SALE_NOT_STARTED: string = "SALE_NOT_STARTED"
-constant INVALID_BUY_AMOUNT: string = "INVALID_BUY_AMOUNT"
+constant AMOUNT_MISMATCH         : string = "AMOUNT_MISMATCH"
+constant BUNDLE_CANT_BE_EMPTY    : string = "BUNDLE_CANT_BE_EMPTY"
+constant CANT_UNPACK_BUNDLE      : string = "CANT_UNPACK_BUNDLE"
+constant CANT_UNPACK_FA12_ASSET  : string = "CANT_UNPACK_FA12_ASSET"
+constant CANT_UNPACK_FA2_ASSET   : string = "CANT_UNPACK_FA2_ASSET"
+constant FEES_OVER_SELLER_LIMIT  : string = "FEES_OVER_SELLER_LIMIT"
+constant INVALID_BUNDLE_ITEM_QTY : string = "INVALID_BUNDLE_ITEM_QTY"
+constant INVALID_BUY_AMOUNT      : string = "INVALID_BUY_AMOUNT"
+constant INVALID_CALLER          : string = "INVALID_CALLER"
+constant INVALID_SALE_END_DATE   : string = "INVALID_SALE_END_DATE"
+constant INVALID_SALE_START_DATE : string = "INVALID_SALE_START_DATE"
+constant MAX_BUNDLE_SIZE         : string = "MAX_BUNDLE_SIZE"
+constant MISSING_BUNDLE_SALE     : string = "MISSING_BUNDLE_SALE"
+constant MISSING_CANDIDATE       : string = "MISSING_CANDIDATE"
+constant MISSING_SALE            : string = "MISSING_SALE"
+constant SALE_ALREADY_EXISTS     : string = "SALE_ALREADY_EXISTS"
+constant SALE_CLOSED             : string = "SALE_CLOSED"
+constant SALE_NOT_STARTED        : string = "SALE_NOT_STARTED"
+constant WRONG_XTZ_PAYLOAD       : string = "WRONG_XTZ_PAYLOAD"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -40,9 +42,14 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    candidate ?is owner_candidate otherwise MISSING_CANDIDATE
+  }
+  require {
+    r0: caller = candidate otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := candidate;
     owner_candidate := none
   }
 }
@@ -184,14 +191,15 @@ entry sell (
             s_sale_type = XTZ;
     }
     effect {
-      if(issome(s_sale.sale_end)) then (
-        var end_date = opt_get(s_sale.sale_end);
-        dorequire(end_date > now, INVALID_SALE_END_DATE);
-        if(issome(s_sale.sale_start)) then (
-          var start_date = opt_get(s_sale.sale_start);
-          dorequire(start_date < end_date, INVALID_SALE_START_DATE)
-        );
-      );
+
+      match s_sale.sale_end with
+      | some(end_date) -> begin
+        do_require(end_date > now, INVALID_SALE_END_DATE);
+        const start_date = s_sale.sale_start ? the: now;
+        do_require(end_date > start_date, INVALID_SALE_START_DATE);
+      end
+      | none -> ()
+      end;
 
       var unpack_result = verify_and_unpack_asset(s_sale_type, s_sale_asset);
       transfer 0tz to sales_storage call set_sale<address * nat * address * asset_type * bytes * sale>(
@@ -225,17 +233,18 @@ entry sell_bundle (
             sb_sale_type = XTZ;
     }
     effect {
-      if(issome(sb_sale.bundle_sale_end)) then (
-        var end_date = opt_get(sb_sale.bundle_sale_end);
-        dorequire(end_date > now, INVALID_SALE_END_DATE);
-        if(issome(sb_sale.bundle_sale_start)) then (
-          var start_date = opt_get(sb_sale.bundle_sale_start);
-          dorequire(start_date < end_date, INVALID_SALE_START_DATE)
-        );
-      );
+      match sb_sale.bundle_sale_end with
+      | some(end_date) -> begin
+        do_require(end_date > now, INVALID_SALE_END_DATE);
+        const start_date = sb_sale.bundle_sale_start ? the: now;
+        do_require(end_date > start_date, INVALID_SALE_START_DATE);
+      end
+      | none -> ()
+      end;
+
       var unpack_result = verify_and_unpack_asset(sb_sale_type, sb_sale_asset);
       var bundle = verify_and_unpack_bundle(sb_bundle);
-      dorequire(length(bundle) <= max_bundle_items, (MAX_BUNDLE_SIZE, max_bundle_items));
+      do_require(length(bundle) <= max_bundle_items, (MAX_BUNDLE_SIZE, max_bundle_items));
       transfer 0tz to sales_storage call set_bundle_sale<bytes * address * asset_type * bytes * bundle_sale>(
         (
           sb_bundle,
@@ -259,26 +268,31 @@ entry buy(
   b_origin_fees: list<part>,
   b_payouts: list<part>){
     effect {
-      var current_sale = require_some(get_sale(b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset), MISSING_SALE);
-      dorequire(process_sum_fees(current_sale.sale_origin_fees) + process_sum_fees(b_origin_fees) + protocol_fee <= current_sale.sale_max_fees_base_boint, FEES_OVER_SELLER_LIMIT);
-      dorequire(b_amount > 0 and b_amount <= current_sale.sale_asset_qty, INVALID_BUY_AMOUNT);
+      var current_sale ?= get_sale(b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset) : MISSING_SALE;
+      do_require(process_sum_fees(current_sale.sale_origin_fees) + process_sum_fees(b_origin_fees) + protocol_fee <= current_sale.sale_max_fees_base_boint, FEES_OVER_SELLER_LIMIT);
+      do_require(b_amount > 0 and b_amount <= current_sale.sale_asset_qty, INVALID_BUY_AMOUNT);
 
-      if(issome(current_sale.sale_end)) then (
-        var end_date = opt_get(current_sale.sale_end);
-        dorequire(end_date > now, SALE_CLOSED);
-      );
+      match current_sale.sale_end with
+      | some(end_date) -> begin
+        do_require(end_date > now, SALE_CLOSED);
+      end
+      | none -> ()
+      end;
 
-      if(issome(current_sale.sale_start)) then (
-          var start_date = opt_get(current_sale.sale_start);
-          dorequire(start_date < now, SALE_NOT_STARTED);
-      );
+      match current_sale.sale_start with
+      | some(sale_start) -> begin
+        do_require(sale_start < now, SALE_NOT_STARTED);
+      end
+      | none -> ()
+      end;
+
 
       var unpack_result = verify_and_unpack_asset(b_sale_type, b_sale_asset);
       var buy_asset_contract = unpack_result[0];
       var buy_asset_token_id = unpack_result[1];
 
       if(b_sale_type = XTZ) then (
-        dorequire(transferred = current_sale.sale_amount * b_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
+        do_require(transferred = current_sale.sale_amount * b_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
       );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
@@ -286,7 +300,7 @@ entry buy(
           [{
             bundle_item_contract = b_asset_contract;
             bundle_item_id = b_asset_token_id ;
-            bundle_item_qty = current_sale.sale_asset_qty
+            bundle_item_qty = b_amount
           }],
           b_seller,
           caller,
@@ -329,24 +343,28 @@ entry buy_bundle(
   bb_payouts: list<part>
   ){
     effect {
-      var current_sale = require_some(get_bundle_sale(bb_bundle, bb_seller, bb_sale_type, bb_sale_asset), MISSING_BUNDLE_SALE);
-      dorequire(process_sum_fees(current_sale.bundle_sale_origin_fees) + process_sum_fees(bb_origin_fees) + protocol_fee <= current_sale.bundle_sale_max_fees_base_boint, FEES_OVER_SELLER_LIMIT);
-      dorequire(bb_amount > 0 and bb_amount <= current_sale.bundle_sale_qty, INVALID_BUY_AMOUNT);
+      var current_sale ?= get_bundle_sale(bb_bundle, bb_seller, bb_sale_type, bb_sale_asset) : MISSING_BUNDLE_SALE;
+      do_require(process_sum_fees(current_sale.bundle_sale_origin_fees) + process_sum_fees(bb_origin_fees) + protocol_fee <= current_sale.bundle_sale_max_fees_base_boint, FEES_OVER_SELLER_LIMIT);
+      do_require(bb_amount > 0 and bb_amount <= current_sale.bundle_sale_qty, INVALID_BUY_AMOUNT);
 
-      if(issome(current_sale.bundle_sale_end)) then (
-        var end_date = opt_get(current_sale.bundle_sale_end);
-        dorequire(end_date > now, SALE_CLOSED);
-      );
+      match current_sale.bundle_sale_end with
+      | some(end_date) -> begin
+        do_require(end_date > now, SALE_CLOSED);
+      end
+      | none -> ()
+      end;
 
-      if(issome(current_sale.bundle_sale_start)) then (
-          var start_date = opt_get(current_sale.bundle_sale_start);
-          dorequire(start_date < now, SALE_NOT_STARTED);
-      );
+      match current_sale.bundle_sale_start with
+      | some(sale_start) -> begin
+        do_require(sale_start < now, SALE_NOT_STARTED);
+      end
+      | none -> ()
+      end;
 
       var unpacked_bundle = verify_and_unpack_bundle(bb_bundle);
 
       if(bb_sale_type = XTZ) then (
-        dorequire(transferred = current_sale.bundle_sale_amount * bb_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.bundle_sale_amount * 1utz))
+        do_require(transferred = current_sale.bundle_sale_amount * bb_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.bundle_sale_amount * 1utz))
       );
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
@@ -414,7 +432,7 @@ function sale_exists(
   se_seller: address,
   se_sale_type: asset_type,
   se_sale_asset: bytes) : bool {
-    return match callview<bool>(
+    return match call_view<bool>(
         sales_storage,
         "sale_exists",
         (
@@ -436,7 +454,7 @@ function bundle_sale_exists(
   bse_seller: address,
   bse_sale_type: asset_type,
   bse_sale_asset: bytes) : bool {
-    return match callview<bool>(
+    return match call_view<bool>(
         sales_storage,
         "bundle_sale_exists",
         (
@@ -490,9 +508,9 @@ function verify_and_unpack_bundle(vaub_data: bytes) : (list<bundle_item>) {
     )
     | none -> fail(CANT_UNPACK_BUNDLE)
     end;
-    dorequire(length(bundle) > 0, BUNDLE_CANT_BE_EMPTY);
+    do_require(length(bundle) > 0, BUNDLE_CANT_BE_EMPTY);
     for item in bundle do
-      dorequire(item.bundle_item_qty > 0, INVALID_BUNDLE_ITEM_QTY);
+      do_require(item.bundle_item_qty > 0, INVALID_BUNDLE_ITEM_QTY);
     done;
     return (bundle)
 }
@@ -503,7 +521,7 @@ function get_sale(
   gb_seller: address,
   gb_sale_type: asset_type,
   gb_sale_asset: bytes) : option<sale> {
-    return opt_get(callview<option<sale>>(
+    return (call_view<option<sale>>(
         sales_storage,
         "get_sale",
         (
@@ -513,7 +531,7 @@ function get_sale(
           gb_sale_type,
           gb_sale_asset
         )
-    ))
+    ) ? the : none<sale>)
 }
 
 function get_bundle_sale(
@@ -521,7 +539,7 @@ function get_bundle_sale(
   gbs_seller: address,
   gbs_sale_type: asset_type,
   gbs_sale_asset: bytes) : option<bundle_sale> {
-    return opt_get(callview<option<bundle_sale>>(
+    return (call_view<option<bundle_sale>>(
         sales_storage,
         "get_bundle_sale",
         (
@@ -530,7 +548,7 @@ function get_bundle_sale(
           gbs_sale_type,
           gbs_sale_asset
         )
-    ))
+        ) ? the : none<bundle_sale>)
 }
 
 function bp(bp_value : nat, bp_op_value : nat) : nat {

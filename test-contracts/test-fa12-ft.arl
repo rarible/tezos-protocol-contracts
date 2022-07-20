@@ -1,5 +1,9 @@
 archetype fa12(initialholder : address, totalsupply : nat)
 
+constant NOT_ENOUGH_ALLOWANCE    : string = "NotEnoughAllowance"
+constant NOT_ENOUGH_BALANCE      : string = "NotEnoughBalance"
+constant UNSAFE_ALLOWANCE_CHANGE : string = "UnsafeAllowanceChange"
+
 asset allowance identified by addr_owner addr_spender to big_map {
   addr_owner       : address;
   addr_spender     : address;
@@ -21,22 +25,22 @@ asset token_metadata to big_map {
 
 entry set_token_metadata(m : bytes) {
   effect {
-    token_metadata.addupdate(0, { token_id = 0; token_info = [ ("", m)] })
+    token_metadata.add_update(0, { token_id = 0; token_info = [ ("", m)] })
   }
 }
 
 entry %transfer (%from : address, %to : address, value : nat) {
   require {
-    r1 otherwise "NotEnoughBalance" : ledger[%from].tokens >= value;
+    r1 : ledger[%from].tokens >= value otherwise NOT_ENOUGH_BALANCE;
   }
   effect {
     if caller <> %from then (
       var current = allowance[(%from, caller)].amount;
-      dofailif(current < value, ("NotEnoughAllowance", ((value, current))));
+      do_fail_if(current < value, (NOT_ENOUGH_ALLOWANCE, ((value, current))));
       allowance.update((%from, caller), { amount -=  value });
     );
     ledger.update(%from, { tokens -= value });
-    ledger.addupdate(%to, { tokens += value });
+    ledger.add_update(%to, { tokens += value });
   }
 }
 
@@ -44,9 +48,9 @@ entry approve(spender : address, value : nat) {
   var k = (caller, spender);
   if allowance.contains(k) then (
     var previous = allowance[k].amount;
-    dofailif(previous > 0 and value > 0, (("UnsafeAllowanceChange", previous)));
+    do_fail_if(previous > 0 and value > 0, ((UNSAFE_ALLOWANCE_CHANGE, previous)));
   );
-  allowance.addupdate( k, { amount = value });
+  allowance.add_update( k, { amount = value });
 }
 
 getter getAllowance (owner : address, spender : address) : nat {

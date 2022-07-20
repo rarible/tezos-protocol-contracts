@@ -498,9 +498,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_0, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_0} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -514,9 +512,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_1, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_1} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -530,9 +526,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_2, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_2} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -546,9 +540,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_3, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_3} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -562,9 +554,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_4, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_4} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -578,9 +568,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_5, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_5} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -594,9 +582,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_6, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_6} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -610,9 +596,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_7, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_0} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -626,9 +610,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_8, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_8} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -642,9 +624,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_9, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_9} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
         });
@@ -1522,7 +1502,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s3")');
+            }, errors.getErrorInvalidCondition("r_s3"));
         });
 
         it('Set sale with wrong buy asset payload (FA2) should fail', async () => {
@@ -1543,7 +1523,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_FA2_ASSET"');
+            }, errors.CANT_UNPACK_FA2_ASSET);
         });
 
         it('Set sale with wrong buy asset payload (FA12) should fail', async () => {
@@ -1563,7 +1543,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_FA12_ASSET"');
+            }, errors.CANT_UNPACK_FA12_ASSET);
         });
 
         it('Set sale with wrong buy asset payload (XTZ) should fail', async () => {
@@ -1605,7 +1585,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s1")');
+            }, errors.getErrorInvalidCondition("r_s1"));
         });
 
         it('Set sale with sale amount = 0 should fail', async () => {
@@ -1626,7 +1606,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s0")');
+            }, errors.getErrorInvalidCondition("r_s0"));
         });
 
         it('Set sale with end date < now should fail', async () => {
@@ -1650,7 +1630,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"INVALID_SALE_END_DATE"');
+            }, errors.INVALID_SALE_END_DATE);
         });
 
         it('Set sale with end date < start date should fail', async () => {
@@ -1671,7 +1651,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"INVALID_SALE_START_DATE"');
+            }, errors.INVALID_SALE_START_DATE);
         });
 
         it('Set sale with max fees amount = 0 should fail', async () => {
@@ -1692,7 +1672,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s2")');
+            }, errors.getErrorInvalidCondition("r_s2"));
         });
 
         it('Set sale with max fees amount > max limit should fail', async () => {
@@ -1713,7 +1693,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s2")');
+            }, errors.getErrorInvalidCondition("r_s2"));
         });
 
         it('Set sale with max fees amount < protocol fees should fail', async () => {
@@ -1734,7 +1714,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s2")');
+            }, errors.getErrorInvalidCondition("r_s2"));
         });
 
         it('Set sale with max fees amount > protocol fees + origin fees should fail', async () => {
@@ -1755,7 +1735,7 @@ describe('Set sales tests', async () => {
                                                             (Pair None None))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_s2")');
+            }, errors.getErrorInvalidCondition("r_s2"));
         });
 
         it('Set sale buying with a sale that already exists should update the previous order and succeed', async () => {
@@ -2684,7 +2664,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"BUNDLE_CANT_BE_EMPTY"');
+            }, errors.BUNDLE_CANT_BE_EMPTY);
         });
 
         it('Set bundle sale with unknown buy asset payload should fail', async () => {
@@ -2709,7 +2689,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb2")');
+            }, errors.getErrorInvalidCondition("r_sb2"));
         });
 
         it('Set bundle sale with wrong buy asset payload (FA2) should fail', async () => {
@@ -2734,7 +2714,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_FA2_ASSET"');
+            }, errors.CANT_UNPACK_FA2_ASSET);
         });
 
         it('Set bundle sale with wrong buy asset payload (FA12) should fail', async () => {
@@ -2758,7 +2738,7 @@ describe('Set bundle sales tests', async () => {
                                                                 (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_FA12_ASSET"');
+            }, errors.CANT_UNPACK_FA12_ASSET);
         });
 
         it('Set bundle sale with wrong buy asset payload (XTZ) should fail', async () => {
@@ -2783,7 +2763,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"WRONG_XTZ_PAYLOAD"');
+            }, errors.WRONG_XTZ_PAYLOAD);
         });
 
         it('Set bundle sale with wrong bundle payload should fail', async () => {
@@ -2804,7 +2784,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_BUNDLE"');
+            }, errors.CANT_UNPACK_BUNDLE);
         });
 
         it('Set bundle sale with NFT amount = 0 duration should fail', async () => {
@@ -2829,7 +2809,7 @@ describe('Set bundle sales tests', async () => {
                                                                 (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"INVALID_BUNDLE_ITEM_QTY"');
+            }, errors.INVALID_BUNDLE_ITEM_QTY);
         });
 
         it('Set bundle sale with sale amount = 0 should fail', async () => {
@@ -2854,7 +2834,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb0")');
+            }, errors.getErrorInvalidCondition("r_sb0"));
         });
 
         it('Set bundle sale with end date < now duration should fail', async () => {
@@ -2882,7 +2862,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"INVALID_SALE_END_DATE"');
+            }, errors.INVALID_SALE_END_DATE);
         });
 
         it('Set bundle sale with end date < start date duration should fail', async () => {
@@ -2907,7 +2887,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"INVALID_SALE_START_DATE"');
+            }, errors.INVALID_SALE_START_DATE);
         });
 
         it('Set bundle sale with max fees = 0 should fail', async () => {
@@ -2932,7 +2912,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb1")');
+            }, errors.getErrorInvalidCondition("r_sb1"));
         });
 
         it('Set bundle sale with max fees > max fees limit should fail', async () => {
@@ -2957,7 +2937,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb1")');
+            }, errors.getErrorInvalidCondition("r_sb1"));
         });
 
         it('Set bundle sale with max fees < protocol fees should fail', async () => {
@@ -2982,7 +2962,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb1")');
+            }, errors.getErrorInvalidCondition("r_sb1"));
         });
 
         it('Set bundle sale with max fees < protocol fees + origin fees should fail', async () => {
@@ -3007,7 +2987,7 @@ describe('Set bundle sales tests', async () => {
                                                             (Pair None None)))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sb1")');
+            }, errors.getErrorInvalidCondition("r_sb1"));
         });
 
         it('Set bundle sale buying with a sale that already exists should update the previous order and succeed', async () => {
@@ -3791,7 +3771,7 @@ describe('Buy tests', async () => {
                                                 (Pair {} {})))))))`,
                     as: bob.pkh,
                 });
-            }, '"MISSING_SALE"');
+            }, errors.MISSING_SALE);
         });
 
         it('Buy with XTZ and wrong amount should fail', async () => {
@@ -3824,7 +3804,7 @@ describe('Buy tests', async () => {
                                                     (Pair {} {})))))))`,
                     as: bob.pkh,
                 });
-            }, '(Pair "AMOUNT_MISMATCH" (Pair 0 1000000))');
+            }, errors.getErrorAmountMismatch(0, 1000000));
         });
 
         it('Buy with good start date and end date should succeed', async () => {
@@ -3898,7 +3878,7 @@ describe('Buy tests', async () => {
                     amouynt: `${sale_amount}utz`,
                     as: bob.pkh,
                 });
-            }, '"SALE_NOT_STARTED"');
+            }, errors.SALE_NOT_STARTED);
         });
 
 
@@ -3922,7 +3902,7 @@ describe('Buy tests', async () => {
                     amouynt: `${sale_amount}utz`,
                     as: bob.pkh,
                 });
-            }, '"SALE_CLOSED"');
+            }, errors.SALE_CLOSED);
         });
     });
 });
@@ -4679,7 +4659,7 @@ describe('Buy bundle tests', async () => {
                     argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(FA12)} 0x${sale_asset}))`,
                     as: alice.pkh
                 });
-            }, '(Pair "InvalidCondition" "r_cbs0")');
+            }, errors.getErrorInvalidCondition("r_cbs0"));
         });
 
         it('Buy bundle with XTZ and wrong amount should fail', async () => {
@@ -4709,7 +4689,7 @@ describe('Buy bundle tests', async () => {
                     argMichelson: `(Pair 0x${bundle} (Pair "${alice.pkh}" (Pair ${parseInt(XTZ)} (Pair 0x${sale_asset} (Pair ${qty} (Pair {} {}))))))`,
                     as: bob.pkh
                 });
-            }, '(Pair "AMOUNT_MISMATCH" (Pair 0 1000000))');
+            }, errors.getErrorAmountMismatch(0, 1000000));
         });
 
         it('Buy bundle with good start date and end date should succeed', async () => {
@@ -4780,7 +4760,7 @@ describe('Buy bundle tests', async () => {
                     amount: `${sale_amount}utz`,
                     as: bob.pkh
                 });
-            }, '"SALE_NOT_STARTED"');
+            }, errors.SALE_NOT_STARTED);
         });
 
 
@@ -4804,7 +4784,7 @@ describe('Buy bundle tests', async () => {
                     amount: `${sale_amount}utz`,
                     as: bob.pkh
                 });
-            }, '"SALE_CLOSED"');
+            }, errors.SALE_CLOSED);
         });
     });
 });
@@ -4818,7 +4798,7 @@ describe('Cancel sale tests', async () => {
                 argMichelson: `(Pair "${nft.address}" (Pair 2222 (Pair ${parseInt(XTZ)} 0x${sale_asset})))`,
                 as: bob.pkh,
             });
-        }, '(Pair "InvalidCondition" "r_cs0")');
+        }, errors.getErrorInvalidCondition("r_cs0"));
     });
 
 
@@ -4861,7 +4841,7 @@ describe('Cancel bundle sale tests', async () => {
                 argMichelson: `(Pair 0x${bundle} (Pair ${parseInt(XTZ)} 0x${sale_asset}))`,
                 as: bob.pkh,
             });
-        }, '(Pair "InvalidCondition" "r_cbs0")');
+        }, errors.getErrorInvalidCondition("r_cbs0"));
     });
 
     it('Cancel own bundle sale should succeed', async () => {
@@ -5105,7 +5085,7 @@ describe('Miscelleanous tests', async () => {
                 as: bob.pkh,
                 amount: `${sale_amount}utz`,
             });
-        }, '"INVALID_BUY_AMOUNT"');
+        }, errors.INVALID_BUY_AMOUNT);
     });
 
     it('Buy with amount > sale amount should fail', async () => {
@@ -5123,7 +5103,7 @@ describe('Miscelleanous tests', async () => {
                 as: bob.pkh,
                 amount: `${sale_amount}utz`,
             });
-        }, '"INVALID_BUY_AMOUNT"');
+        }, errors.INVALID_BUY_AMOUNT);
     });
 
     it('Buy with multiple items should succeed', async () => {
@@ -5276,7 +5256,7 @@ describe('Miscelleanous tests', async () => {
                 amount: `${sale_amount}utz`,
                 as: bob.pkh
             });
-        }, '"INVALID_BUY_AMOUNT"');
+        }, errors.INVALID_BUY_AMOUNT);
     });
 
     it('Buy bundle with qty > sale amount should fail', async () => {
@@ -5292,7 +5272,7 @@ describe('Miscelleanous tests', async () => {
                 amount: `${sale_amount}utz`,
                 as: bob.pkh
             });
-        }, '"INVALID_BUY_AMOUNT"');
+        }, errors.INVALID_BUY_AMOUNT);
     });
 
     it('Buy with multiple items should succeed', async () => {

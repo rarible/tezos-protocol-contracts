@@ -17,6 +17,9 @@ constant ROYALTIES_TOO_HIGH             : string = "ROYALTIES_TOO_HIGH"
 constant TAKE_ASSET_IS_NOT_XTZ          : string = "TAKE_ASSET_IS_NOT_XTZ"
 constant NOT_ENOUGH_XTZ                 : string = "NOT_ENOUGH_XTZ"
 constant NO_OPERATION_TO_SEND           : string = "NO_OPERATION_TO_SEND"
+constant MISSING_OWNER_CANDIDATE        : string = "MISSING_OWNER_CANDIDATE"
+constant INVALID_CALLER                 : string = "INVALID_CALLER"
+constant NOT_FOUND                      : string = "NOT_FOUND"
 
 //----------------------------------------------------------------------------
 // Metadata
@@ -43,9 +46,14 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
+  }
+  require {
+    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := owner_candidate_addr;
     owner_candidate := none
   }
 }
@@ -120,7 +128,7 @@ function getFeeReceiver(token : option<address>) : address {
   return
     match token with
     | some (v) ->
-        match fee_receivers.getopt(v) with
+        match fee_receivers[v] with
         | some (wallet) -> wallet
         | none -> default_fee_receiver
         end
@@ -146,20 +154,20 @@ record rec_asset_type {
 }
 
 record %asset {
-  asset_type : rec_asset_type;
-  asset_value : nat;
+  asset_type   : rec_asset_type;
+  %asset_value : nat;
 }
 
 record order {
-  maker      : option<key>;
-  make_asset : %asset;
-  taker      : option<key>;
-  take_asset : %asset;
-  salt       : nat;
-  start      : option<date>;
-  %end       : option<date>;
-  data_type  : bytes;
-  data       : bytes;
+  maker       : option<key>;
+  %make_asset : %asset;
+  taker       : option<key>;
+  take_asset  : %asset;
+  salt        : nat;
+  start       : option<date>;
+  %end        : option<date>;
+  data_type   : bytes;
+  data        : bytes;
 }
 
 record fill_result {
@@ -206,16 +214,16 @@ function get_transfer(
   ito : address) : transfer_arg {
     match iasset.asset_type.asset_class with
     | XTZ -> begin
-      var vamount : tez = iasset.asset_value * 1utz;
+      var vamount : tez = iasset.%asset_value * 1utz;
       return XTZ_ARG(vamount,ito)
     end
     | FA_1_2 -> begin
-      var addr_fa_1_2 = require_some(unpack<address>(iasset.asset_type.asset_data), CANNOT_UNPACK_FA_1_2_ADDR);
-      return FA_1_2_ARG(addr_fa_1_2, ifrom, ito, iasset.asset_value);
+      var addr_fa_1_2 ?= unpack<address>(iasset.asset_type.asset_data) : CANNOT_UNPACK_FA_1_2_ADDR;
+      return FA_1_2_ARG(addr_fa_1_2, ifrom, ito, iasset.%asset_value);
     end
     | FA_2(fa2t) -> begin
-      var u = require_some(unpack<address * nat>(iasset.asset_type.asset_data), CANNOT_UNPACK_FA_2_ADDR);
-      var arg : list<address * list<address * nat * nat>> = [(ifrom, [(ito, u[1], iasset.asset_value)])];
+      var u ?= unpack<address * nat>(iasset.asset_type.asset_data) : CANNOT_UNPACK_FA_2_ADDR;
+      var arg : list<address * list<address * nat * nat>> = [(ifrom, [(ito, u[1], iasset.%asset_value)])];
       return FA_2_ARG(u[0], arg)
     end
     | FA_2_LAZY(fa2t) -> fail (ASSET_TYPE_UNSUPPORTED)
@@ -237,19 +245,19 @@ function transferPayouts(
           var currentAmount = bp(iamount, item.partValue);
           sumBps += item.partValue;
           if (currentAmount > 0) then (
-            restValue := sub_nat(restValue, currentAmount);
+            restValue ?:= sub_nat(restValue, currentAmount) : NOT_FOUND;
             ops.prepend(get_transfer(
               {asset_type = matchCalculate;
-               asset_value = currentAmount}, ifrom, item.partAccount));
+               %asset_value = currentAmount}, ifrom, item.partAccount));
           )
       done;
       ops.reverse();
       sumBps += lastPayout.partValue;
-      dorequire(sumBps = 10_000, SUM_PAYOUTS_NOT_100_PERCENT);
+      do_require(sumBps = 10_000, SUM_PAYOUTS_NOT_100_PERCENT);
       if (restValue > 0) then (
           ops.prepend(get_transfer(
               {asset_type = matchCalculate;
-               asset_value = restValue}, ifrom, lastPayout.partAccount));
+               %asset_value = restValue}, ifrom, lastPayout.partAccount));
       )
     end
     | [] -> ()
@@ -266,7 +274,9 @@ function calculateTotalAmount(iamount : nat, feeOnTopBp : nat, orderOriginFees :
 }
 
 function subFee(value : nat, fee : nat) : nat * nat {
-  return (if value > fee then (sub_nat (value, fee), fee) else (0, value))
+  return (if value > fee then (sub_nat (value, fee) ? the : 0, fee) else (0, value))
+  // TODO: check if it's this lighter code is equivalent
+  // return (sub_nat (value, fee) ? (the, fee) : (0, value))
 }
 
 function subFeeInBp(value : nat, total : nat, feeInBp : nat) : nat * nat {
@@ -336,7 +346,7 @@ function transferRoyalties(
     var result = r[0];
     var totalRoyalties = r[1];
     var ops = r[2];
-    dorequire(totalRoyalties <= 5000, ROYALTIES_TOO_HIGH);
+    do_require(totalRoyalties <= 5000, ROYALTIES_TOO_HIGH);
     return ((result, ops))
 }
 
@@ -377,8 +387,10 @@ entry do_transfers(
       var totalMakeValue = ifill.make_value;
       var totalTakeValue = ifill.take_value;
 
-      var left_order_maker  : address = key_address(opt_get(order_left.maker));
-      var right_order_maker : address = key_address(opt_get(order_right.maker));
+      const left_order_maker_key : key ?= order_left.maker : NOT_FOUND;
+      var left_order_maker  : address = key_to_address(left_order_maker_key);
+      const right_order_maker_key : key ?= order_right.maker : NOT_FOUND;
+      var right_order_maker : address = key_to_address(right_order_maker_key);
 
       var ops1 : list<transfer_arg> = [];
       var ops2 : list<transfer_arg> = [];
@@ -399,48 +411,50 @@ entry do_transfers(
 
       var ops3 : list<transfer_arg> = [];
       if (make_match.asset_class = XTZ) then (
-        dorequire(take_match.asset_class <> XTZ, TAKE_ASSET_IS_NOT_XTZ);
+        do_require(take_match.asset_class <> XTZ, TAKE_ASSET_IS_NOT_XTZ);
         var ntransferred = mutez_to_nat(transferred);
-        dorequire(ntransferred >= totalMakeValue, NOT_ENOUGH_XTZ);
+        do_require(ntransferred >= totalMakeValue, NOT_ENOUGH_XTZ);
         if (ntransferred > totalMakeValue) then (
           var n : nat = ntransferred;
-          var a : tez = sub_nat(n, totalMakeValue) * 1utz;
+          var a : tez = (sub_nat(n, totalMakeValue) ? the * 1utz : 0utz) ;
           ops3 := [XTZ_ARG(a, source)]
         )
       ) else if (take_match.asset_class = XTZ) then (
         var ntransferred = mutez_to_nat(transferred);
-        dorequire(ntransferred >= totalTakeValue, NOT_ENOUGH_XTZ);
+        do_require(ntransferred >= totalTakeValue, NOT_ENOUGH_XTZ);
         if (ntransferred > totalTakeValue) then (
           var n : nat = ntransferred;
-          var a : tez = sub_nat(n, totalTakeValue) * 1utz;
+          var a : tez = (sub_nat(n, totalTakeValue) ? the * 1utz : 0utz);
           ops3 := [XTZ_ARG(a, source)]
         )
       );
       var transfer_args = ops1.concat(concat(ops2, ops3));
 
       var mkops = lambda<list<operation>>((p:(list<transfer_arg> * unit)) ->
-        fold(left<list<operation>> ((emptylist<operation>(), p[0])), x ->
+        fold(left<list<operation>> ((make_list<operation>([]), p[0])), x ->
           begin
             match x[1] with
              | hd::tail -> left<list<operation>>((
-              (prepend(x[0],
+              prepend(x[0],
                 match hd with
                 | XTZ_ARG(amount, %to) ->
-                  mkoperation(amount, address_to_contract(%to), ())
+                  make_operation(amount, require_entrypoint<unit>("%default", %to, "NOT_FOUND"), Unit)
                 | FA_1_2_ARG(c, %from, %to, amount) ->
-                  mkoperation(0tz, require_entrypoint<address * address * nat>("%transfer", c, "ENTRY_FA_1_2_NOT_FOUND"), (%from, %to, amount))
+                  make_operation(0tz, require_entrypoint<address * address * nat>("%transfer", c, "ENTRY_FA_1_2_NOT_FOUND"), (%from, %to, amount))
                 | FA_2_ARG(c, txs) ->
-                  mkoperation(0tz, require_entrypoint<list<address * list<address * nat * nat>>>("%transfer", c, "ENTRY_FA_2_NOT_FOUND"), txs)
-                end)), tail))
+                  make_operation(0tz, require_entrypoint<list<address * list<address * nat * nat>>>("%transfer", c, "ENTRY_FA_2_NOT_FOUND"), txs)
+                end), tail))
              | [] -> right<list<operation> * list<transfer_arg>>(x[0])
             end
           end)
       );
 
-      var lambdaops = apply_lambda(mkops, transfer_args);
+      // var mkops = lambda<list<operation>>((p : list<transfer_arg> * unit) -> make_list<operation>([]));
 
-      transfer transferred to opt_get(transfer_proxy) call do_transfers<lambda<unit,list<operation>>>(lambdaops);
-      dorequire(operations.length() > 0, NO_OPERATION_TO_SEND)
+      const lambdaops = apply_lambda(mkops, transfer_args);
+
+      const transfer_proxy_addr ?= transfer_proxy : NOT_FOUND;
+      transfer transferred to transfer_proxy_addr call do_transfers<lambda<unit,list<operation>>>(lambdaops);
+      do_require(operations.length() > 0, NO_OPERATION_TO_SEND)
     }
 }
-

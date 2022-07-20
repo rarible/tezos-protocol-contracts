@@ -4,6 +4,10 @@
 archetype fill_storage(owner : address)
 with metadata ""
 
+constant MISSING_OWNER_CANDIDATE        : string = "MISSING_OWNER_CANDIDATE"
+constant INVALID_CALLER                 : string = "INVALID_CALLER"
+constant NOT_FOUND                      : string = "NOT_FOUND"
+
 //----------------------------------------------------------------------------
 // Metadata
 //----------------------------------------------------------------------------
@@ -29,12 +33,18 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
+  }
+  require {
+    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := owner_candidate_addr;
     owner_candidate := none
   }
 }
+
 
 //----------------------------------------------------------------------------
 // User role
@@ -66,7 +76,8 @@ variable fill : big_map<bytes, option<nat>> = []
 
 // READ
 view get(k : bytes) : option<nat> {
-  return fill[k]
+  const res ?= fill[k] : NOT_FOUND;
+  return res
 }
 
 view contains(k : bytes) : bool {
