@@ -200,49 +200,93 @@ const isSandbox = () => {
 };
 
 exports.errors = {
+    // Common
+    INVALID_CALLER: '"INVALID_CALLER"',
+    getErrorInvalidCondition: (id) => {
+        return `(Pair "INVALID_CONDITION" "${id}")`
+    },
+
+    // Sales Storage
+    CANT_UNPACK_FA12_ASSET: '"CANT_UNPACK_FA12_ASSET"',
+    CANT_UNPACK_FA2_ASSET: '"CANT_UNPACK_FA2_ASSET"',
+    MISSING_CANDIDATE: '"MISSING_CANDIDATE"',
+    MISSING_SALES_CONTRACT: '"MISSING_SALES_CONTRACT"',
+
+
+    // Sales
+    AMOUNT_MISMATCH: '"AMOUNT_MISMATCH"',
+    BUNDLE_CANT_BE_EMPTY: '"BUNDLE_CANT_BE_EMPTY"',
+    CANT_UNPACK_BUNDLE: '"CANT_UNPACK_BUNDLE"',
+    CANT_UNPACK_FA12_ASSET: '"CANT_UNPACK_FA12_ASSET"',
+    CANT_UNPACK_FA2_ASSET: '"CANT_UNPACK_FA2_ASSET"',
+    FEES_OVER_SELLER_LIMIT: '"FEES_OVER_SELLER_LIMIT"',
+    INVALID_BUNDLE_ITEM_QTY: '"INVALID_BUNDLE_ITEM_QTY"',
+    INVALID_BUY_AMOUNT: '"INVALID_BUY_AMOUNT"',
+    INVALID_CALLER: '"INVALID_CALLER"',
+    INVALID_SALE_END_DATE: '"INVALID_SALE_END_DATE"',
+    INVALID_SALE_START_DATE: '"INVALID_SALE_START_DATE"',
+    MAX_BUNDLE_SIZE: '"MAX_BUNDLE_SIZE"',
+    MISSING_BUNDLE_SALE: '"MISSING_BUNDLE_SALE"',
+    MISSING_CANDIDATE: '"MISSING_CANDIDATE"',
+    MISSING_SALE: '"MISSING_SALE"',
+    SALE_ALREADY_EXISTS: '"SALE_ALREADY_EXISTS"',
+    SALE_CLOSED: '"SALE_CLOSED"',
+    SALE_NOT_STARTED: '"SALE_NOT_STARTED"',
+    WRONG_XTZ_PAYLOAD: '"WRONG_XTZ_PAYLOAD"',
+    getErrorMaxBundleSize: (n) => {
+        return `(Pair "MAX_BUNDLE_SIZE" ${n})`
+    },
+    getErrorAmountMismatch: (id1, id2) => {
+        return `(Pair "AMOUNT_MISMATCH" (Pair ${id1} ${id2}))`
+    },
+
+    // FA 1.2
+    NOT_ENOUGH_ALLOWANCE: '"NotEnoughAllowance"',
+    NOT_ENOUGH_BALANCE: '"NotEnoughBalance"',
+    UNSAFE_ALLOWANCE_CHANGE: '"UnsafeAllowanceChange"',
+
+    // FA 2 ft
     CALLER_NOT_OWNER: '"CALLER_NOT_OWNER"',
-    NOT_FOUND: '"NotFound"',
-    LEDGER_NOT_FOUND: '(Pair "AssetNotFound" "ledger")',
-    INVALID_CALLER: '"InvalidCaller"',
-    INVALID_AMOUNT: '"FA2_INVALID_AMOUNT"',
-    FA2_INSUFFICIENT_BALANCE: '"FA2_INSUFFICIENT_BALANCE"',
-    FA2_NOT_OPERATOR: '"FA2_NOT_OPERATOR"',
-    ARCHETYPE_ALREADY_REGISTERED: '"Archetype already registered"',
-    ARCHETYPE_INVALID_VALIDATOR:
-        '"Archetype requires a minting validator contract address"',
-    ARCHETYPE_NOT_REGISTERED: '"Archetype not registered"',
-    LIMIT_ALREADY_SET: '"MintingValidator: minting limit already set"',
-    SERIAL_OOB: '"MintingValidator: serial number out of bounds"',
-    ALREADY_MINTED: '"Token already minted"',
-    DEADLINE_REACHED: '"MintingValidator: deadline reached"',
-    DEADLINE_ALREADY_SET: '"MintingValidator: deadline already set"',
-    MUST_BE_MINTER: '"Must be a minter"',
-    DOES_NOT_EXIST: '"Token does not exist"',
-    // NOT_WHITELISTED: '"Recipient is not whitelisted"',
-    NOT_WHITELISTED: '"TO_NOT_ALLOWED"',
-    WHITELIST_TO_RESTRICTED: '"TO_RESTRICTED"',
-    NOT_ADMIN: '"Must be an administrator"',
-    ERC1155_NOT_APPROVED: '"ERC1155: caller is not owner nor approved"',
-    ERC1155_INSUFFICIENT_BALANCE:
-        '"ERC1155: insufficient balance for transfer"',
-    ARCHETYPE_QUOTA: '"Archetype quota reached"',
-    COOLDOWN: '"Transfer cooldown"',
-    USDC_WRONG_SIG: '"FiatTokenV2: invalid signature"',
-    USDC_BALANCE_TOO_LOW: '"ERC20: transfer amount exceeds balance"',
-    USDC_ALLOWANCE_TOO_LOW: '"ERC20: transfer amount exceeds allowance"',
-    QUARTZ_MINTER_AUTHORIZATION_EXPIRED:
-        '"QUARTZ_MINTER: authorization expired"',
-    QUARTZ_MINTER_RECOVER_FAILED: '"QUARTZ_MINTER: invalid signature"',
-    PAUSED: '"Pausable: paused"',
-    NOT_PAUSED: '"Pausable: not paused"',
-    META_TRANSACTION_WRONG_SIGNATURE:
-        '"NativeMetaTransaction: WRONG_SIGNATURE"',
-    MISSIGNED: '(Pair "MISSIGNED"',
-    EXPIRED_PERMIT: '"PERMIT_EXPIRED"',
-    EXPIRY_NEGATIVE: '"EXPIRY_NEGATIVE"',
-    EXPIRY_TOO_BIG: '"EXPIRY_TOO_BIG"',
-    NOT_PERMIT_ISSUER: '"NOT_PERMIT_ISSUER"',
+    CONTRACT_NOT_PAUSED: '"CONTRACT_NOT_PAUSED"',
     CONTRACT_PAUSED: '"CONTRACT_PAUSED"',
-    KEY_EXISTS: '(Pair "KeyExists" "royalties")',
-    TOKEN_METADATA_KEY_EXISTS: '(Pair "KeyExists" "token_metadata")',
+    EXPIRY_TOO_BIG: '"EXPIRY_TOO_BIG"',
+    FA2_INSUFFICIENT_BALANCE: '"FA2_INSUFFICIENT_BALANCE"',
+    FA2_INVALID_AMOUNT: '"FA2_INVALID_AMOUNT"',
+    FA2_NOT_OPERATOR: '"FA2_NOT_OPERATOR"',
+    MISSIGNED: '"MISSIGNED"',
+    NO_ENTRY_FOR_USER: '"NO_ENTRY_FOR_USER"',
+    NOT_FOUND: '"NOT_FOUND"',
+    PERMIT_EXPIRED: '"PERMIT_EXPIRED"',
+    PERMIT_NOT_FOUND: '"PERMIT_NOT_FOUND"',
+    PERMIT_USER_NOT_FOUND: '"PERMIT_USER_NOT_FOUND"',
+    SIGNER_NOT_FROM: '"SIGNER_NOT_FROM"',
+
+    // FA 2 nft
+    CALLER_NOT_OWNER: '"CALLER_NOT_OWNER"',
+    CONTRACT_NOT_PAUSED: '"CONTRACT_NOT_PAUSED"',
+    CONTRACT_PAUSED: '"CONTRACT_PAUSED"',
+    EXPIRY_TOO_BIG: '"EXPIRY_TOO_BIG"',
+    FA2_INSUFFICIENT_BALANCE: '"FA2_INSUFFICIENT_BALANCE"',
+    FA2_INVALID_AMOUNT: '"FA2_INVALID_AMOUNT"',
+    FA2_NOT_OPERATOR: '"FA2_NOT_OPERATOR"',
+    MISSIGNED: '"MISSIGNED"',
+    NO_ENTRY_FOR_USER: '"NO_ENTRY_FOR_USER"',
+    NOT_FOUND: '"NOT_FOUND"',
+    PERMIT_EXPIRED: '"PERMIT_EXPIRED"',
+    PERMIT_NOT_FOUND: '"PERMIT_NOT_FOUND"',
+    PERMIT_USER_NOT_FOUND: '"PERMIT_USER_NOT_FOUND"',
+    SIGNER_NOT_FROM: '"SIGNER_NOT_FROM"',
+
+    // Royalties Provider
+    INVALID_CALLER: '"INVALID_CALLER"',
+    MISSING_OWNER_CANDIDATE: '"MISSING_OWNER_CANDIDATE"',
+
+    // Transfer Manager
+    MISSING_ASSET_ID: '"MISSING_ASSET_ID"',
+    MISSING_ASSET_CONTRACT: '"MISSING_ASSET_CONTRACT"',
+    ROYALTIES_TOO_HIGH: '"ROYALTIES_TOO_HIGH"',
+    TOTAL_AMOUNT_NEGATIVE: '"TOTAL_AMOUNT_NEGATIVE"',
+    CANT_UNPACK_FA2_ASSET: '"CANT_UNPACK_FA2_ASSET"',
+    CANT_UNPACK_FA12_ASSET: '"CANT_UNPACK_FA12_ASSET"',
+    NOT_AUTHORIZED: '"NOT_AUTHORIZED"',
 };

@@ -3,10 +3,12 @@ archetype bids_storage(
 )
 with metadata ""
 
-constant MISSING_BIDS_CONTRACT: string = "MISSING_BIDS_CONTRACT"
-constant MISSING_TRANSFER_MANAGER: string = "MISSING_TRANSFER_MANAGER"
-constant CANT_UNPACK_FA2_ASSET: string = "CANT_UNPACK_FA2_BID_ASSET"
-constant CANT_UNPACK_FA12_ASSET: string = "CANT_UNPACK_FA12_BID_ASSET"
+constant CANT_UNPACK_FA12_ASSET     : string = "CANT_UNPACK_FA12_BID_ASSET"
+constant CANT_UNPACK_FA2_ASSET      : string = "CANT_UNPACK_FA2_BID_ASSET"
+constant INVALID_CALLER             : string = "INVALID_CALLER"
+constant MISSING_BIDS_CONTRACT      : string = "MISSING_BIDS_CONTRACT"
+constant MISSING_OWNER_CANDIDATE    : string = "MISSING_OWNER_CANDIDATE"
+constant MISSING_TRANSFER_MANAGER   : string = "MISSING_TRANSFER_MANAGER"
 
 enum asset_type =
 | XTZ
@@ -53,9 +55,14 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
+  }
+  require {
+    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := owner_candidate_addr;
     owner_candidate := none
   }
 }
@@ -148,9 +155,14 @@ entry set_bid(
   sb_bid_type: asset_type,
   sb_bid_asset: bytes,
   sb_bid : bid) {
-  called by require_some(bids_contract, MISSING_BIDS_CONTRACT)
+  constant {
+    bids_contract_addr ?is bids_contract otherwise MISSING_BIDS_CONTRACT
+  }
+  require {
+    sb1: bids_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    bids.addupdate(
+    bids.add_update(
       (
         sb_asset_contract,
         sb_asset_token_id,
@@ -171,9 +183,14 @@ entry set_floor_bid(
   sb_bid_type: asset_type,
   sb_bid_asset: bytes,
   sb_bid : bid) {
-  called by require_some(bids_contract, MISSING_BIDS_CONTRACT)
+  constant {
+    bids_contract_addr ?is bids_contract otherwise MISSING_BIDS_CONTRACT
+  }
+  require {
+    sfb1: bids_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    floor_bids.addupdate(
+    floor_bids.add_update(
       (
         sb_asset_contract,
         sb_bidder,
@@ -193,9 +210,14 @@ entry set_bundle_bid(
   sbb_bid_type: asset_type,
   sbb_bid_asset: bytes,
   sbb_bid: bundle_bid) {
-  called by require_some(bids_contract, MISSING_BIDS_CONTRACT)
+  constant {
+    bids_contract_addr ?is bids_contract otherwise MISSING_BIDS_CONTRACT
+  }
+  require {
+    sbb1: bids_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    bundle_bids.addupdate(
+    bundle_bids.add_update(
       (
         sbb_bundle,
         sbb_seller,
@@ -215,7 +237,12 @@ entry remove_bid(
   rb_bidder: address,
   rb_bid_type: asset_type,
   rb_bid_asset: bytes) {
-  called by require_some(bids_contract, MISSING_BIDS_CONTRACT)
+  constant {
+    bids_contract_addr ?is bids_contract otherwise MISSING_BIDS_CONTRACT
+  }
+  require {
+    rb1: bids_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
     bids.remove((rb_asset_contract, rb_asset_token_id, rb_bidder, rb_bid_type, rb_bid_asset));
   }
@@ -226,7 +253,12 @@ entry remove_floor_bid(
   rb_bidder: address,
   rb_bid_type: asset_type,
   rb_bid_asset: bytes) {
-  called by require_some(bids_contract, MISSING_BIDS_CONTRACT)
+  constant {
+    bids_contract_addr ?is bids_contract otherwise MISSING_BIDS_CONTRACT
+  }
+  require {
+    rfb1: bids_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
     floor_bids.remove((rb_asset_contract, rb_bidder, rb_bid_type, rb_bid_asset));
   }
@@ -237,7 +269,12 @@ entry remove_bundle_bid(
   rbb_seller: address,
   rbb_sale_type: asset_type,
   rbb_sale_asset: bytes) {
-  called by require_some(bids_contract, MISSING_BIDS_CONTRACT)
+  constant {
+    bids_contract_addr ?is bids_contract otherwise MISSING_BIDS_CONTRACT
+  }
+  require {
+    rbb1: bids_contract_addr = caller otherwise INVALID_CALLER
+  }
   effect {
     bundle_bids.remove((rbb_bundle, rbb_seller, rbb_sale_type, rbb_sale_asset));
   }
@@ -274,11 +311,7 @@ view get_bid(
   gb_bidder: address,
   gb_bid_type: asset_type,
   gb_bid_asset: bytes) : option<bid> {
-  if(bids.contains((gb_asset_contract, gb_asset_token_id, gb_bidder, gb_bid_type, gb_bid_asset))) then (
-    return some(bids[(gb_asset_contract, gb_asset_token_id, gb_bidder, gb_bid_type, gb_bid_asset)].bid_record);
-   ) else (
-    return none;
-   )
+    return bids[(gb_asset_contract, gb_asset_token_id, gb_bidder, gb_bid_type, gb_bid_asset)]?.bid_record
 }
 
 view get_floor_bid(
@@ -286,11 +319,7 @@ view get_floor_bid(
   gb_bidder: address,
   gb_bid_type: asset_type,
   gb_bid_asset: bytes) : option<bid> {
-  if(floor_bids.contains((gb_asset_contract, gb_bidder, gb_bid_type, gb_bid_asset))) then (
-    return some(floor_bids[(gb_asset_contract, gb_bidder, gb_bid_type, gb_bid_asset)].floor_bid_record);
-   ) else (
-    return none;
-   )
+    return floor_bids[(gb_asset_contract, gb_bidder, gb_bid_type, gb_bid_asset)]?.floor_bid_record
 }
 
 view get_bundle_bid(
@@ -298,15 +327,17 @@ view get_bundle_bid(
   gbb_seller: address,
   gbb_bid_type: asset_type,
   gbb_bid_asset: bytes) : option<bundle_bid> {
-  if(bundle_bids.contains((gbb_bundle, gbb_seller, gbb_bid_type, gbb_bid_asset))) then (
-    return some(bundle_bids[(gbb_bundle, gbb_seller, gbb_bid_type, gbb_bid_asset)].bundle_bids_record);
-   ) else (
-    return none;
-   )
+    return bundle_bids[(gbb_bundle, gbb_seller, gbb_bid_type, gbb_bid_asset)]?.bundle_bids_record
 }
 
 entry process_transfers(pt_transfers: list<process_transfer_param>){
-  called by require_some(bids_contract, MISSING_BIDS_CONTRACT) or require_some(transfer_manager, MISSING_TRANSFER_MANAGER)
+  constant {
+    bids_contract_addr ?is bids_contract otherwise MISSING_BIDS_CONTRACT;
+    transfer_manager_addr ?is transfer_manager otherwise MISSING_BIDS_CONTRACT
+  }
+  require {
+    pt1: bids_contract_addr = caller or transfer_manager_addr = caller otherwise INVALID_CALLER
+  }
   effect {
     for pt_transfer in pt_transfers do
       match pt_transfer.ptp_asset_type with

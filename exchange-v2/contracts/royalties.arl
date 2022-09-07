@@ -3,6 +3,10 @@ archetype royalties(
 )
 with metadata ""
 
+constant MISSING_OWNER_CANDIDATE        : string = "MISSING_OWNER_CANDIDATE"
+constant INVALID_CALLER                 : string = "INVALID_CALLER"
+constant NOT_FOUND                      : string = "NOT_FOUND"
+
 //----------------------------------------------------------------------------
 // Metadata
 //----------------------------------------------------------------------------
@@ -28,9 +32,14 @@ entry declare_ownership(candidate : address) {
 }
 
 entry claim_ownership() {
-  called by opt_get(owner_candidate)
+  constant {
+    owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
+  }
+  require {
+    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+  }
   effect {
-    owner := opt_get(owner_candidate);
+    owner := owner_candidate_addr;
     owner_candidate := none
   }
 }
@@ -75,7 +84,7 @@ asset royalties identified by rtoken rtokenId to big_map {
 entry set_royalties(token : address, tokenId : option<nat>, value : list<part>) {
   called by owner or user
   effect {
-    royalties.addupdate((token, tokenId), {rvalue = value})
+    royalties.add_update((token, tokenId), {rvalue = value})
   }
 }
 
@@ -86,9 +95,9 @@ view get_royalties(token : address, tokenId : nat) : list<part> {
     else if royalties.contains((token, none)) then
       royalties[(token, none)].rvalue
     else
-      match callview<list<part>>(token, "get_royalties", tokenId) with
+      match call_view<list<part>>(token, "get_royalties", tokenId) with
       | some(roy) -> roy
-      | none -> emptylist<part>()
+      | none -> make_list<part>([])
       end
   )
 }

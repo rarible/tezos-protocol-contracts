@@ -663,9 +663,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_0, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_0} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -679,9 +677,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_1, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_1} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -695,9 +691,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_2, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_2} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -711,9 +705,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_3, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_3} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -727,9 +719,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_4, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_4} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -743,9 +733,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_5, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_5} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -759,9 +747,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_6, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_6} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -775,9 +761,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_7, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_7} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -791,9 +775,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_8, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_8} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
             await fa2_ft.mint({
@@ -807,9 +789,7 @@ describe('Tokens setup', async () => {
                 as: alice.pkh,
             });
             await fa2_ft.transfer({
-                arg: {
-                    txs: [[alice.pkh, [[bob.pkh, token_id_9, initial_fa2_ft_amount / 2]]]],
-                },
+                argMichelson: `{ Pair "${alice.pkh}" { Pair "${bob.pkh}" (Pair ${token_id_9} ${initial_fa2_ft_amount / 2}) } }`,
                 as: alice.pkh,
             });
         });
@@ -2190,7 +2170,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa1")');
+            }, errors.getErrorInvalidCondition("r_sa1"));
         });
 
         it('Starting auction with wrong buy asset payload (FA2) should fail', async () => {
@@ -2216,7 +2196,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_FA2_BUY_ASSET"');
+            }, errors.CANT_UNPACK_FA2_BUY_ASSET);
         });
 
         it('Starting auction with wrong buy asset payload (FA12) should fail', async () => {
@@ -2242,7 +2222,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_FA12_BUY_ASSET"');
+            }, errors.CANT_UNPACK_FA12_BUY_ASSET);
         });
 
         it('Starting auction with wrong buy asset payload (XTZ) should fail', async () => {
@@ -2268,7 +2248,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"WRONG_BUY_ASSET_PAYLOAD"');
+            }, errors.WRONG_BUY_ASSET_PAYLOAD);
         });
 
         it('Starting auction with NFT amount = 0 should fail', async () => {
@@ -2294,7 +2274,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa7")');
+            }, errors.getErrorInvalidCondition("r_sa7"));
         });
 
         it('Starting auction with not enough NFT balance should fail', async () => {
@@ -2320,7 +2300,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"FA2_INSUFFICIENT_BALANCE"');
+            }, errors.FA2_INSUFFICIENT_BALANCE);
         });
 
         it('Starting auction with duration < extension duration should fail', async () => {
@@ -2346,7 +2326,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa2")');
+            }, errors.getErrorInvalidCondition("r_sa2"));
         });
 
         it('Starting auction with duration > max_duration should fail', async () => {
@@ -2372,7 +2352,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa3")');
+            }, errors.getErrorInvalidCondition("r_sa3"));
         });
 
         it('Starting auction with buyout price < min price should fail', async () => {
@@ -2398,7 +2378,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa4")');
+            }, errors.getErrorInvalidCondition("r_sa4"));
         });
 
         it('Starting auction with min step = 0 should fail', async () => {
@@ -2424,7 +2404,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa6")');
+            }, errors.getErrorInvalidCondition("r_sa6"));
         });
 
         it('Starting auction with start date in the past should fail', async () => {
@@ -2448,7 +2428,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"AUCTION_START_DATE_IN_THE_PAST"');
+            }, errors.AUCTION_START_DATE_IN_THE_PAST);
         });
 
         it('Starting auction buying with Fungible FA2 that already exists should fail', async () => {
@@ -2474,7 +2454,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa8")');
+            }, errors.getErrorInvalidCondition("r_sa8"));
         });
 
         it('Starting auction with max seller fees = 0 should fail', async () => {
@@ -2500,7 +2480,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa9")');
+            }, errors.getErrorInvalidCondition("r_sa9"));
         });
 
         it('Starting auction with max seller fees > max possible fees should fail', async () => {
@@ -2526,7 +2506,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa9")');
+            }, errors.getErrorInvalidCondition("r_sa9"));
         });
 
         it('Starting auction with max seller fees < protocol fees should fail', async () => {
@@ -2552,7 +2532,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa9")');
+            }, errors.getErrorInvalidCondition("r_sa9"));
         });
 
         it('Starting auction with origin fees + protocol fees > max fees should fail', async () => {
@@ -2578,7 +2558,7 @@ describe('Start Auction tests', async () => {
                     )))))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sa9")');
+            }, errors.getErrorInvalidCondition("r_sa9"));
         });
     });
 });
@@ -3561,7 +3541,7 @@ describe('Start bundle Auction tests', async () => {
                     as: alice.pkh,
                 });
 
-            }, '"BUNDLE_CANT_BE_EMPTY"');
+            }, errors.BUNDLE_CANT_BE_EMPTY);
         });
 
         it('Starting bundle auction with unknown buy asset payload should fail', async () => {
@@ -3593,7 +3573,7 @@ describe('Start bundle Auction tests', async () => {
                     as: alice.pkh,
                 });
 
-            }, '(Pair "InvalidCondition" "r_sba1")');
+            }, errors.getErrorInvalidCondition("r_sba1"));
         });
 
         it('Starting bundle auction with wrong buy asset payload (FA2) should fail', async () => {
@@ -3625,7 +3605,7 @@ describe('Start bundle Auction tests', async () => {
                     as: alice.pkh,
                 });
 
-            }, '"CANT_UNPACK_FA2_BUY_ASSET"');
+            }, errors.CANT_UNPACK_FA2_BUY_ASSET);
         });
 
         it('Starting bundle auction with wrong buy asset payload (FA12) should fail', async () => {
@@ -3656,7 +3636,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_FA12_BUY_ASSET"');
+            }, errors.CANT_UNPACK_FA12_BUY_ASSET);
         });
 
         it('Starting bundle auction with wrong buy asset payload (XTZ) should fail', async () => {
@@ -3687,7 +3667,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"WRONG_BUY_ASSET_PAYLOAD"');
+            }, errors.WRONG_BUY_ASSET_PAYLOAD);
         });
 
         it('Starting bundle auction with NFT amount = 0 duration should fail', async () => {
@@ -3718,7 +3698,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"INVALID_BUNDLE_ITEM_QTY"');
+            }, errors.INVALID_BUNDLE_ITEM_QTY);
         });
 
         it('Starting bundle auction with not enough NFT balance should fail', async () => {
@@ -3748,7 +3728,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"FA2_INSUFFICIENT_BALANCE"');
+            }, errors.FA2_INSUFFICIENT_BALANCE);
         });
 
         it('Starting bundle auction with too many NFT in bundle should fail', async () => {
@@ -3789,7 +3769,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "MAX_BUNDLE_SIZE" 10)');
+            }, errors.getErrorMaxBundleSize(10));
         });
 
         it('Starting bundle auction with duration < extension duration should fail', async () => {
@@ -3821,7 +3801,7 @@ describe('Start bundle Auction tests', async () => {
                     as: alice.pkh,
                 });
 
-            }, '(Pair "InvalidCondition" "r_sba2")');
+            }, errors.getErrorInvalidCondition("r_sba2"));
         });
 
         it('Starting bundle auction with duration > max_duration should fail', async () => {
@@ -3852,7 +3832,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sba3")');
+            }, errors.getErrorInvalidCondition("r_sba3"));
         });
 
         it('Starting bundle auction with buyout price < min price should fail', async () => {
@@ -3883,7 +3863,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sba4")');
+            }, errors.getErrorInvalidCondition("r_sba4"));
         });
 
         it('Starting bundle auction with min_step = 0 duration should fail', async () => {
@@ -3914,7 +3894,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sba6")');
+            }, errors.getErrorInvalidCondition("r_sba6"));
         });
 
         it('Starting bundle auction with start date in the past should fail', async () => {
@@ -3943,7 +3923,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"AUCTION_START_DATE_IN_THE_PAST"');
+            }, errors.AUCTION_START_DATE_IN_THE_PAST);
         });
 
         it('Starting bundle auction with invalid bundle should fail', async () => {
@@ -3967,7 +3947,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '"CANT_UNPACK_BUNDLE"');
+            }, errors.CANT_UNPACK_BUNDLE);
         });
 
         it('Starting bundle auction buying with Fungible FA2 that already exists should fail', async () => {
@@ -3998,7 +3978,7 @@ describe('Start bundle Auction tests', async () => {
                         )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sba7")');
+            }, errors.getErrorInvalidCondition("r_sba7"));
         });
 
         it('Starting auction with max seller fees = 0 should fail', async () => {
@@ -4029,7 +4009,7 @@ describe('Start bundle Auction tests', async () => {
                     )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sba8")');
+            }, errors.getErrorInvalidCondition("r_sba8"));
         });
 
         it('Starting auction with max seller fees > max possible fees should fail', async () => {
@@ -4060,7 +4040,7 @@ describe('Start bundle Auction tests', async () => {
                     )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sba8")');
+            }, errors.getErrorInvalidCondition("r_sba8"));
         });
 
         it('Starting auction with max seller fees < protocol fees should fail', async () => {
@@ -4089,7 +4069,7 @@ describe('Start bundle Auction tests', async () => {
                     )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sba8")');
+            }, errors.getErrorInvalidCondition("r_sba8"));
         });
 
         it('Starting auction with origin fees + protocol fees > max fees should fail', async () => {
@@ -4118,7 +4098,7 @@ describe('Start bundle Auction tests', async () => {
                     )))))))))))`,
                     as: alice.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_sba8")');
+            }, errors.getErrorInvalidCondition("r_sba8"));
         });
     });
 });
@@ -4145,7 +4125,7 @@ describe('Put bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pb0")');
+            }, errors.getErrorInvalidCondition("r_pb0"));
         });
 
         it('Put bid with not enough balance should fail', async () => {
@@ -4168,7 +4148,7 @@ describe('Put bid tests', async () => {
                     as: bob.pkh,
                 });
             } catch (error) {
-                error.value.includes('"FA2_INSUFFICIENT_BALANCE"')
+                error.value.includes(errors.FA2_INSUFFICIENT_BALANCE)
             }
         });
 
@@ -4192,7 +4172,7 @@ describe('Put bid tests', async () => {
                     `,
                     as: carl.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pb1")');
+            }, errors.getErrorInvalidCondition("r_pb1"));
         });
 
         it('Put bid on a non existing auction should fail', async () => {
@@ -4215,14 +4195,14 @@ describe('Put bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"MISSING_AUCTION"');
+            }, errors.MISSING_AUCTION);
         });
 
         it('Put bid on an auction not started should fail', async () => {
             await expectToThrow(async () => {
 
                 if (isMockup()) {
-                    await setMockupNow((Date.now() / 1000) - 400);
+                    await setMockupNow((Date.now() / 1000) - 4000);
                 }
 
                 await auction.put_bid({
@@ -4239,7 +4219,7 @@ describe('Put bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_NOT_IN_PROGRESS"');
+            }, errors.AUCTION_NOT_IN_PROGRESS);
 
         });
 
@@ -4264,7 +4244,7 @@ describe('Put bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_FINISHED"');
+            }, errors.AUCTION_FINISHED);
 
         });
 
@@ -4289,7 +4269,7 @@ describe('Put bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_BID_TOO_LOW"');
+            }, errors.AUCTION_BID_TOO_LOW);
 
         });
     });
@@ -4652,7 +4632,7 @@ describe('Put bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_BID_ALREADY_EXISTS"');
+            }, errors.AUCTION_BID_ALREADY_EXISTS);
         });
 
         it('Put bid with amount < last bid should fail', async () => {
@@ -4675,7 +4655,7 @@ describe('Put bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_BID_TOO_LOW"');
+            }, errors.AUCTION_BID_TOO_LOW);
         });
     });
 
@@ -4702,7 +4682,7 @@ describe('Put bid tests', async () => {
                     amount: `${bid_amount + 1}utz`,
                     as: bob.pkh,
                 });
-            }, '(Pair "AUCTION_BID_AMOUNT_MISMATCH" (Pair 1000001 1000000))');
+            }, errors.getErrorAuctionBidAmountMismatch(1000001, 1000000));
         });
 
         it('Put bid with good amount of XTZ (no bid origin fees, no payouts) should succeed', async () => {
@@ -5051,7 +5031,7 @@ describe('Put bundle bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pbb0")');
+            }, errors.getErrorInvalidCondition("r_pbb0"));
         });
 
         it('Put bundle bid with not enough balance should fail', async () => {
@@ -5079,7 +5059,7 @@ describe('Put bundle bid tests', async () => {
                     as: bob.pkh,
                 });
             } catch (error) {
-                assert(error.value.includes('"FA2_INSUFFICIENT_BALANCE"'));
+                assert(error.value.includes(errors.FA2_INSUFFICIENT_BALANCE));
             }
         });
 
@@ -5108,7 +5088,7 @@ describe('Put bundle bid tests', async () => {
                     `,
                     as: carl.pkh,
                 });
-            }, '(Pair "InvalidCondition" "r_pbb1")');
+            }, errors.getErrorInvalidCondition("r_pbb1"));
         });
 
         it('Put bundle bid on a non existing auction should fail', async () => {
@@ -5136,7 +5116,7 @@ describe('Put bundle bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"MISSING_AUCTION"');
+            }, errors.MISSING_AUCTION);
         });
 
         it('Put bundle bid on an auction not started should fail', async () => {
@@ -5165,7 +5145,7 @@ describe('Put bundle bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_NOT_IN_PROGRESS"');
+            }, errors.AUCTION_NOT_IN_PROGRESS);
 
         });
 
@@ -5195,7 +5175,7 @@ describe('Put bundle bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_FINISHED"');
+            }, errors.AUCTION_FINISHED);
 
         });
 
@@ -5225,7 +5205,7 @@ describe('Put bundle bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_BID_TOO_LOW"');
+            }, errors.AUCTION_BID_TOO_LOW);
 
         });
     });
@@ -5626,7 +5606,7 @@ describe('Put bundle bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_BID_ALREADY_EXISTS"');
+            }, errors.AUCTION_BID_ALREADY_EXISTS);
         });
 
         it('Put bundle bid with amount < last bid should fail', async () => {
@@ -5655,7 +5635,7 @@ describe('Put bundle bid tests', async () => {
                     `,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_BID_TOO_LOW"');
+            }, errors.AUCTION_BID_TOO_LOW);
         });
     });
 
@@ -5688,7 +5668,7 @@ describe('Put bundle bid tests', async () => {
                     amount: `${bid_amount + 1}utz`,
                     as: bob.pkh,
                 });
-            }, '(Pair "AUCTION_BID_AMOUNT_MISMATCH" (Pair 1000001 1000000))');
+            }, errors.getErrorAuctionBidAmountMismatch(1000001, 1000000));
         });
 
         it('Put bundle bid with good amount of XTZ (no bid origin fees, no payouts) should succeed', async () => {
@@ -6592,7 +6572,7 @@ describe('Finish auction tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair 99 "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
-            }, '"MISSING_AUCTION"');
+            }, errors.MISSING_AUCTION);
         });
 
         it('Finish an auction not started should fail', async () => {
@@ -6626,7 +6606,7 @@ describe('Finish auction tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_NOT_FINISHABLE"');
+            }, errors.AUCTION_NOT_FINISHABLE);
         });
 
         it('Finish an auction not ended (without bid) should fail', async () => {
@@ -6640,7 +6620,7 @@ describe('Finish auction tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_NOT_FINISHABLE"');
+            }, errors.AUCTION_NOT_FINISHABLE);
         });
 
         it('Finish an auction not ended (with bid) should fail', async () => {
@@ -6669,7 +6649,7 @@ describe('Finish auction tests', async () => {
                     argMichelson: `(Pair "${nft.address}" (Pair ${token_id} "${alice.pkh}"))`,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_NOT_FINISHABLE"');
+            }, errors.AUCTION_NOT_FINISHABLE);
         });
     });
 });
@@ -7408,7 +7388,7 @@ describe('Finish bundle auction tests', async () => {
                     argMichelson: `(Pair 0x "${carl.pkh}")`,
                     as: bob.pkh,
                 });
-            }, '"MISSING_AUCTION"');
+            }, errors.MISSING_AUCTION);
         });
 
         it('Finish a bundle auction not started should fail', async () => {
@@ -7446,7 +7426,7 @@ describe('Finish bundle auction tests', async () => {
                     argMichelson: `(Pair 0x${bundle} "${alice.pkh}")`,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_NOT_FINISHABLE"');
+            }, errors.AUCTION_NOT_FINISHABLE);
         });
 
         it('Finish a bundle auction not ended (without bid) should fail', async () => {
@@ -7464,7 +7444,7 @@ describe('Finish bundle auction tests', async () => {
                     argMichelson: `(Pair 0x${bundle} "${alice.pkh}")`,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_NOT_FINISHABLE"');
+            }, errors.AUCTION_NOT_FINISHABLE);
         });
 
         it('Finish a bundle auction not ended (with bid) should fail', async () => {
@@ -7497,7 +7477,7 @@ describe('Finish bundle auction tests', async () => {
                     argMichelson: `(Pair 0x${bundle} "${alice.pkh}")`,
                     as: bob.pkh,
                 });
-            }, '"AUCTION_NOT_FINISHABLE"');
+            }, errors.AUCTION_NOT_FINISHABLE);
         });
     });
 });
@@ -7509,7 +7489,7 @@ describe('Cancel auction tests', async () => {
                 argMichelson: `(Pair "${nft.address}" 999999)`,
                 as: bob.pkh,
             });
-        }, '"MISSING_AUCTION"');
+        }, errors.MISSING_AUCTION);
     });
 
     it('Cancel an auction with an existing bid should fail', async () => {
@@ -7557,7 +7537,7 @@ describe('Cancel auction tests', async () => {
                 argMichelson: `(Pair "${nft.address}" ${token_id_8})`,
                 as: alice.pkh,
             });
-        }, '"AUCTION_WITH_BID_NON_CANCELLABLE"');
+        }, errors.AUCTION_WITH_BID_NON_CANCELLABLE);
     });
 
     it('Cancel a valid auction should succeed', async () => {
@@ -7619,7 +7599,7 @@ describe('Cancel bundle auction tests', async () => {
                 argMichelson: `0x${bundle}`,
                 as: bob.pkh,
             });
-        }, '"MISSING_AUCTION"');
+        }, errors.MISSING_AUCTION);
     });
 
     it('Cancel a bundle auction with an existing bid should fail', async () => {
@@ -7671,7 +7651,7 @@ describe('Cancel bundle auction tests', async () => {
                 argMichelson: `0x${bundle}`,
                 as: alice.pkh,
             });
-        }, '"AUCTION_WITH_BID_NON_CANCELLABLE"');
+        }, errors.AUCTION_WITH_BID_NON_CANCELLABLE);
     });
 
     it('Cancel a valid bundle auction should succeed', async () => {
