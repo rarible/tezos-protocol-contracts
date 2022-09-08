@@ -1,0 +1,190 @@
+archetype wrapper_router(
+  owner: address,
+  router: address,
+  rarible_sales: address
+)
+with metadata ""
+
+/* METADATA ---------------------------------------------------------------- */
+
+entry set_metadata(k: string, d : option<bytes>) {
+  called by owner
+  require { md_r1 : is_not_paused() }
+  effect {
+    metadata.update(k, d)
+  }
+}
+
+/* PAUSABLE ---------------------------------------------------------------- */
+
+variable paused : bool = false
+
+function is_not_paused() : bool {
+  do_fail_if(paused, "CONTRACT_PAUSED");
+  return true
+}
+
+entry pause() {
+  called by owner
+  require {
+    pausable_r1: is_not_paused()
+  }
+  effect {
+    paused := true
+  }
+}
+
+entry unpause() {
+  called by owner
+  require {
+    pausable_r2: paused otherwise "CONTRACT_NOT_PAUSED"
+  }
+  effect {
+    paused := false
+  }
+}
+
+/* SETTERS ------------------------------------------------------- */
+entry set_router(sr_router : address) {
+  called by owner
+  effect {
+    router := sr_router;
+  }
+}
+
+entry set_rarible_sales(srs_sales : address) {
+  called by owner
+  effect {
+    rarible_sales := srs_sales;
+  }
+}
+
+/* OWNERSHIP TRANSFER ------------------------------------------------------- */
+
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  require {
+    ownership_r1: (owner_candidate ? the = caller : false) otherwise "INVALID_CALLER"
+  }
+  effect {
+    owner := caller;
+    owner_candidate := none
+  }
+}
+
+/* WRAPPER ROUTER ------------------------------------------------------- */
+
+variable protocol_fee : nat = 0
+
+enum asset_type =
+| XTZ
+| FA12
+| FA2
+
+record part {
+  part_account : address;
+  part_value   : nat;
+}
+
+record sale {
+  sale_origin_fees : list<part>;
+  sale_payouts : list<part>;
+  sale_amount : nat;
+  sale_asset_qty: nat;
+  sale_start: option<date>;
+  sale_end: option<date>;
+  sale_max_fees_base_boint: nat;
+  sale_data_type  : option<bytes>;
+  sale_data       : option<bytes>;
+}
+
+record sell_args {
+  s_asset_contract: address;
+  s_asset_token_id: nat;
+  s_sale_type: asset_type;
+  s_sale_asset: bytes;
+  s_sale : sale;
+}
+
+record buy_args {
+  b_asset_contract: address;
+  b_asset_token_id: nat;
+  b_seller: address;
+  b_sale_type: asset_type;
+  b_sale_asset: bytes;
+  b_amount: nat;
+  b_origin_fees: list<part>;
+  b_payouts: list<part>
+}
+
+record cancel_args {
+  c_asset_contract: address;
+  c_asset_token_id: nat;
+  c_sale_type: asset_type;
+  c_sale_asset: bytes;
+}
+
+asset contracts identified by contract_name to big_map {
+  contract_name : string;
+  contract_wrapper: address;
+  contract_registered_entrypoints: list<string>
+}
+
+entry handle_routed_operation(hro_entrypoint: string, hro_payload: bytes) {
+    called by router
+    effect {
+      if hro_entrypoint = "buy" then
+      begin
+        const buy_payload = unpack_buy_args(hro_payload);
+        transfer 0tz to rarible_sales call buy<buy_args>(buy_payload);
+      end
+      else if hro_entrypoint = "sell" then
+      begin
+        const sell_payload = unpack_sell_args(hro_payload);
+        transfer 0tz to rarible_sales call sell<sell_args>(sell_payload);
+      end
+      else if hro_entrypoint = "cancel" then
+      begin
+        const cancel_payload = unpack_cancel_args(hro_payload);
+        transfer 0tz to rarible_sales call cancel_sale<cancel_args>(cancel_payload);
+      end
+      else begin
+        fail("UNSUPPORTED_RARIBLE_OPERATION")
+      end
+    }
+}
+
+function unpack_sell_args(usa_asset_data: bytes) : sell_args {
+    match unpack<sell_args>(usa_asset_data) with
+    | some(unpacked_payload) -> (
+        return unpacked_payload;
+      )
+    | none -> fail("FAILED_TO_UNPACK_RARIBLE_SELL_ARGS")
+    end
+}
+
+function unpack_buy_args(uba_asset_data: bytes) : buy_args {
+    match unpack<buy_args>(uba_asset_data) with
+    | some(unpacked_payload) -> (
+        return unpacked_payload;
+      )
+    | none -> fail("FAILED_TO_UNPACK_RARIBLE_BUY_ARGS")
+    end
+}
+
+function unpack_cancel_args(uca_asset_data: bytes) : cancel_args {
+    match unpack<cancel_args>(uca_asset_data) with
+    | some(unpacked_payload) -> (
+        return unpacked_payload;
+      )
+    | none -> fail("FAILED_TO_UNPACK_RARIBLE_CANCEL_ARGS")
+    end
+}

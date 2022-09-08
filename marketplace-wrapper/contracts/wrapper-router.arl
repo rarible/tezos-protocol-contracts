@@ -1,0 +1,103 @@
+archetype wrapper_router(
+  owner: address
+)
+with metadata ""
+
+/* METADATA ---------------------------------------------------------------- */
+
+entry set_metadata(k: string, d : option<bytes>) {
+  called by owner
+  require { md_r1 : is_not_paused() }
+  effect {
+    metadata.update(k, d)
+  }
+}
+
+/* PAUSABLE ---------------------------------------------------------------- */
+
+variable paused : bool = false
+
+function is_not_paused() : bool {
+  do_fail_if(paused, "CONTRACT_PAUSED");
+  return true
+}
+
+entry pause() {
+  called by owner
+  require {
+    pausable_r1: is_not_paused()
+  }
+  effect {
+    paused := true
+  }
+}
+
+entry unpause() {
+  called by owner
+  require {
+    pausable_r2: paused otherwise "CONTRACT_NOT_PAUSED"
+  }
+  effect {
+    paused := false
+  }
+}
+
+/* OWNERSHIP TRANSFER ------------------------------------------------------- */
+
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  require {
+    ownership_r1: (owner_candidate ? the = caller : false) otherwise "INVALID_CALLER"
+  }
+  effect {
+    owner := caller;
+    owner_candidate := none
+  }
+}
+
+/* WRAPPER ROUTER ------------------------------------------------------- */
+
+variable protocol_fee : nat = 0
+
+asset contracts identified by contract_name to big_map {
+  contract_name : string;
+  contract_wrapper: address;
+  contract_registered_entrypoints: list<string>
+}
+
+entry route(r_destination: string, r_entrypoint: string, r_payload: bytes) {
+    require {
+        router_unsupported_contract: contracts.contains(r_destination);
+        router_unsupported_entrypoint: contracts[r_destination].contract_registered_entrypoints.contains(r_entrypoint);
+    }
+    effect {
+      const wrapper = contracts[r_destination].contract_wrapper;
+      transfer 0tz to wrapper call handle_routed_operation<string * bytes>((r_entrypoint, r_payload))
+    }
+}
+
+entry register_contract(rc_name: string, rc_proxy_contract: address, rc_entrypoints: list<string>) {
+  called by owner
+  effect {
+    contracts.put({
+      contract_name = rc_name;
+      contract_wrapper = rc_proxy_contract;
+      contract_registered_entrypoints = rc_entrypoints
+    })
+  }
+}
+
+entry unregister_contract(uc_name: string) {
+  called by owner
+  effect {
+    contracts.remove(uc_name)
+  }
+}
