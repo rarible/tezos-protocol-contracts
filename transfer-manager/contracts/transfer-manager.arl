@@ -12,9 +12,32 @@ constant TOTAL_AMOUNT_NEGATIVE  : string = "TOTAL_AMOUNT_NEGATIVE"
 constant CANT_UNPACK_FA2_ASSET  : string = "CANT_UNPACK_FA2_ASSET"
 constant CANT_UNPACK_FA12_ASSET : string = "CANT_UNPACK_FA12_ASSET"
 constant NOT_AUTHORIZED         : string = "NOT_AUTHORIZED"
+constant MISSING_CANDIDATE       : string = "MISSING_CANDIDATE"
+constant INVALID_CALLER          : string = "INVALID_CALLER"
 
 variable fee_receivers          : map<address, address> = []
 variable authorized_contracts   : set<address> = []
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  constant {
+    candidate ?is owner_candidate otherwise MISSING_CANDIDATE
+  }
+  require {
+    r0: caller = candidate otherwise INVALID_CALLER
+  }
+  effect {
+    owner := candidate;
+    owner_candidate := none
+  }
+}
 
 function get_fee_receiver(gfr_token : option<address>) : address {
   return
