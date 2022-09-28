@@ -1,0 +1,265 @@
+archetype sales_storage(
+  owner: address
+)
+with metadata ""
+
+constant CANT_UNPACK_FA12_ASSET : string = "CANT_UNPACK_FA12_ASSET"
+constant CANT_UNPACK_FA2_ASSET  : string = "CANT_UNPACK_FA2_ASSET"
+constant MISSING_CANDIDATE      : string = "MISSING_CANDIDATE"
+constant MISSING_SALES_CONTRACT : string = "MISSING_SALES_CONTRACT"
+
+enum asset_type =
+| XTZ
+| FA12
+| FA2
+
+record FA2_asset {
+  fa2_asset_contract : address;
+  fa2_asset_token_id: nat;
+}
+
+record FA12_asset {
+  fa12_asset_contract : address;
+}
+
+record part {
+  part_account : address;
+  part_value   : nat;
+}
+
+record bundle_item {
+  bundle_item_contract : address;
+  bundle_item_id   : nat;
+  bundle_item_qty   : nat;
+}
+
+record operator_param {
+  opp_owner    : address;
+  opp_operator : address;
+  opp_token_id : nat
+} as ((owner, (operator, token_id)))
+
+//----------------------------------------------------------------------------
+// Owner role transfer
+//----------------------------------------------------------------------------
+
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  constant {
+    candidate ?is owner_candidate otherwise "MISSING_CANDIDATE"
+  }
+  require {
+    r0: caller = candidate otherwise "INVALID_CALLER"
+  }
+  effect {
+    owner := candidate;
+    owner_candidate := none
+  }
+}
+
+//----------------------------------------------------------------------------
+// Admin
+//----------------------------------------------------------------------------
+entry set_sales_contract(ssc_contract : address) {
+  called by owner
+  effect {
+    sales_contract := some(ssc_contract);
+  }
+}
+
+entry set_transfer_manager(stm_contract : address) {
+  called by owner
+  effect {
+    transfer_manager := some(stm_contract);
+  }
+}
+
+//----------------------------------------------------------------------------
+// Auction
+//----------------------------------------------------------------------------
+variable sales_contract : option<address> = none
+variable transfer_manager : option<address> = none
+
+record bundle_sale {
+  bundle_sale_origin_fees : list<part>;
+  bundle_sale_payouts : list<part>;
+  bundle_sale_amount : nat;
+  bundle_sale_start: option<date>;
+  bundle_sale_end: option<date>;
+  bundle_sale_qty : nat;
+  bundle_sale_max_fees_base_boint: nat;
+  bundle_sale_data_type  : option<bytes>;
+  bundle_sale_data       : option<bytes>;
+}
+
+record sale {
+  sale_origin_fees : list<part>;
+  sale_payouts : list<part>;
+  sale_amount : nat;
+  sale_asset_qty: nat;
+  sale_start: option<date>;
+  sale_end: option<date>;
+  sale_max_fees_base_boint: nat;
+  sale_data_type  : option<bytes>;
+  sale_data       : option<bytes>;
+}
+
+asset sales identified by sale_asset_contract sale_asset_token_id sale_asset_seller sale_type sale_asset to big_map {
+  sale_asset_contract : address;
+  sale_asset_token_id: nat;
+  sale_asset_seller: address;
+  sale_type: asset_type;
+  sale_asset : bytes;
+  sale_record: sale;
+}
+
+asset bundle_sales identified by bundle_sales_bunde bundle_sales_asset_seller bundle_sales_type bundle_sales_asset to big_map {
+  bundle_sales_bunde: bytes;
+  bundle_sales_asset_seller: address;
+  bundle_sales_type: asset_type;
+  bundle_sales_asset : bytes;
+  bundle_sales_record: bundle_sale;
+}
+
+entry set_sale(
+  ss_asset_contract: address,
+  ss_asset_token_id: nat,
+  ss_seller: address,
+  ss_sale_type: asset_type,
+  ss_sale_asset: bytes,
+  ss_sale: sale) {
+  constant {
+    authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
+  }
+  require {
+    r_ss0: caller = authorized_contract otherwise "INVALID_CALLER"
+  }
+  effect {
+    sales.add_update(
+      (
+        ss_asset_contract,
+        ss_asset_token_id,
+        ss_seller,
+        ss_sale_type,
+        ss_sale_asset
+      ),
+      {
+        sale_record = ss_sale
+      }
+    );
+  }
+}
+
+entry set_bundle_sale(
+  sbs_bundle: bytes,
+  sbs_seller: address,
+  sbs_sale_type: asset_type,
+  sbs_sale_asset: bytes,
+  sbs_sale: bundle_sale) {
+  constant {
+    authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
+  }
+  require {
+    r_sbs0: caller = authorized_contract otherwise "INVALID_CALLER"
+  }
+  effect {
+    bundle_sales.add_update(
+      (
+        sbs_bundle,
+        sbs_seller,
+        sbs_sale_type,
+        sbs_sale_asset
+      ),
+      {
+        bundle_sales_record = sbs_sale
+      }
+    );
+  }
+}
+
+entry remove_sale(
+  rs_asset_contract: address,
+  rs_asset_token_id: nat,
+  rs_seller: address,
+  rs_sale_type: asset_type,
+  rs_sale_asset: bytes) {
+  constant {
+    authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
+  }
+  require {
+    r_rs0: caller = authorized_contract otherwise "INVALID_CALLER"
+  }
+  effect {
+    sales.remove((rs_asset_contract, rs_asset_token_id, rs_seller, rs_sale_type, rs_sale_asset));
+  }
+}
+
+entry remove_bundle_sale(
+  rbs_bundle: bytes,
+  rbs_seller: address,
+  rbs_sale_type: asset_type,
+  rbs_sale_asset: bytes) {
+  constant {
+    authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
+  }
+  require {
+    r_rbs0: caller = authorized_contract otherwise "INVALID_CALLER"
+  }
+    effect {
+    bundle_sales.remove((rbs_bundle, rbs_seller, rbs_sale_type, rbs_sale_asset));
+  }
+}
+
+view sale_exists(
+  se_asset_contract: address,
+  se_asset_token_id: nat,
+  se_seller: address,
+  se_sale_type: asset_type,
+  se_sale_asset: bytes) : bool {
+  return sales.contains((se_asset_contract, se_asset_token_id, se_seller, se_sale_type, se_sale_asset))
+}
+
+view bundle_sale_exists(
+  bse_bundle: bytes,
+  bse_seller: address,
+  bse_sale_type: asset_type,
+  bse_sale_asset: bytes) : bool {
+  return bundle_sales.contains((bse_bundle, bse_seller, bse_sale_type, bse_sale_asset))
+}
+
+view get_sale(
+  gs_asset_contract: address,
+  gs_asset_token_id: nat,
+  gs_seller: address,
+  gs_sale_type: asset_type,
+  gs_sale_asset: bytes) : option<sale> {
+  if(sales.contains((gs_asset_contract, gs_asset_token_id, gs_seller, gs_sale_type, gs_sale_asset))) then (
+    return some(sales[(gs_asset_contract, gs_asset_token_id, gs_seller, gs_sale_type, gs_sale_asset)].sale_record);
+   ) else (
+    return none;
+   )
+}
+
+view get_bundle_sale(
+  gbs_bundle: bytes,
+  gbs_seller: address,
+  gbs_sale_type: asset_type,
+  gbs_sale_asset: bytes) : option<bundle_sale> {
+  if(bundle_sales.contains((gbs_bundle, gbs_seller, gbs_sale_type, gbs_sale_asset))) then (
+    return some(bundle_sales[(gbs_bundle, gbs_seller, gbs_sale_type, gbs_sale_asset)].bundle_sales_record);
+   ) else (
+    return none;
+   )
+}
+
+
+
+entry default() {}
