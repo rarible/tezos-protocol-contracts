@@ -1,20 +1,24 @@
 {
-    "name": "@rarible/rarible-tezos-feeless-sales",
-    "version": "1.0.0",
-    "description": "Rarible Tezos feeless sales contract",
-    "main": "index.js",
-    "scripts": {
-        "test": "mocha --timeout 0 --slow 0"
-    },
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-        "@completium/completium-cli": "^0.4.23",
-        "bignumber.js": "^9.0.2",
-        "chai": "^4.3.4",
-        "mocha": "^9.1.2"
-    },
-    "devDependencies": {
-        "prettier": "2.4.1"
-    }
+  "name": "feeless-onchain-sales",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "./run_test.sh",
+    "gen-binding": "completium-cli run binder-ts"
+  },
+  "dependencies": {
+    "@completium/completium-cli": "^0.4.26",
+    "@completium/experiment-ts": "0.0.80",
+    "@types/node": "latest",
+    "mocha": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/mocha": "^9.1.1",
+    "typescript": "^4.7.4"
+  },
+  "completium": {
+    "binding_path": "./tests/binding/",
+    "build_path": "./build/",
+    "contracts_path": "./contracts/",
+    "tests_path": "./tests/"
+  }
 }

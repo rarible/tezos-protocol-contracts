@@ -1,4 +1,4 @@
-archetype sales(
+archetype feeless_sales(
     owner: address,
     protocol_fee: nat,
     transfer_manager: address,

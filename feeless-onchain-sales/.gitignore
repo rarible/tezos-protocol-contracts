@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 /dist
+build/
 mochawesome-report
 
 # local env files

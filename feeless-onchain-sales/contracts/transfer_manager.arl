@@ -1,0 +1,442 @@
+archetype transfer_manager(
+    owner: address,
+    royalties_provider: address,
+    default_fee_receiver: address,
+)
+with metadata ""
+
+constant MISSING_ASSET_ID       : string = "MISSING_ASSET_ID"
+constant MISSING_ASSET_CONTRACT : string = "MISSING_ASSET_CONTRACT"
+constant ROYALTIES_TOO_HIGH     : string = "ROYALTIES_TOO_HIGH"
+constant TOTAL_AMOUNT_NEGATIVE  : string = "TOTAL_AMOUNT_NEGATIVE"
+constant CANT_UNPACK_FA2_ASSET  : string = "CANT_UNPACK_FA2_ASSET"
+constant CANT_UNPACK_FA12_ASSET : string = "CANT_UNPACK_FA12_ASSET"
+constant NOT_AUTHORIZED         : string = "NOT_AUTHORIZED"
+constant MISSING_CANDIDATE       : string = "MISSING_CANDIDATE"
+constant INVALID_CALLER          : string = "INVALID_CALLER"
+
+variable fee_receivers          : map<address, address> = []
+variable authorized_contracts   : set<address> = []
+variable owner_candidate : option<address> = none
+
+entry declare_ownership(candidate : address) {
+  called by owner
+  effect {
+    owner_candidate := some(candidate);
+  }
+}
+
+entry claim_ownership() {
+  constant {
+    candidate ?is owner_candidate otherwise MISSING_CANDIDATE
+  }
+  require {
+    r0: caller = candidate otherwise INVALID_CALLER
+  }
+  effect {
+    owner := candidate;
+    owner_candidate := none
+  }
+}
+
+function get_fee_receiver(gfr_token : option<address>) : address {
+  return
+    match gfr_token with
+    | some (v) ->
+        match fee_receivers[v] with
+        | some (wallet) -> wallet
+        | none -> default_fee_receiver
+        end
+    | none -> default_fee_receiver
+    end
+}
+
+entry set_default_fee_receiver(sfr : address) {
+  called by owner
+  effect {
+    default_fee_receiver := sfr;
+  }
+}
+
+entry set_royalties_provider(srp : address) {
+  called by owner
+  effect {
+    royalties_provider := srp;
+  }
+}
+
+entry set_fee_receiver(token : address, wallet : address) {
+  called by owner
+  effect {
+    fee_receivers.put(token, wallet)
+  }
+}
+
+entry authorize_contract(ac_contract : address) {
+  called by owner
+  effect {
+    authorized_contracts.add(ac_contract)
+  }
+}
+
+entry revoke_contract(ac_contract : address) {
+  called by owner
+  effect {
+    authorized_contracts.remove(ac_contract)
+  }
+}
+
+function isAuthorized() : bool {
+  if (authorized_contracts.contains(caller) or caller = self_address)
+  then return true
+  else fail(NOT_AUTHORIZED)
+}
+
+
+enum asset_type =
+| XTZ
+| FA12
+| FA2
+
+record FA2_asset {
+  fa2_asset_contract : address;
+  fa2_asset_token_id: nat;
+}
+
+record FA12_asset {
+  fa12_asset_contract : address;
+}
+
+record transfer_param {
+  destination_address: address;
+  token_id: nat;
+  token_amount: nat
+} as ((%to, (token_id, amount)))
+
+record process_transfer_param {
+  ptp_asset_type: asset_type;
+  ptp_asset: bytes;
+  ptp_amount: nat;
+  ptp_origin: address;
+  ptp_destination: address;
+}
+
+record bundle_item {
+  bundle_item_contract : address;
+  bundle_item_id   : nat;
+  bundle_item_qty: nat;
+}
+
+record part {
+  part_account : address;
+  part_value   : nat;
+}
+
+record fees {
+  origin_fees : list<part>;
+  payouts: list<part>;
+}
+
+function get_royalties(gr_asset_contract: address, gr_asset_id: nat) : list<part> {
+    return match call_view<list<part>>(
+        royalties_provider,
+        "get_royalties",
+        (
+            gr_asset_contract,
+            gr_asset_id
+        )
+    )
+    with
+        | some(v) -> v
+        | none -> make_list<part>([])
+    end
+}
+
+entry manage_transfers(
+  mt_bundle: list<bundle_item>,
+  mt_nft_origin: address,
+  mt_nft_destination: address,
+  mt_ft_amount: nat,
+  mt_ft_asset_type: asset_type,
+  mt_ft_asset: bytes,
+  mt_ft_origin: address,
+  mt_ft_destination: address,
+  mt_rarible_custody: address,
+  mt_protocol_fees: nat,
+  mt_origin_fees: list<part>,
+  mt_payouts: list<part>
+){
+    require {
+      r_mt0 : isAuthorized();
+    }
+    effect {
+      var buy_asset_contract : option<address> = none;
+      var transfer_manager_operations: list<process_transfer_param> = [];
+      var rarible_custody_operations: list<process_transfer_param> = [];
+
+      var ft_origin = mt_ft_origin;
+
+      var ft_operations: list<process_transfer_param> = [];
+
+      if (transferred > 0tz and mt_ft_asset_type = XTZ) then (
+        ft_origin := self_address;
+      );
+
+
+      match mt_ft_asset_type with
+      | FA2 -> (
+        match unpack<FA2_asset>(mt_ft_asset) with
+        | some(buyAsset) -> (
+            buy_asset_contract := some(buyAsset.fa2_asset_contract);
+          )
+        | none -> fail(CANT_UNPACK_FA2_ASSET)
+        end
+      )
+      | FA12 -> (
+        match unpack<FA12_asset>(mt_ft_asset) with
+        | some(buyAsset) -> (
+            buy_asset_contract := some(buyAsset.fa12_asset_contract);
+        )
+        | none -> fail(CANT_UNPACK_FA12_ASSET)
+        end
+      )
+      | XTZ -> ()
+      end;
+
+      var protocol_fees = bp(mt_ft_amount, mt_protocol_fees);
+      var total_after_all_fees: nat = abs(mt_ft_amount - protocol_fees);
+
+      //Then process the origin fees, and the matching operations
+      var all_origin_fees = process_fees(
+        mt_ft_asset,
+        mt_ft_asset_type,
+        mt_ft_amount,
+        mt_origin_fees,
+        ft_origin,
+        ft_operations);
+      total_after_all_fees -= all_origin_fees[0];
+      ft_operations := all_origin_fees[1];
+
+      var share_per_nft = abs(floor(10000/length(mt_bundle)));
+      for bundle_nft in mt_bundle do
+        var price_per_nft = bp(mt_ft_amount, share_per_nft);
+        if(price_per_nft > 0) then (
+          //Then process the amount of royalties, and the matching operations
+          var rest_royalties = process_royalties(
+            mt_ft_asset_type,
+            mt_ft_asset,
+            bundle_nft.bundle_item_contract,
+            bundle_nft.bundle_item_id,
+            price_per_nft,
+            ft_origin,
+            ft_operations
+          );
+          total_after_all_fees -= rest_royalties[0];
+          ft_operations := rest_royalties[1];
+
+          var nft_operation: process_transfer_param = {
+            ptp_asset_type = FA2;
+            ptp_asset = pack({
+              fa2_asset_contract = bundle_nft.bundle_item_contract;
+              fa2_asset_token_id = bundle_nft.bundle_item_id
+              });
+            ptp_amount = bundle_nft.bundle_item_qty;
+            ptp_origin = mt_nft_origin;
+            ptp_destination = mt_nft_destination
+          };
+
+          if(mt_nft_origin = mt_rarible_custody) then (
+            rarible_custody_operations.prepend(nft_operation);
+          ) else (
+            transfer_manager_operations.prepend(nft_operation);
+          );
+        )
+      done;
+
+      //Finally process the auction and bid payouts, and the matching operations
+      var all_payouts =  process_fees(
+        mt_ft_asset,
+        mt_ft_asset_type,
+        total_after_all_fees,
+        mt_payouts,
+        ft_origin,
+        ft_operations);
+
+      total_after_all_fees -= all_payouts[0];
+      ft_operations := all_payouts[1];
+
+      do_require(total_after_all_fees >= 0, TOTAL_AMOUNT_NEGATIVE);
+
+      //Now that we have processed all the fees, we need to process the operations
+      //transfer protocol fees
+      if(protocol_fees > 0) then (
+        ft_operations.prepend({
+          ptp_asset_type = mt_ft_asset_type;
+          ptp_asset = mt_ft_asset;
+          ptp_amount = protocol_fees;
+          ptp_origin = ft_origin;
+          ptp_destination = get_fee_receiver(buy_asset_contract)
+        });
+      );
+
+      if(total_after_all_fees > 0) then (
+        //transfer buy asset to seller
+        ft_operations.prepend({
+          ptp_asset_type = mt_ft_asset_type;
+          ptp_asset = mt_ft_asset;
+          ptp_amount = total_after_all_fees;
+          ptp_origin = mt_ft_origin;
+          ptp_destination = mt_ft_destination
+        });
+      );
+
+      if(ft_origin = mt_rarible_custody) then (
+        rarible_custody_operations.concat(ft_operations);
+      ) else (
+        transfer_manager_operations.concat(ft_operations);
+      );
+
+      for pt_transfer in transfer_manager_operations do
+          match pt_transfer.ptp_asset_type with
+          | FA2  -> (
+            match unpack<FA2_asset>(pt_transfer.ptp_asset) with
+            | some(buyAsset) -> (
+                transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
+                  [
+                      (
+                          pt_transfer.ptp_origin,
+                          [
+                              {
+                                  destination_address = pt_transfer.ptp_destination;
+                                  token_id = buyAsset.fa2_asset_token_id;
+                                  token_amount = pt_transfer.ptp_amount
+                              }
+                          ]
+                      )
+                  ]
+                )
+              )
+            | none -> fail(CANT_UNPACK_FA2_ASSET)
+            end;
+          )
+          | FA12 -> (
+            match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+              | some(buyAsset) -> (
+                  transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+              )
+              | none -> fail(CANT_UNPACK_FA12_ASSET)
+              end
+            )
+          | XTZ -> (
+                transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+            )
+          end;
+      done;
+
+      if(length(rarible_custody_operations) > 0) then (
+        transfer 0tz to mt_rarible_custody call process_transfers<list<process_transfer_param>>(rarible_custody_operations);
+      );
+    }
+}
+
+function bp(bp_value : nat, bp_op_value : nat) : nat {
+  return abs(floor(bp_value * bp_op_value / 10000))
+}
+
+function process_fees(
+    pf_asset: bytes,
+    pf_asset_type: asset_type,
+    pf_amount: nat,
+    pf_fees: list<part>,
+    pf_from: address,
+    pf_operations: list<process_transfer_param>
+
+) : nat * list<process_transfer_param> {
+  var total_fees: nat = 0;
+  for fee in pf_fees do
+    var processed_fee = bp(pf_amount, fee.part_value);
+    total_fees += processed_fee;
+    if (processed_fee > 0) then (
+      pf_operations.prepend({
+        ptp_asset_type = pf_asset_type;
+        ptp_asset = pf_asset;
+        ptp_amount = processed_fee;
+        ptp_origin = pf_from;
+        ptp_destination = fee.part_account
+      }))
+  done;
+  return ((total_fees, pf_operations))
+}
+
+function process_royalties(
+    pr_buy_asset_type: asset_type,
+    pr_buy_asset: bytes,
+    pr_sell_asset_contract: address,
+    pr_sell_asset_token_id: nat,
+    pr_amount: nat,
+    pr_from: address,
+    pr_operations: list<process_transfer_param>
+): nat * list<process_transfer_param> {
+    var royalties_fees: list<part> = get_royalties(pr_sell_asset_contract, pr_sell_asset_token_id);
+    var rest_royalties = process_fees(pr_buy_asset, pr_buy_asset_type, pr_amount, royalties_fees, pr_from, pr_operations);
+    var royalties = rest_royalties[0];
+    var transactions = rest_royalties[1];
+    do_require((royalties / pr_amount) < 0.5 , ROYALTIES_TOO_HIGH);
+    return ((royalties, transactions))
+}
+
+
+
+function merge_operations(mp_parts: list<process_transfer_param>, mp_parts_to_add: list<list<process_transfer_param>>) : list<process_transfer_param> {
+  for part_list in mp_parts_to_add do
+    for l_part in part_list do
+      mp_parts.prepend(l_part)
+    done;
+  done;
+
+  return mp_parts
+}
+
+entry process_transfers(pt_transfers: list<process_transfer_param>){
+  require {
+    r_pt0 : isAuthorized();
+  }
+  effect {
+    for pt_transfer in pt_transfers do
+      match pt_transfer.ptp_asset_type with
+      | FA2  -> (
+        match unpack<FA2_asset>(pt_transfer.ptp_asset) with
+        | some(buyAsset) -> (
+            transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
+              [
+                  (
+                      pt_transfer.ptp_origin,
+                      [
+                          {
+                              destination_address = pt_transfer.ptp_destination;
+                              token_id = buyAsset.fa2_asset_token_id;
+                              token_amount = pt_transfer.ptp_amount
+                          }
+                      ]
+                  )
+              ]
+            )
+          )
+        | none -> fail(CANT_UNPACK_FA2_ASSET)
+        end;
+      )
+      | FA12 -> (
+        match unpack<FA12_asset>(pt_transfer.ptp_asset) with
+          | some(buyAsset) -> (
+              transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
+          )
+          | none -> fail(CANT_UNPACK_FA12_ASSET)
+          end
+        )
+      | XTZ -> (
+            transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
+        )
+      end;
+    done;
+  }
+}
