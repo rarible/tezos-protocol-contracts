@@ -230,7 +230,7 @@ export class Fa12 {
     async get_allowance_value(key: allowance_key): Promise<allowance_value | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.allowance), key.to_mich(), allowance_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(storage.allowance), key.to_mich(), allowance_key_mich_type), collapsed = true;
             if (data != undefined) {
                 return mich_to_allowance_value(data, true);
             }
@@ -243,7 +243,7 @@ export class Fa12 {
     async has_allowance_value(key: allowance_key): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.allowance), key.to_mich(), allowance_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(storage.allowance), key.to_mich(), allowance_key_mich_type), collapsed = true;
             if (data != undefined) {
                 return true;
             }
@@ -256,7 +256,7 @@ export class Fa12 {
     async get_ledger_value(key: ledger_key): Promise<ledger_value | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.ledger), key.to_mich(), ledger_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(storage.ledger), key.to_mich(), ledger_key_mich_type), collapsed = true;
             if (data != undefined) {
                 return mich_to_ledger_value(data, true);
             }
@@ -269,7 +269,7 @@ export class Fa12 {
     async has_ledger_value(key: ledger_key): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.ledger), key.to_mich(), ledger_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(storage.ledger), key.to_mich(), ledger_key_mich_type), collapsed = true;
             if (data != undefined) {
                 return true;
             }
@@ -282,7 +282,7 @@ export class Fa12 {
     async get_token_metadata_value(key: token_metadata_key): Promise<token_metadata_value | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.token_metadata), key.to_mich(), token_metadata_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(storage.token_metadata), key.to_mich(), token_metadata_key_mich_type), collapsed = true;
             if (data != undefined) {
                 return mich_to_token_metadata_value(data, true);
             }
@@ -295,7 +295,7 @@ export class Fa12 {
     async has_token_metadata_value(key: token_metadata_key): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.token_metadata), key.to_mich(), token_metadata_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(storage.token_metadata), key.to_mich(), token_metadata_key_mich_type), collapsed = true;
             if (data != undefined) {
                 return true;
             }

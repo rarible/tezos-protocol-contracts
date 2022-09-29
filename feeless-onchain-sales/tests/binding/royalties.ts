@@ -239,7 +239,7 @@ export class Royalties {
     async get_royalties_value(key: royalties_key): Promise<royalties_value | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.royalties), key.to_mich(), royalties_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(storage.royalties), key.to_mich(), royalties_key_mich_type), collapsed = true;
             if (data != undefined) {
                 return mich_to_royalties_value(data, true);
             }
@@ -252,7 +252,7 @@ export class Royalties {
     async has_royalties_value(key: royalties_key): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.royalties), key.to_mich(), royalties_key_mich_type);
+            const data = await ex.get_big_map_value(BigInt(storage.royalties), key.to_mich(), royalties_key_mich_type), collapsed = true;
             if (data != undefined) {
                 return true;
             }
@@ -265,7 +265,7 @@ export class Royalties {
     async get_metadata_value(key: string): Promise<ex.Bytes | undefined> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.metadata), ex.string_to_mich(key), ex.prim_annot_to_mich_type("bytes", []));
+            const data = await ex.get_big_map_value(BigInt(storage.metadata), ex.string_to_mich(key), ex.prim_annot_to_mich_type("string", [])), collapsed = true;
             if (data != undefined) {
                 return ex.mich_to_bytes(data);
             }
@@ -278,7 +278,7 @@ export class Royalties {
     async has_metadata_value(key: string): Promise<boolean> {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
-            const data = await ex.get_big_map_value(BigInt(storage.metadata), ex.string_to_mich(key), ex.prim_annot_to_mich_type("bytes", []));
+            const data = await ex.get_big_map_value(BigInt(storage.metadata), ex.string_to_mich(key), ex.prim_annot_to_mich_type("string", [])), collapsed = true;
             if (data != undefined) {
                 return true;
             }

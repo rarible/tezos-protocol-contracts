@@ -100,6 +100,23 @@ record sale {
   sale_data       : option<bytes>;
 }
 
+record sale_arg {
+  sale_arg_asset_contract: address;
+  sale_arg_asset_token_id: nat;
+  sale_arg_seller: address;
+  sale_arg_type: asset_type;
+  sale_arg_asset: bytes;
+  sale_arg_origin_fees : list<part>;
+  sale_arg_payouts : list<part>;
+  sale_arg_amount : nat;
+  sale_arg_asset_qty: nat;
+  sale_arg_start: option<date>;
+  sale_arg_end: option<date>;
+  sale_arg_max_fees_base_boint: nat;
+  sale_arg_data_type  : option<bytes>;
+  sale_arg_data       : option<bytes>;
+}
+
 asset sales identified by sale_asset_contract sale_asset_token_id sale_asset_seller sale_type sale_asset to big_map {
   sale_asset_contract : address;
   sale_asset_token_id: nat;
@@ -110,12 +127,7 @@ asset sales identified by sale_asset_contract sale_asset_token_id sale_asset_sel
 }
 
 entry set_sale(
-  ss_asset_contract: address,
-  ss_asset_token_id: nat,
-  ss_seller: address,
-  ss_sale_type: asset_type,
-  ss_sale_asset: bytes,
-  ss_sale: sale) {
+  ss_sale: sale_arg) {
   constant {
     authorized_contract ?is sales_contract otherwise "MISSING_SALES_CONTRACT"
   }
@@ -125,14 +137,24 @@ entry set_sale(
   effect {
     sales.add_update(
       (
-        ss_asset_contract,
-        ss_asset_token_id,
-        ss_seller,
-        ss_sale_type,
-        ss_sale_asset
+        ss_sale.sale_arg_asset_contract,
+        ss_sale.sale_arg_asset_token_id,
+        ss_sale.sale_arg_seller,
+        ss_sale.sale_arg_type,
+        ss_sale.sale_arg_asset
       ),
       {
-        sale_record = ss_sale
+        sale_record = {
+            sale_origin_fees = ss_sale.sale_arg_origin_fees;
+            sale_payouts = ss_sale.sale_arg_payouts;
+            sale_amount = ss_sale.sale_arg_amount;
+            sale_asset_qty = ss_sale.sale_arg_asset_qty;
+            sale_start = ss_sale.sale_arg_start;
+            sale_end = ss_sale.sale_arg_end;
+            sale_max_fees_base_boint = ss_sale.sale_arg_max_fees_base_boint;
+            sale_data_type = ss_sale.sale_arg_data_type;
+            sale_data = ss_sale.sale_arg_data
+        }
       }
     );
   }
