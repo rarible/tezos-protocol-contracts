@@ -1,4 +1,5 @@
 import {
+	Account,
 	Address, Bytes,
 	exec_batch,
 	expect_to_fail,
@@ -20,13 +21,13 @@ import {
 } from "./binding/fa2";
 import {Royalties} from "./binding/royalties";
 import {
-	asset_type, FA12_asset, FA12_asset_mich_type,
+	asset_type, FA12, FA12_asset, FA12_asset_mich_type,
 	FA2,
 	FA2_asset,
 	FA2_asset_mich_type,
 	Feeless_sales, part,
 	sale,
-	sale_mich_type
+	sale_mich_type, XTZ
 } from "./binding/feeless_sales";
 import {sales_key, Sales_storage} from "./binding/sales_storage";
 import {transfer_manager, Transfer_manager} from "./binding/transfer_manager";
@@ -90,30 +91,34 @@ const permit_data_type = pair_array_to_mich_type([
 	])
 ])
 
-export const get_permit_data = (ptps : Bytes, contract : Address, permit_counter : Nat | undefined) : Bytes => {
+export const get_permit_data = (ptps: Bytes, contract: Address, permit_counter: Nat | undefined): Bytes => {
 	let counter = new Nat(0)
 	if (permit_counter != undefined) {
 		counter = permit_counter
 	}
 	const chain_id = is_mockup() ? 'NetXynUjJNZm7wi' : '';
 	const permit_data = mich_array_to_mich([
-		mich_array_to_mich([ contract.to_mich(), string_to_mich(chain_id) ]),
-		mich_array_to_mich([ counter.to_mich(), ptps.to_mich() ])
+		mich_array_to_mich([contract.to_mich(), string_to_mich(chain_id)]),
+		mich_array_to_mich([counter.to_mich(), ptps.to_mich()])
 	])
 	return pack(permit_data, permit_data_type);
 }
 
 async function sumbit_and_verify_sale_order(
 	nft_token_id: Nat,
-	origin_fees: part[],
-	payouts: part[],
+	owner: Account,
+	sale_order_amount: Nat,
+	sale_order_qty: Nat,
+	sale_max_fees: Nat,
 	asset_type: asset_type,
 	sale_start: Option<Date>,
 	sale_end: Option<Date>,
+	origin_fees: part[],
+	payouts: part[],
 	sale_asset_contract?: Fa2 | Fa12,
 	sale_asset_token_id?: Nat,
 ) {
-	const permit = await permits_contract.get_permits_value(alice.get_address())
+	const permit = await permits_contract.get_permits_value(owner.get_address())
 	const counter = permit?.counter
 
 	const is_fa2 = sale_asset_contract && sale_asset_token_id
@@ -124,23 +129,23 @@ async function sumbit_and_verify_sale_order(
 		FA12_asset_mich_type) : new Bytes("")
 	const sale_key = new sales_key(fa2_nft_contract.get_address(),
 		nft_token_id,
-		alice.get_address(),
+		owner.get_address(),
 		asset_type,
 		sale_asset)
 	const pre_sale = await sales_storage_contract.get_sales_value(sale_key)
 	assert(pre_sale == undefined)
 	const sale_data = new sale(fa2_nft_contract.get_address(),
 		nft_token_id,
-		alice.get_address(),
+		owner.get_address(),
 		asset_type,
 		sale_asset,
 		origin_fees,
 		payouts,
-		new Nat(sale_amount),
-		new Nat(qty),
+		sale_order_amount,
+		sale_order_qty,
 		sale_start,
 		sale_end,
-		new Nat(max_fees),
+		sale_max_fees,
 		Option.None(),
 		Option.None())
 	const packed_sales_data = pack(sale_data.to_mich(), sale_mich_type)
@@ -148,8 +153,8 @@ async function sumbit_and_verify_sale_order(
 		packed_sales_data,
 		permits_contract.get_address(),
 		counter);
-	const signature = await sign(after_permit_data, alice)
-	await feeless_sales_contract.sell(sale_data, alice.get_public_key(), signature, {as: alice})
+	const signature = await sign(after_permit_data, owner)
+	await feeless_sales_contract.sell(sale_data, owner.get_public_key(), signature, {as: owner})
 	const post_sale = await sales_storage_contract.get_sales_value(sale_key)
 	assert(post_sale != undefined)
 	assert(post_sale?.sale_amount.equals(new Nat(sale_amount)))
@@ -204,16 +209,17 @@ describe('Contracts deployment', async () => {
 describe('Permits contract configuration', async () => {
 	it("Add Feeless sales contract as permit consumer as non admin should fail", async () => {
 		await expect_to_fail(async () => {
-			await permits_contract.manage_consumer(new add(feeless_sales_contract.get_address()),  { as: bob })
+			await permits_contract.manage_consumer(new add(feeless_sales_contract.get_address()), {as: bob})
 		}, transfer_manager.errors.INVALID_CALLER);
 	})
 
-	it('Add Feeless sales contract as permit consumer as non admin should succeed', async () => {
+	it('Add Feeless sales contract as permit consumer as admin should succeed', async () => {
 		const pre_consumer = await permits_contract.get_consumer();
-		assert(pre_consumer.find( a => a.equals(feeless_sales_contract.get_address())) == undefined);
-		await permits_contract.manage_consumer(new add(feeless_sales_contract.get_address()),  { as: alice })
+		assert(pre_consumer.find(a => a.equals(feeless_sales_contract.get_address())) == undefined);
+		await permits_contract.manage_consumer(new add(feeless_sales_contract.get_address()), {as: alice})
 		const post_consumer = await permits_contract.get_consumer();
-		assert(post_consumer.find( a => a.equals(feeless_sales_contract.get_address()))?.equals(feeless_sales_contract.get_address()));
+		assert(post_consumer.find(a => a.equals(feeless_sales_contract.get_address()))
+			?.equals(feeless_sales_contract.get_address()));
 	});
 })
 
@@ -461,34 +467,154 @@ describe('Set feeless sales tests', async () => {
 	describe('Set feeless sale in Fungible FA2', async () => {
 		it('Set feeless sale buying with Fungible FA2 should succeed (no royalties, no sale payouts, no sale origin fees)',
 			async () => {
-				await sumbit_and_verify_sale_order(new Nat(0), [], [], new FA2(), Option.None(), Option.None(), fa2_ft_contract, new Nat(0))
+				await sumbit_and_verify_sale_order(new Nat(0),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new FA2(),
+					Option.None(),
+					Option.None(),
+					[],
+					[],
+					fa2_ft_contract,
+					new Nat(0))
 			});
 		it('Set sale buying with Fungible FA2 should succeed (single royalties, single sale payouts, single sale origin fees)',
 			async () => {
 				await sumbit_and_verify_sale_order(new Nat(1),
-					[new part(carl.get_address(), new Nat(payout_value))],
-					[new part(daniel.get_address(), new Nat(payout_value))],
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
 					new FA2(),
 					Option.None(),
 					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value))],
+					[new part(daniel.get_address(), new Nat(payout_value))],
 					fa2_ft_contract,
 					new Nat(1))
 			});
 		it('Set sale buying with Fungible FA2 should succeed (multiple royalties, multiple payouts, multiple origin fees)',
 			async () => {
 				await sumbit_and_verify_sale_order(new Nat(2),
-					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
-						new Nat(payout_value))],
-					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
-						new Nat(payout_value))],
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
 					new FA2(),
 					Option.None(),
 					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
 					fa2_ft_contract,
 					new Nat(2))
 			});
 	});
 
-	describe('Set feeless sale in Fungible FA12', async () => {
+	describe('Set feeless sale in XTZ', async () => {
+		it('Set sale buying with XTZ should succeed (no royalties, no payouts, no origin fees)', async () => {
+			await sumbit_and_verify_sale_order(new Nat(3),
+				alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees), new XTZ(), Option.None(), Option.None(), [], [])
+		});
+
+		it('Set sale buying with XTZ should succeed (single royalties, single payouts, single origin fees)',
+			async () => {
+				await sumbit_and_verify_sale_order(new Nat(4), alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees), new XTZ(), Option.None(), Option.None(), [new part(carl.get_address(), new Nat(payout_value))],
+					[new part(daniel.get_address(), new Nat(payout_value))])
+			});
+
+		it('Set sale buying with XTZ should succeed (multiple royalties, multiple payouts, multiple origin fees)',
+			async () => {
+				await sumbit_and_verify_sale_order(new Nat(5),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))])
+			});
+	});
+
+	describe('Set feeless sale in FA12', async () => {
+		it('Set sale buying with FA12 should succeed (no royalties, no payouts, no origin fees)', async () => {
+			await sumbit_and_verify_sale_order(new Nat(6), alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees), new FA12(), Option.None(), Option.None(), [], [], fa12_ft_0_contract)
+		});
+
+		it('Set sale buying with FA12 should succeed (single royalties, single payouts, single origin fees)',
+			async () => {
+				await sumbit_and_verify_sale_order(new Nat(7), alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees), new FA12(), Option.None(), Option.None(), [new part(carl.get_address(), new Nat(payout_value))],
+					[new part(daniel.get_address(), new Nat(payout_value))], fa12_ft_1_contract)
+			});
+
+		it('Set sale buying with FA12 should succeed (multiple royalties, multiple payouts, multiple origin fees)',
+			async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new FA12(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_2_contract)
+			});
+	});
+
+	describe('Common args test', async () => {
+		it('Set sale with wrong buy asset payload (FA2) should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new FA2(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_2_contract)
+			}, feeless_sales_contract.errors.CANT_UNPACK_FA2_ASSET);
+		});
+
+		it('Set sale with wrong buy asset payload (FA12) should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new FA12(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],)
+			}, feeless_sales_contract.errors.CANT_UNPACK_FA12_ASSET);
+		});
+
+		it('Set sale with wrong buy asset payload (XTZ) should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.WRONG_XTZ_PAYLOAD);
+		});
+
+		it('Set sale with NFT amount = 0 should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(0), new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.WRONG_XTZ_PAYLOAD);
+		});
 	});
 });
