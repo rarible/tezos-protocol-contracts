@@ -120,7 +120,6 @@ async function sumbit_and_verify_sale_order(
 ) {
 	const permit = await permits_contract.get_permits_value(owner.get_address())
 	const counter = permit?.counter
-
 	const is_fa2 = sale_asset_contract && sale_asset_token_id
 	const is_fa12 = sale_asset_contract && !sale_asset_token_id
 	const sale_asset = is_fa2 ? pack(new FA2_asset(sale_asset_contract.get_address(),
@@ -756,25 +755,73 @@ describe('Set feeless sales tests', async () => {
 			}, feeless_sales_contract.errors.r_s2);
 		});
 
+		it('Set sale with bad signature should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.r_s2);
+		});
+
 		it('Set sale buying with a sale that already exists should update the previous order and succeed', async () => {
-			await sumbit_and_verify_sale_order(new Nat(9),
-				alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
-				new FA12(),
-				Option.None(),
-				Option.None(),
-				[new part(carl.get_address(), new Nat(payout_value))],
-				[new part(daniel.get_address(),
-					new Nat(payout_value))],
-				fa12_ft_1_contract)
-			await sumbit_and_verify_sale_order(new Nat(9),
-				alice, new Nat(sale_amount), new Nat(qty*2), new Nat(max_fees),
-				new FA12(),
-				Option.None(),
-				Option.None(),
-				[new part(carl.get_address(), new Nat(payout_value))],
-				[new part(daniel.get_address(),
-					new Nat(payout_value))],
-				fa12_ft_1_contract)
+			await expect_to_fail(async () => {
+
+				const owner = alice
+				const sale_asset_contract = fa2_ft_contract
+				const sale_asset_token_id = new Nat(9)
+				const asset_type = new FA2()
+				const nft_token_id = new Nat(9)
+				const origin_fees: part[] = []
+				const payouts: part[] = []
+
+				const permit = await permits_contract.get_permits_value(owner.get_address())
+				const counter = permit?.counter
+				const is_fa2 = sale_asset_contract && sale_asset_token_id
+				const is_fa12 = sale_asset_contract && !sale_asset_token_id
+				const sale_asset = is_fa2 ? pack(new FA2_asset(sale_asset_contract.get_address(),
+						new Nat(1)).to_mich(),
+					FA2_asset_mich_type) : is_fa12 ? pack(sale_asset_contract.get_address().to_mich(),
+					FA12_asset_mich_type) : new Bytes("")
+				const sale_data = new sale(fa2_nft_contract.get_address(),
+					nft_token_id,
+					owner.get_address(),
+					asset_type,
+					sale_asset,
+					origin_fees,
+					payouts,
+					new Nat(sale_amount),
+					new Nat(qty),
+					Option.None(),
+					Option.None(),
+					new Nat(max_fees),
+					Option.None(),
+					Option.None())
+				const packed_sales_data = pack(sale_data.to_mich(), sale_mich_type)
+				const after_permit_data = await get_permit_data(
+					packed_sales_data,
+					permits_contract.get_address(),
+					counter);
+				const signature = await sign(after_permit_data, owner)
+				sale_data.sale_asset_token_id = new Nat(0)
+				await feeless_sales_contract.sell(sale_data, owner.get_public_key(), signature, {as: owner})
+			}, {
+				"prim": "Pair",
+				"args": [
+					{
+						"string": "MISSIGNED"
+					},
+					{
+						"bytes": "05070707070a0000001601363455eaeb7c05aba917c38d5999dc8bb4609b46000a00000004f3d48554070700090a000000960507070a0000001601b558c1db50a388422e04fa95361f9c22650cfdd8000707000007070a0000001600006b82198cb179e8306c1bedd08f12dc863f3288860707000207070a000000200507070a00000016014effc70a27029b49f35bb75977909aaedae6df3e000001070702000000000707020000000007070080897a070700010707030607070306070700909c01070703060306"
+					}
+				]
+			});
 		});
 	});
 });
