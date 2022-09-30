@@ -378,6 +378,9 @@ const set_transfer_manager_arg_to_mich = (stm_contract: ex.Address): ex.Michelin
 const set_sales_storage_arg_to_mich = (sss_contract: ex.Address): ex.Micheline => {
     return sss_contract.to_mich();
 }
+const set_permits_arg_to_mich = (sp_contract: ex.Address): ex.Micheline => {
+    return sp_contract.to_mich();
+}
 const set_max_bundle_items_arg_to_mich = (smbi_number: ex.Nat): ex.Micheline => {
     return smbi_number.to_mich();
 }
@@ -429,12 +432,13 @@ export class Feeless_sales {
         }
         throw new Error("Contract not initialised");
     }
-    async deploy(owner: ex.Address, protocol_fee: ex.Nat, transfer_manager: ex.Address, sales_storage: ex.Address, params: Partial<ex.Parameters>) {
+    async deploy(owner: ex.Address, protocol_fee: ex.Nat, transfer_manager: ex.Address, sales_storage: ex.Address, permits: ex.Address, params: Partial<ex.Parameters>) {
         const address = await ex.deploy("./contracts/feeless_sales.arl", {
             owner: owner.to_mich(),
             protocol_fee: protocol_fee.to_mich(),
             transfer_manager: transfer_manager.to_mich(),
-            sales_storage: sales_storage.to_mich()
+            sales_storage: sales_storage.to_mich(),
+            permits: permits.to_mich()
         }, params);
         this.address = address;
     }
@@ -477,6 +481,12 @@ export class Feeless_sales {
     async set_sales_storage(sss_contract: ex.Address, params: Partial<ex.Parameters>): Promise<any> {
         if (this.address != undefined) {
             return await ex.call(this.address, "set_sales_storage", set_sales_storage_arg_to_mich(sss_contract), params);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async set_permits(sp_contract: ex.Address, params: Partial<ex.Parameters>): Promise<any> {
+        if (this.address != undefined) {
+            return await ex.call(this.address, "set_permits", set_permits_arg_to_mich(sp_contract), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -552,6 +562,12 @@ export class Feeless_sales {
         }
         throw new Error("Contract not initialised");
     }
+    async get_set_permits_param(sp_contract: ex.Address, params: Partial<ex.Parameters>): Promise<ex.CallParameter> {
+        if (this.address != undefined) {
+            return await ex.get_call_param(this.address, "set_permits", set_permits_arg_to_mich(sp_contract), params);
+        }
+        throw new Error("Contract not initialised");
+    }
     async get_set_max_bundle_items_param(smbi_number: ex.Nat, params: Partial<ex.Parameters>): Promise<ex.CallParameter> {
         if (this.address != undefined) {
             return await ex.get_call_param(this.address, "set_max_bundle_items", set_max_bundle_items_arg_to_mich(smbi_number), params);
@@ -607,6 +623,13 @@ export class Feeless_sales {
         if (this.address != undefined) {
             const storage = await ex.get_storage(this.address);
             return new ex.Address(storage.sales_storage);
+        }
+        throw new Error("Contract not initialised");
+    }
+    async get_permits(): Promise<ex.Address> {
+        if (this.address != undefined) {
+            const storage = await ex.get_storage(this.address);
+            return new ex.Address(storage.permits);
         }
         throw new Error("Contract not initialised");
     }
@@ -666,7 +689,6 @@ export class Feeless_sales {
         MISSING_SALE: ex.string_to_mich("\"MISSING_SALE\""),
         INVALID_SALE_START_DATE: ex.string_to_mich("\"INVALID_SALE_START_DATE\""),
         INVALID_SALE_END_DATE: ex.string_to_mich("\"INVALID_SALE_END_DATE\""),
-        INVALID_SIGNATURE: ex.string_to_mich("\"INVALID_SIGNATURE\""),
         INVALID_SELLER: ex.string_to_mich("\"INVALID_SELLER\""),
         r_s3: ex.pair_to_mich([ex.string_to_mich("\"INVALID_CONDITION\""), ex.string_to_mich("\"r_s3\"")]),
         r_s2: ex.pair_to_mich([ex.string_to_mich("\"INVALID_CONDITION\""), ex.string_to_mich("\"r_s2\"")]),

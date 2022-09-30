@@ -2,7 +2,8 @@ archetype feeless_sales(
     owner: address,
     protocol_fee: nat,
     transfer_manager: address,
-    sales_storage: address
+    sales_storage: address,
+    permits: address
 )
 with metadata ""
 
@@ -87,6 +88,13 @@ entry set_sales_storage(sss_contract : address) {
   called by owner
   effect {
     sales_storage := sss_contract;
+  }
+}
+
+entry set_permits(sp_contract : address) {
+  called by owner
+  effect {
+    permits := sp_contract;
   }
 }
 
@@ -195,8 +203,7 @@ entry sell (
       do_require(seller_address = s_sale.sale_seller, INVALID_SELLER);
 
       var packed_data = pack(s_sale);
-      var is_sig_valid = check_signature(s_seller_pubk, s_sig, packed_data);
-      do_require(is_sig_valid = true, INVALID_SIGNATURE);
+      transfer 0tz to permits call check<key * signature * bytes>((s_seller_pubk, s_sig, packed_data));
       match s_sale.sale_end with
       | some(end_date) -> begin
         do_require(end_date > now, INVALID_SALE_END_DATE);
