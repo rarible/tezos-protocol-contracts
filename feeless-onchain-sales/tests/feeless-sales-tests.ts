@@ -132,8 +132,6 @@ async function sumbit_and_verify_sale_order(
 		owner.get_address(),
 		asset_type,
 		sale_asset)
-	const pre_sale = await sales_storage_contract.get_sales_value(sale_key)
-	assert(pre_sale == undefined)
 	const sale_data = new sale(fa2_nft_contract.get_address(),
 		nft_token_id,
 		owner.get_address(),
@@ -157,8 +155,8 @@ async function sumbit_and_verify_sale_order(
 	await feeless_sales_contract.sell(sale_data, owner.get_public_key(), signature, {as: owner})
 	const post_sale = await sales_storage_contract.get_sales_value(sale_key)
 	assert(post_sale != undefined)
-	assert(post_sale?.sale_amount.equals(new Nat(sale_amount)))
-	assert(post_sale?.sale_asset_qty.equals(new Nat(qty)))
+	assert(post_sale?.sale_amount.equals(sale_order_amount))
+	assert(post_sale?.sale_asset_qty.equals(sale_order_qty))
 	assert(post_sale?.sale_start.equals(sale_start))
 	assert(post_sale?.sale_end.equals(sale_end))
 	assert(post_sale?.sale_origin_fees.length == origin_fees.length)
@@ -508,12 +506,28 @@ describe('Set feeless sales tests', async () => {
 	describe('Set feeless sale in XTZ', async () => {
 		it('Set sale buying with XTZ should succeed (no royalties, no payouts, no origin fees)', async () => {
 			await sumbit_and_verify_sale_order(new Nat(3),
-				alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees), new XTZ(), Option.None(), Option.None(), [], [])
+				alice,
+				new Nat(sale_amount),
+				new Nat(qty),
+				new Nat(max_fees),
+				new XTZ(),
+				Option.None(),
+				Option.None(),
+				[],
+				[])
 		});
 
 		it('Set sale buying with XTZ should succeed (single royalties, single payouts, single origin fees)',
 			async () => {
-				await sumbit_and_verify_sale_order(new Nat(4), alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees), new XTZ(), Option.None(), Option.None(), [new part(carl.get_address(), new Nat(payout_value))],
+				await sumbit_and_verify_sale_order(new Nat(4),
+					alice,
+					new Nat(sale_amount),
+					new Nat(qty),
+					new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value))],
 					[new part(daniel.get_address(), new Nat(payout_value))])
 			});
 
@@ -533,13 +547,32 @@ describe('Set feeless sales tests', async () => {
 
 	describe('Set feeless sale in FA12', async () => {
 		it('Set sale buying with FA12 should succeed (no royalties, no payouts, no origin fees)', async () => {
-			await sumbit_and_verify_sale_order(new Nat(6), alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees), new FA12(), Option.None(), Option.None(), [], [], fa12_ft_0_contract)
+			await sumbit_and_verify_sale_order(new Nat(6),
+				alice,
+				new Nat(sale_amount),
+				new Nat(qty),
+				new Nat(max_fees),
+				new FA12(),
+				Option.None(),
+				Option.None(),
+				[],
+				[],
+				fa12_ft_0_contract)
 		});
 
 		it('Set sale buying with FA12 should succeed (single royalties, single payouts, single origin fees)',
 			async () => {
-				await sumbit_and_verify_sale_order(new Nat(7), alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees), new FA12(), Option.None(), Option.None(), [new part(carl.get_address(), new Nat(payout_value))],
-					[new part(daniel.get_address(), new Nat(payout_value))], fa12_ft_1_contract)
+				await sumbit_and_verify_sale_order(new Nat(7),
+					alice,
+					new Nat(sale_amount),
+					new Nat(qty),
+					new Nat(max_fees),
+					new FA12(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value))],
+					[new part(daniel.get_address(), new Nat(payout_value))],
+					fa12_ft_1_contract)
 			});
 
 		it('Set sale buying with FA12 should succeed (multiple royalties, multiple payouts, multiple origin fees)',
@@ -614,7 +647,134 @@ describe('Set feeless sales tests', async () => {
 					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
 						new Nat(payout_value))],
 					fa12_ft_0_contract)
-			}, feeless_sales_contract.errors.WRONG_XTZ_PAYLOAD);
+			}, feeless_sales_contract.errors.r_s1);
+		});
+
+		it('Set sale with sale amount = 0 should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(0), new Nat(qty), new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.r_s0);
+		});
+
+		it('Set sale with end date < now should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.Some(new Date(now.getMilliseconds() - 1000)),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.INVALID_SALE_END_DATE);
+		});
+
+		it('Set sale with end date < start date should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice,
+					new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new XTZ(),
+					Option.Some(new Date(now.getMilliseconds() + 2000)),
+					Option.Some(new Date(now.getMilliseconds() + 1000)),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.INVALID_SALE_END_DATE);
+		});
+
+		it('Set sale with max fees amount = 0 should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(0),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.r_s2);
+		});
+
+		it('Set sale with max fees > max limit should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(99999999),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.r_s2);
+		});
+
+		it('Set sale with max fees amount < protocol fees should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(150),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.r_s2);
+		});
+
+		it('Set sale with protocol fees + origin fees > max fees amount should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_sale_order(new Nat(8),
+					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[new part(carl.get_address(), new Nat(10000)), new part(daniel.get_address(),
+						new Nat(10000))],
+					[new part(carl.get_address(), new Nat(payout_value)), new part(daniel.get_address(),
+						new Nat(payout_value))],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.r_s2);
+		});
+
+		it('Set sale buying with a sale that already exists should update the previous order and succeed', async () => {
+			await sumbit_and_verify_sale_order(new Nat(9),
+				alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
+				new FA12(),
+				Option.None(),
+				Option.None(),
+				[new part(carl.get_address(), new Nat(payout_value))],
+				[new part(daniel.get_address(),
+					new Nat(payout_value))],
+				fa12_ft_1_contract)
+			await sumbit_and_verify_sale_order(new Nat(9),
+				alice, new Nat(sale_amount), new Nat(qty*2), new Nat(max_fees),
+				new FA12(),
+				Option.None(),
+				Option.None(),
+				[new part(carl.get_address(), new Nat(payout_value))],
+				[new part(daniel.get_address(),
+					new Nat(payout_value))],
+				fa12_ft_1_contract)
 		});
 	});
 });
