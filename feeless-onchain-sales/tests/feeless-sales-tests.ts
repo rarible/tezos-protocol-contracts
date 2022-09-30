@@ -1,4 +1,5 @@
 import {
+	Address, Bytes,
 	exec_batch,
 	expect_to_fail,
 	get_account,
@@ -18,9 +19,18 @@ import {
 	transfer_param
 } from "./binding/fa2";
 import {Royalties} from "./binding/royalties";
-import {FA2, FA2_asset, FA2_asset_mich_type, Feeless_sales, sale, sale_mich_type} from "./binding/feeless_sales";
+import {
+	asset_type, FA12_asset, FA12_asset_mich_type,
+	FA2,
+	FA2_asset,
+	FA2_asset_mich_type,
+	Feeless_sales, part,
+	sale,
+	sale_mich_type
+} from "./binding/feeless_sales";
 import {sales_key, Sales_storage} from "./binding/sales_storage";
 import {transfer_manager, Transfer_manager} from "./binding/transfer_manager";
+import * as ex from "@completium/experiment-ts";
 
 const assert = require('assert');
 
@@ -54,7 +64,7 @@ set_quiet(true);
 const now = new Date(Date.now())
 set_mockup_now(now)
 
-/* Constants & Utils ------------------------------------------------------- */
+/* Constants ------------------------------------------------------- */
 const initial_ft_amount = 100000000;
 const fee = 250;
 const payout_value = 100;
@@ -62,9 +72,59 @@ const max_fees = 10000;
 const sale_amount = 1000000;
 const qty = 1;
 
-exports.XTZ = '0';
-exports.FA12 = '1';
-exports.FA2 = '2';
+/* Sale order --------------------------------------------------------------- */
+async function sumbit_and_verify_sale_order(
+	nft_token_id: Nat,
+	origin_fees: part[],
+	payouts: part[],
+	asset_type: asset_type,
+	sale_asset_contract?: Fa2 | Fa12,
+	sale_asset_token_id?: Nat
+) {
+	const is_fa2 = sale_asset_contract && sale_asset_token_id
+	const is_fa12 = sale_asset_contract && !sale_asset_token_id
+	const sale_asset = is_fa2 ? pack(new FA2_asset(sale_asset_contract.get_address(),
+			new Nat(1)).to_mich(),
+		FA2_asset_mich_type) : is_fa12 ? pack(sale_asset_contract.get_address().to_mich(),
+		FA12_asset_mich_type) : new Bytes("")
+	const sale_key = new sales_key(fa2_nft_contract.get_address(),
+		nft_token_id,
+		alice.get_address(),
+		asset_type,
+		sale_asset)
+	const pre_sale = await sales_storage_contract.get_sales_value(sale_key)
+	assert(pre_sale == undefined)
+	const sale_data = new sale(fa2_nft_contract.get_address(),
+		nft_token_id,
+		alice.get_address(),
+		asset_type,
+		sale_asset,
+		origin_fees,
+		payouts,
+		new Nat(sale_amount),
+		new Nat(qty),
+		Option.None(),
+		Option.None(),
+		new Nat(max_fees),
+		Option.None(),
+		Option.None())
+	const signature = await sign(pack(sale_data.to_mich(), sale_mich_type), alice)
+	await feeless_sales_contract.sell(sale_data, alice.get_public_key(), signature, {as: alice})
+	const post_sale = await sales_storage_contract.get_sales_value(sale_key)
+	assert(post_sale != undefined)
+	assert(post_sale?.sale_amount.equals(new Nat(sale_amount)))
+	assert(post_sale?.sale_asset_qty.equals(new Nat(qty)))
+	assert(post_sale?.sale_origin_fees.length == origin_fees.length)
+	assert(post_sale?.sale_payouts.length == payouts.length)
+	for(let i = 0; i < origin_fees.length - 1; i++) {
+		assert(post_sale?.sale_origin_fees[i].part_account.equals(origin_fees[0].part_account))
+		assert(post_sale?.sale_origin_fees[i].part_value.equals(origin_fees[0].part_value))
+	}
+	for(let i = 0; i < origin_fees.length - 1; i++) {
+		assert(post_sale?.sale_payouts[i].part_account.equals(payouts[0].part_account))
+		assert(post_sale?.sale_payouts[i].part_value.equals(payouts[0].part_value))
+	}
+}
 
 /* Scenarios --------------------------------------------------------------- */
 describe('Contracts deployment', async () => {
@@ -325,39 +385,14 @@ describe('Set feeless sales tests', async () => {
 	describe('Set feeless sale in Fungible FA2', async () => {
 		it('Set feeless sale buying with Fungible FA2 should succeed (no royalties, no sale payouts, no sale origin fees)',
 			async () => {
-				const sale_asset = pack(new FA2_asset(fa2_nft_contract.get_address(), new Nat(0)).to_mich(),
-					FA2_asset_mich_type)
-				const sale_key = new sales_key(fa2_nft_contract.get_address(),
-					new Nat(0),
-					alice.get_address(),
-					new FA2(),
-					sale_asset)
-				const pre_sale = await sales_storage_contract.get_sales_value(new sales_key(fa2_nft_contract.get_address(),
-					new Nat(0),
-					alice.get_address(),
-					new FA2(),
-					sale_asset))
-				assert(pre_sale == undefined)
-				const sale_data = new sale(fa2_nft_contract.get_address(),
-					new Nat(0),
-					alice.get_address(),
-					new FA2(),
-					sale_asset,
-					[],
-					[],
-					new Nat(sale_amount),
-					new Nat(qty),
-					Option.None(),
-					Option.None(),
-					new Nat(max_fees),
-					Option.None(),
-					Option.None())
-				const signature = await sign(pack(sale_data.to_mich(), sale_mich_type), alice)
-				await feeless_sales_contract.sell(sale_data, alice.get_public_key(), signature, {as: alice})
-				const post_sale = await sales_storage_contract.get_sales_value(sale_key)
-				assert(post_sale != undefined)
-				assert(post_sale?.sale_amount.equals(new Nat(sale_amount)))
-				assert(post_sale?.sale_asset_qty.equals(new Nat(qty)))
+				await sumbit_and_verify_sale_order(new Nat(0), [], [], new FA2(), fa2_ft_contract, new Nat(0))
+			});
+	});
+
+	describe('Set feeless sale in Fungible FA2', async () => {
+		it('Set sale buying with Fungible FA2 should succeed (single royalties, single sale payouts, single sale origin fees)',
+			async () => {
+				await sumbit_and_verify_sale_order(new Nat(1), [new part(carl.get_address(), new Nat(payout_value))], [new part(daniel.get_address(), new Nat(payout_value))], new FA2(), fa2_ft_contract, new Nat(0))
 			});
 	});
 });
