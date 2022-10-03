@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "scripts": {
     "test": "./run_test.sh",
+    "build": "npx tsc --outDir build",
     "gen-binding": "completium-cli run binder-ts"
   },
   "dependencies": {
-    "@completium/completium-cli": "^0.4.27",
-    "@completium/experiment-ts": "0.0.80",
+    "@completium/archetype-ts-types": "0.0.5",
+    "@completium/completium-cli": "^0.4.28",
+    "@completium/experiment-ts": "0.0.85",
     "@types/node": "latest",
     "mocha": "^10.0.0"
   },

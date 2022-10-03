@@ -60,17 +60,23 @@ entry set_metadata(k: string, d : option<bytes>) {
   }
 }
 
-/* TOKEN METADATA ------------------------------------------------------------ */
+/* Royalties ---------------------------------------------------------------- */
+record part {
+  partAccount : address;
+  partValue   : nat;
+}
 
-constant TOKEN_ID                 : nat    = 0
-constant METADATA_COIN            : bytes  = 0x697066733a2f2f516d617635756142437a4d77377871446f55364d444534743473695855484e4737664a68474c746f79774b35694a // ipfs://Qmav5uaBCzMw7xqDoU6MDE4t4siXUHNG7fJhGLtoywK5iJ
+asset royalties identified by rtokenid to big_map {
+  rtokenid : nat;
+  rvalue : list<part>;
+}
+
+/* TOKEN METADATA ------------------------------------------------------------ */
 
 asset token_metadata to big_map {
   ftoken_metadata : nat;
   token_id        : nat;
   token_info      : map<string, bytes>;
-} initialized by {
-  {TOKEN_ID; TOKEN_ID; [("", METADATA_COIN)]}
 }
 
 entry set_token_metadata (tid : nat, tdata: map<string, bytes>) {
@@ -261,13 +267,15 @@ entry %transfer (txs : list<transfer_param>) {
   }
 }
 
-entry mint (tow : address, tid : nat, nbt : nat) {
-  called by owner
-  require { fa2_r5: is_not_paused() }
+entry mint (iowner : address, itokenid : nat,iamount : nat, itokenMetadata: map<string, bytes>, iroyalties : list<part>) {
+  require { r10: is_not_paused() }
   effect {
-    ledger.add_update((tow, tid), { lamount += nbt });
+    token_metadata.add({ftoken_metadata = itokenid; token_id = itokenid; token_info = itokenMetadata});
+    royalties.add({ rtokenid = itokenid; rvalue = iroyalties });
+    ledger.add({ ltokenid = itokenid; lowner = iowner; lamount = iamount });
   }
 }
+
 
 entry burn(tid : nat, nbt : nat) {
   constant {
@@ -298,9 +306,7 @@ record balance_of_response {
 
 getter balance_of (requests : list<balance_of_request>) : list<balance_of_response> {
   return map(requests, br ->
-    let b =
-      if br.btoken_id <> TOKEN_ID then 0
-      else (ledger[(br.bo_owner, br.btoken_id)] ? the.lamount : 0) in
+    let b = (ledger[(br.bo_owner, br.btoken_id)] ? the.lamount : 0) in
     {
       request = br;
       balance_ = b
