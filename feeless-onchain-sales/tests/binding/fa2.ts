@@ -459,11 +459,6 @@ const update_operators_for_all_arg_to_mich = (upl: Array<update_for_all_op>): at
         return x.to_mich();
     });
 }
-const do_transfer_arg_to_mich = (txs: Array<transfer_param>): att.Micheline => {
-    return att.list_to_mich(txs, x => {
-        return x.to_mich();
-    });
-}
 const transfer_arg_to_mich = (txs: Array<transfer_param>): att.Micheline => {
     return att.list_to_mich(txs, x => {
         return x.to_mich();
@@ -497,6 +492,9 @@ const balance_of_arg_to_mich = (requests: Array<balance_of_request>): att.Michel
     return att.list_to_mich(requests, x => {
         return x.to_mich();
     });
+}
+const view_get_royalties_arg_to_mich = (tokenId: att.Nat): att.Micheline => {
+    return tokenId.to_mich();
 }
 export const deploy_balance_of_callback = async (): Promise<string> => {
     return await ex.deploy_callback("balance_of", att.list_annot_to_mich_type(att.pair_array_to_mich_type([
@@ -580,12 +578,6 @@ export class Fa2 {
         }
         throw new Error("Contract not initialised");
     }
-    async do_transfer(txs: Array<transfer_param>, params: Partial<ex.Parameters>): Promise<any> {
-        if (this.address != undefined) {
-            return await ex.call(this.address, "do_transfer", do_transfer_arg_to_mich(txs), params);
-        }
-        throw new Error("Contract not initialised");
-    }
     async transfer(txs: Array<transfer_param>, params: Partial<ex.Parameters>): Promise<any> {
         if (this.address != undefined) {
             return await ex.call(this.address, "transfer", transfer_arg_to_mich(txs), params);
@@ -658,12 +650,6 @@ export class Fa2 {
         }
         throw new Error("Contract not initialised");
     }
-    async get_do_transfer_param(txs: Array<transfer_param>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
-        if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "do_transfer", do_transfer_arg_to_mich(txs), params);
-        }
-        throw new Error("Contract not initialised");
-    }
     async get_transfer_param(txs: Array<transfer_param>, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
             return await ex.get_call_param(this.address, "transfer", transfer_arg_to_mich(txs), params);
@@ -694,6 +680,17 @@ export class Fa2 {
                     res.push((x => { return new balance_of_response((x => { return new balance_of_request((x => { return new att.Address(x); })(x.owner), (x => { return new att.Nat(x); })(x.token_id)); })(x.request), (x => { return new att.Nat(x); })(x.balance)); })(x[i]));
                 } return res; });
             }
+        }
+        throw new Error("Contract not initialised");
+    }
+    async view_get_royalties(tokenId: att.Nat, params: Partial<ex.Parameters>): Promise<Array<part>> {
+        if (this.address != undefined) {
+            const mich = await ex.exec_view(this.get_address(), "get_royalties", view_get_royalties_arg_to_mich(tokenId), params);
+            const res: Array<part> = [];
+            for (let i = 0; i < mich.length; i++) {
+                res.push((x => { return new part((x => { return new att.Address(x); })(x.partAccount), (x => { return new att.Nat(x); })(x.partValue)); })(mich[i]));
+            }
+            return res;
         }
         throw new Error("Contract not initialised");
     }
@@ -880,11 +877,11 @@ export class Fa2 {
         FA2_INSUFFICIENT_BALANCE: att.string_to_mich("\"FA2_INSUFFICIENT_BALANCE\""),
         r10: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r10\"")]),
         fa2_r4: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r4\"")]),
-        INVALID_CALLER: att.string_to_mich("\"INVALID_CALLER\""),
         fa2_r2: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r2\"")]),
         CALLER_NOT_OWNER: att.string_to_mich("\"CALLER_NOT_OWNER\""),
         fa2_r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"fa2_r1\"")]),
         tmd_r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"tmd_r1\"")]),
+        INVALID_CALLER: att.string_to_mich("\"INVALID_CALLER\""),
         md_r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"md_r1\"")]),
         pausable_r2: att.string_to_mich("\"CONTRACT_NOT_PAUSED\""),
         pausable_r1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"pausable_r1\"")]),

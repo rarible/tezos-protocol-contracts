@@ -121,7 +121,7 @@ export class bundle_item implements att.ArchetypeType {
     }
 }
 export class bundle_sale implements att.ArchetypeType {
-    constructor(public bundle_sale_origin_fees: Array<part>, public bundle_sale_payouts: Array<part>, public bundle_sale_amount: att.Nat, public bundle_sale_start: att.Option<Date>, public bundle_sale_end: att.Option<Date>, public bundle_sale_qty: att.Nat, public bundle_sale_max_fees_base_boint: att.Nat, public bundle_sale_data_type: att.Option<att.Bytes>, public bundle_sale_data: att.Option<att.Bytes>) { }
+    constructor(public bundle_sale_origin_fees: Array<part>, public bundle_sale_payouts: Array<part>, public bundle_sale_amount: att.Nat, public bundle_sale_start: att.Option<Date>, public bundle_sale_end: att.Option<Date>, public bundle_sale_qty: att.Nat, public bundle_sale_max_fees_base_point: att.Nat, public bundle_sale_data_type: att.Option<att.Bytes>, public bundle_sale_data: att.Option<att.Bytes>) { }
     toString(): string {
         return JSON.stringify(this, null, 2);
     }
@@ -130,14 +130,14 @@ export class bundle_sale implements att.ArchetypeType {
                 return x.to_mich();
             }), att.pair_to_mich([att.list_to_mich(this.bundle_sale_payouts, x => {
                     return x.to_mich();
-                }), att.pair_to_mich([this.bundle_sale_amount.to_mich(), att.pair_to_mich([this.bundle_sale_start.to_mich(), att.pair_to_mich([this.bundle_sale_end.to_mich(), att.pair_to_mich([this.bundle_sale_qty.to_mich(), att.pair_to_mich([this.bundle_sale_max_fees_base_boint.to_mich(), att.pair_to_mich([this.bundle_sale_data_type.to_mich(), this.bundle_sale_data.to_mich()])])])])])])])]);
+                }), att.pair_to_mich([this.bundle_sale_amount.to_mich(), att.pair_to_mich([this.bundle_sale_start.to_mich(), att.pair_to_mich([this.bundle_sale_end.to_mich(), att.pair_to_mich([this.bundle_sale_qty.to_mich(), att.pair_to_mich([this.bundle_sale_max_fees_base_point.to_mich(), att.pair_to_mich([this.bundle_sale_data_type.to_mich(), this.bundle_sale_data.to_mich()])])])])])])])]);
     }
     equals(v: bundle_sale): boolean {
-        return (JSON.stringify(this.bundle_sale_origin_fees) == JSON.stringify(v.bundle_sale_origin_fees) && JSON.stringify(this.bundle_sale_origin_fees) == JSON.stringify(v.bundle_sale_origin_fees) && JSON.stringify(this.bundle_sale_payouts) == JSON.stringify(v.bundle_sale_payouts) && this.bundle_sale_amount.equals(v.bundle_sale_amount) && this.bundle_sale_start.equals(v.bundle_sale_start) && this.bundle_sale_end.equals(v.bundle_sale_end) && this.bundle_sale_qty.equals(v.bundle_sale_qty) && this.bundle_sale_max_fees_base_boint.equals(v.bundle_sale_max_fees_base_boint) && this.bundle_sale_data_type.equals(v.bundle_sale_data_type) && this.bundle_sale_data.equals(v.bundle_sale_data));
+        return (JSON.stringify(this.bundle_sale_origin_fees) == JSON.stringify(v.bundle_sale_origin_fees) && JSON.stringify(this.bundle_sale_origin_fees) == JSON.stringify(v.bundle_sale_origin_fees) && JSON.stringify(this.bundle_sale_payouts) == JSON.stringify(v.bundle_sale_payouts) && this.bundle_sale_amount.equals(v.bundle_sale_amount) && this.bundle_sale_start.equals(v.bundle_sale_start) && this.bundle_sale_end.equals(v.bundle_sale_end) && this.bundle_sale_qty.equals(v.bundle_sale_qty) && this.bundle_sale_max_fees_base_point.equals(v.bundle_sale_max_fees_base_point) && this.bundle_sale_data_type.equals(v.bundle_sale_data_type) && this.bundle_sale_data.equals(v.bundle_sale_data));
     }
 }
 export class sale_arg implements att.ArchetypeType {
-    constructor(public sale_arg_asset_contract: att.Address, public sale_arg_asset_token_id: att.Nat, public sale_arg_seller: att.Address, public sale_arg_type: asset_type, public sale_arg_asset: att.Bytes, public sale_arg_origin_fees: Array<part>, public sale_arg_payouts: Array<part>, public sale_arg_amount: att.Nat, public sale_arg_asset_qty: att.Nat, public sale_arg_start: att.Option<Date>, public sale_arg_end: att.Option<Date>, public sale_arg_max_fees_base_boint: att.Nat, public sale_arg_data_type: att.Option<att.Bytes>, public sale_arg_data: att.Option<att.Bytes>) { }
+    constructor(public sale_arg_asset_contract: att.Address, public sale_arg_asset_token_id: att.Nat, public sale_arg_seller: att.Address, public sale_arg_type: asset_type, public sale_arg_asset: att.Bytes, public sale_arg_origin_fees: Array<part>, public sale_arg_payouts: Array<part>, public sale_arg_amount: att.Nat, public sale_arg_asset_qty: att.Nat, public sale_arg_start: att.Option<Date>, public sale_arg_end: att.Option<Date>, public sale_arg_max_fees_base_point: att.Nat, public sale_arg_data_type: att.Option<att.Bytes>, public sale_arg_data: att.Option<att.Bytes>) { }
     toString(): string {
         return JSON.stringify(this, null, 2);
     }
@@ -146,14 +146,14 @@ export class sale_arg implements att.ArchetypeType {
                                     return x.to_mich();
                                 }), att.pair_to_mich([att.list_to_mich(this.sale_arg_payouts, x => {
                                         return x.to_mich();
-                                    }), att.pair_to_mich([this.sale_arg_amount.to_mich(), att.pair_to_mich([this.sale_arg_asset_qty.to_mich(), att.pair_to_mich([this.sale_arg_start.to_mich(), att.pair_to_mich([this.sale_arg_end.to_mich(), att.pair_to_mich([this.sale_arg_max_fees_base_boint.to_mich(), att.pair_to_mich([this.sale_arg_data_type.to_mich(), this.sale_arg_data.to_mich()])])])])])])])])])])])])]);
+                                    }), att.pair_to_mich([this.sale_arg_amount.to_mich(), att.pair_to_mich([this.sale_arg_asset_qty.to_mich(), att.pair_to_mich([this.sale_arg_start.to_mich(), att.pair_to_mich([this.sale_arg_end.to_mich(), att.pair_to_mich([this.sale_arg_max_fees_base_point.to_mich(), att.pair_to_mich([this.sale_arg_data_type.to_mich(), this.sale_arg_data.to_mich()])])])])])])])])])])])])]);
     }
     equals(v: sale_arg): boolean {
-        return (this.sale_arg_asset_contract.equals(v.sale_arg_asset_contract) && this.sale_arg_asset_contract.equals(v.sale_arg_asset_contract) && this.sale_arg_asset_token_id.equals(v.sale_arg_asset_token_id) && this.sale_arg_seller.equals(v.sale_arg_seller) && this.sale_arg_type == v.sale_arg_type && this.sale_arg_asset.equals(v.sale_arg_asset) && JSON.stringify(this.sale_arg_origin_fees) == JSON.stringify(v.sale_arg_origin_fees) && JSON.stringify(this.sale_arg_payouts) == JSON.stringify(v.sale_arg_payouts) && this.sale_arg_amount.equals(v.sale_arg_amount) && this.sale_arg_asset_qty.equals(v.sale_arg_asset_qty) && this.sale_arg_start.equals(v.sale_arg_start) && this.sale_arg_end.equals(v.sale_arg_end) && this.sale_arg_max_fees_base_boint.equals(v.sale_arg_max_fees_base_boint) && this.sale_arg_data_type.equals(v.sale_arg_data_type) && this.sale_arg_data.equals(v.sale_arg_data));
+        return (this.sale_arg_asset_contract.equals(v.sale_arg_asset_contract) && this.sale_arg_asset_contract.equals(v.sale_arg_asset_contract) && this.sale_arg_asset_token_id.equals(v.sale_arg_asset_token_id) && this.sale_arg_seller.equals(v.sale_arg_seller) && this.sale_arg_type == v.sale_arg_type && this.sale_arg_asset.equals(v.sale_arg_asset) && JSON.stringify(this.sale_arg_origin_fees) == JSON.stringify(v.sale_arg_origin_fees) && JSON.stringify(this.sale_arg_payouts) == JSON.stringify(v.sale_arg_payouts) && this.sale_arg_amount.equals(v.sale_arg_amount) && this.sale_arg_asset_qty.equals(v.sale_arg_asset_qty) && this.sale_arg_start.equals(v.sale_arg_start) && this.sale_arg_end.equals(v.sale_arg_end) && this.sale_arg_max_fees_base_point.equals(v.sale_arg_max_fees_base_point) && this.sale_arg_data_type.equals(v.sale_arg_data_type) && this.sale_arg_data.equals(v.sale_arg_data));
     }
 }
 export class sale implements att.ArchetypeType {
-    constructor(public sale_origin_fees: Array<part>, public sale_payouts: Array<part>, public sale_amount: att.Nat, public sale_asset_qty: att.Nat, public sale_start: att.Option<Date>, public sale_end: att.Option<Date>, public sale_max_fees_base_boint: att.Nat, public sale_data_type: att.Option<att.Bytes>, public sale_data: att.Option<att.Bytes>) { }
+    constructor(public sale_origin_fees: Array<part>, public sale_payouts: Array<part>, public sale_amount: att.Nat, public sale_asset_qty: att.Nat, public sale_start: att.Option<Date>, public sale_end: att.Option<Date>, public sale_max_fees_base_point: att.Nat, public sale_data_type: att.Option<att.Bytes>, public sale_data: att.Option<att.Bytes>) { }
     toString(): string {
         return JSON.stringify(this, null, 2);
     }
@@ -162,10 +162,10 @@ export class sale implements att.ArchetypeType {
                 return x.to_mich();
             }), att.pair_to_mich([att.list_to_mich(this.sale_payouts, x => {
                     return x.to_mich();
-                }), att.pair_to_mich([this.sale_amount.to_mich(), att.pair_to_mich([this.sale_asset_qty.to_mich(), att.pair_to_mich([this.sale_start.to_mich(), att.pair_to_mich([this.sale_end.to_mich(), att.pair_to_mich([this.sale_max_fees_base_boint.to_mich(), att.pair_to_mich([this.sale_data_type.to_mich(), this.sale_data.to_mich()])])])])])])])]);
+                }), att.pair_to_mich([this.sale_amount.to_mich(), att.pair_to_mich([this.sale_asset_qty.to_mich(), att.pair_to_mich([this.sale_start.to_mich(), att.pair_to_mich([this.sale_end.to_mich(), att.pair_to_mich([this.sale_max_fees_base_point.to_mich(), att.pair_to_mich([this.sale_data_type.to_mich(), this.sale_data.to_mich()])])])])])])])]);
     }
     equals(v: sale): boolean {
-        return (JSON.stringify(this.sale_origin_fees) == JSON.stringify(v.sale_origin_fees) && JSON.stringify(this.sale_origin_fees) == JSON.stringify(v.sale_origin_fees) && JSON.stringify(this.sale_payouts) == JSON.stringify(v.sale_payouts) && this.sale_amount.equals(v.sale_amount) && this.sale_asset_qty.equals(v.sale_asset_qty) && this.sale_start.equals(v.sale_start) && this.sale_end.equals(v.sale_end) && this.sale_max_fees_base_boint.equals(v.sale_max_fees_base_boint) && this.sale_data_type.equals(v.sale_data_type) && this.sale_data.equals(v.sale_data));
+        return (JSON.stringify(this.sale_origin_fees) == JSON.stringify(v.sale_origin_fees) && JSON.stringify(this.sale_origin_fees) == JSON.stringify(v.sale_origin_fees) && JSON.stringify(this.sale_payouts) == JSON.stringify(v.sale_payouts) && this.sale_amount.equals(v.sale_amount) && this.sale_asset_qty.equals(v.sale_asset_qty) && this.sale_start.equals(v.sale_start) && this.sale_end.equals(v.sale_end) && this.sale_max_fees_base_point.equals(v.sale_max_fees_base_point) && this.sale_data_type.equals(v.sale_data_type) && this.sale_data.equals(v.sale_data));
     }
 }
 export const FA2_asset_mich_type: att.MichelineType = att.pair_array_to_mich_type([
@@ -233,7 +233,7 @@ export const bundle_sale_mich_type: att.MichelineType = att.pair_array_to_mich_t
                     att.pair_array_to_mich_type([
                         att.prim_annot_to_mich_type("nat", ["%bundle_sale_qty"]),
                         att.pair_array_to_mich_type([
-                            att.prim_annot_to_mich_type("nat", ["%bundle_sale_max_fees_base_boint"]),
+                            att.prim_annot_to_mich_type("nat", ["%bundle_sale_max_fees_base_point"]),
                             att.pair_array_to_mich_type([
                                 att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%bundle_sale_data_type"]),
                                 att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%bundle_sale_data"])
@@ -274,7 +274,7 @@ export const sale_arg_mich_type: att.MichelineType = att.pair_array_to_mich_type
                                         att.pair_array_to_mich_type([
                                             att.option_annot_to_mich_type(att.prim_annot_to_mich_type("timestamp", []), ["%sale_arg_end"]),
                                             att.pair_array_to_mich_type([
-                                                att.prim_annot_to_mich_type("nat", ["%sale_arg_max_fees_base_boint"]),
+                                                att.prim_annot_to_mich_type("nat", ["%sale_arg_max_fees_base_point"]),
                                                 att.pair_array_to_mich_type([
                                                     att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_arg_data_type"]),
                                                     att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_arg_data"])
@@ -310,7 +310,7 @@ export const sale_mich_type: att.MichelineType = att.pair_array_to_mich_type([
                     att.pair_array_to_mich_type([
                         att.option_annot_to_mich_type(att.prim_annot_to_mich_type("timestamp", []), ["%sale_end"]),
                         att.pair_array_to_mich_type([
-                            att.prim_annot_to_mich_type("nat", ["%sale_max_fees_base_boint"]),
+                            att.prim_annot_to_mich_type("nat", ["%sale_max_fees_base_point"]),
                             att.pair_array_to_mich_type([
                                 att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_data_type"]),
                                 att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_data"])
