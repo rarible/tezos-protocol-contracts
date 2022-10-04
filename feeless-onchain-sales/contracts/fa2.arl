@@ -71,6 +71,9 @@ asset royalties identified by rtokenid to big_map {
   rvalue : list<part>;
 }
 
+view get_royalties(tokenId : nat) : list<part> {
+  return (royalties[tokenId]?.rvalue ? the : [])
+}
 /* TOKEN METADATA ------------------------------------------------------------ */
 
 asset token_metadata to big_map {
@@ -226,9 +229,21 @@ entry update_operators_for_all (upl : list<update_for_all_op>) {
   }
 }
 
-entry do_transfer(txs : list<transfer_param>) {
-  called by self_address
+record gasless_param {
+  transfer_params : list<transfer_param>;
+  user_pk         : key;
+  user_sig        : signature
+}
+
+
+
+entry %transfer (txs : list<transfer_param>) {
+  require { fa2_r4 : is_not_paused() }
   effect {
+    if not check_operator(txs) then begin
+     fail(FA2_INSUFFICIENT_BALANCE)
+    end;
+
     for tx in txs do
       const %from = tx.tp_from;
       const tds   = tx.tp_txs;
@@ -245,25 +260,6 @@ entry do_transfer(txs : list<transfer_param>) {
         ledger.add_update((td.to_dest, tid), { lamount += td.token_amount_dest })
       end done
     done
-  }
-}
-
-record gasless_param {
-  transfer_params : list<transfer_param>;
-  user_pk         : key;
-  user_sig        : signature
-}
-
-
-
-entry %transfer (txs : list<transfer_param>) {
-  require { fa2_r4 : is_not_paused() }
-  effect {
-    if not check_operator(txs) then begin
-     fail(FA2_INSUFFICIENT_BALANCE)
-    end;
-
-    transfer 0tz to entry self.do_transfer(txs);
   }
 }
 

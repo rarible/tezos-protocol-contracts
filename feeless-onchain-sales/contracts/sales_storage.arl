@@ -192,11 +192,7 @@ view get_sale(
   gs_seller: address,
   gs_sale_type: asset_type,
   gs_sale_asset: bytes) : option<sale> {
-  if(sales.contains((gs_asset_contract, gs_asset_token_id, gs_seller, gs_sale_type, gs_sale_asset))) then (
-    return some(sales[(gs_asset_contract, gs_asset_token_id, gs_seller, gs_sale_type, gs_sale_asset)].sale_record);
-   ) else (
-    return none;
-   )
+    return sales[(gs_asset_contract, gs_asset_token_id, gs_seller, gs_sale_type, gs_sale_asset)]?.sale_record
 }
 
 entry default() {}

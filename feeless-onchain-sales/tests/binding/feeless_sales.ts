@@ -136,20 +136,36 @@ export class bundle_sale implements att.ArchetypeType {
         return (JSON.stringify(this.bundle_sale_origin_fees) == JSON.stringify(v.bundle_sale_origin_fees) && JSON.stringify(this.bundle_sale_origin_fees) == JSON.stringify(v.bundle_sale_origin_fees) && JSON.stringify(this.bundle_sale_payouts) == JSON.stringify(v.bundle_sale_payouts) && this.bundle_sale_amount.equals(v.bundle_sale_amount) && this.bundle_sale_start.equals(v.bundle_sale_start) && this.bundle_sale_end.equals(v.bundle_sale_end) && this.bundle_sale_qty.equals(v.bundle_sale_qty) && this.bundle_sale_max_fees_base_boint.equals(v.bundle_sale_max_fees_base_boint) && this.bundle_sale_data_type.equals(v.bundle_sale_data_type) && this.bundle_sale_data.equals(v.bundle_sale_data));
     }
 }
-export class sale implements att.ArchetypeType {
-    constructor(public sale_asset_contract: att.Address, public sale_asset_token_id: att.Nat, public sale_seller: att.Address, public sale_type: asset_type, public sale_asset: att.Bytes, public sale_origin_fees: Array<part>, public sale_payouts: Array<part>, public sale_amount: att.Nat, public sale_asset_qty: att.Nat, public sale_start: att.Option<Date>, public sale_end: att.Option<Date>, public sale_max_fees_base_boint: att.Nat, public sale_data_type: att.Option<att.Bytes>, public sale_data: att.Option<att.Bytes>) { }
+export class sale_arg implements att.ArchetypeType {
+    constructor(public sale_arg_asset_contract: att.Address, public sale_arg_asset_token_id: att.Nat, public sale_arg_seller: att.Address, public sale_arg_type: asset_type, public sale_arg_asset: att.Bytes, public sale_arg_origin_fees: Array<part>, public sale_arg_payouts: Array<part>, public sale_arg_amount: att.Nat, public sale_arg_asset_qty: att.Nat, public sale_arg_start: att.Option<Date>, public sale_arg_end: att.Option<Date>, public sale_arg_max_fees_base_boint: att.Nat, public sale_arg_data_type: att.Option<att.Bytes>, public sale_arg_data: att.Option<att.Bytes>) { }
     toString(): string {
         return JSON.stringify(this, null, 2);
     }
     to_mich(): att.Micheline {
-        return att.pair_to_mich([this.sale_asset_contract.to_mich(), att.pair_to_mich([this.sale_asset_token_id.to_mich(), att.pair_to_mich([this.sale_seller.to_mich(), att.pair_to_mich([this.sale_type.to_mich(), att.pair_to_mich([this.sale_asset.to_mich(), att.pair_to_mich([att.list_to_mich(this.sale_origin_fees, x => {
+        return att.pair_to_mich([this.sale_arg_asset_contract.to_mich(), att.pair_to_mich([this.sale_arg_asset_token_id.to_mich(), att.pair_to_mich([this.sale_arg_seller.to_mich(), att.pair_to_mich([this.sale_arg_type.to_mich(), att.pair_to_mich([this.sale_arg_asset.to_mich(), att.pair_to_mich([att.list_to_mich(this.sale_arg_origin_fees, x => {
                                     return x.to_mich();
-                                }), att.pair_to_mich([att.list_to_mich(this.sale_payouts, x => {
+                                }), att.pair_to_mich([att.list_to_mich(this.sale_arg_payouts, x => {
                                         return x.to_mich();
-                                    }), att.pair_to_mich([this.sale_amount.to_mich(), att.pair_to_mich([this.sale_asset_qty.to_mich(), att.pair_to_mich([this.sale_start.to_mich(), att.pair_to_mich([this.sale_end.to_mich(), att.pair_to_mich([this.sale_max_fees_base_boint.to_mich(), att.pair_to_mich([this.sale_data_type.to_mich(), this.sale_data.to_mich()])])])])])])])])])])])])]);
+                                    }), att.pair_to_mich([this.sale_arg_amount.to_mich(), att.pair_to_mich([this.sale_arg_asset_qty.to_mich(), att.pair_to_mich([this.sale_arg_start.to_mich(), att.pair_to_mich([this.sale_arg_end.to_mich(), att.pair_to_mich([this.sale_arg_max_fees_base_boint.to_mich(), att.pair_to_mich([this.sale_arg_data_type.to_mich(), this.sale_arg_data.to_mich()])])])])])])])])])])])])]);
+    }
+    equals(v: sale_arg): boolean {
+        return (this.sale_arg_asset_contract.equals(v.sale_arg_asset_contract) && this.sale_arg_asset_contract.equals(v.sale_arg_asset_contract) && this.sale_arg_asset_token_id.equals(v.sale_arg_asset_token_id) && this.sale_arg_seller.equals(v.sale_arg_seller) && this.sale_arg_type == v.sale_arg_type && this.sale_arg_asset.equals(v.sale_arg_asset) && JSON.stringify(this.sale_arg_origin_fees) == JSON.stringify(v.sale_arg_origin_fees) && JSON.stringify(this.sale_arg_payouts) == JSON.stringify(v.sale_arg_payouts) && this.sale_arg_amount.equals(v.sale_arg_amount) && this.sale_arg_asset_qty.equals(v.sale_arg_asset_qty) && this.sale_arg_start.equals(v.sale_arg_start) && this.sale_arg_end.equals(v.sale_arg_end) && this.sale_arg_max_fees_base_boint.equals(v.sale_arg_max_fees_base_boint) && this.sale_arg_data_type.equals(v.sale_arg_data_type) && this.sale_arg_data.equals(v.sale_arg_data));
+    }
+}
+export class sale implements att.ArchetypeType {
+    constructor(public sale_origin_fees: Array<part>, public sale_payouts: Array<part>, public sale_amount: att.Nat, public sale_asset_qty: att.Nat, public sale_start: att.Option<Date>, public sale_end: att.Option<Date>, public sale_max_fees_base_boint: att.Nat, public sale_data_type: att.Option<att.Bytes>, public sale_data: att.Option<att.Bytes>) { }
+    toString(): string {
+        return JSON.stringify(this, null, 2);
+    }
+    to_mich(): att.Micheline {
+        return att.pair_to_mich([att.list_to_mich(this.sale_origin_fees, x => {
+                return x.to_mich();
+            }), att.pair_to_mich([att.list_to_mich(this.sale_payouts, x => {
+                    return x.to_mich();
+                }), att.pair_to_mich([this.sale_amount.to_mich(), att.pair_to_mich([this.sale_asset_qty.to_mich(), att.pair_to_mich([this.sale_start.to_mich(), att.pair_to_mich([this.sale_end.to_mich(), att.pair_to_mich([this.sale_max_fees_base_boint.to_mich(), att.pair_to_mich([this.sale_data_type.to_mich(), this.sale_data.to_mich()])])])])])])])]);
     }
     equals(v: sale): boolean {
-        return (this.sale_asset_contract.equals(v.sale_asset_contract) && this.sale_asset_contract.equals(v.sale_asset_contract) && this.sale_asset_token_id.equals(v.sale_asset_token_id) && this.sale_seller.equals(v.sale_seller) && this.sale_type == v.sale_type && this.sale_asset.equals(v.sale_asset) && JSON.stringify(this.sale_origin_fees) == JSON.stringify(v.sale_origin_fees) && JSON.stringify(this.sale_payouts) == JSON.stringify(v.sale_payouts) && this.sale_amount.equals(v.sale_amount) && this.sale_asset_qty.equals(v.sale_asset_qty) && this.sale_start.equals(v.sale_start) && this.sale_end.equals(v.sale_end) && this.sale_max_fees_base_boint.equals(v.sale_max_fees_base_boint) && this.sale_data_type.equals(v.sale_data_type) && this.sale_data.equals(v.sale_data));
+        return (JSON.stringify(this.sale_origin_fees) == JSON.stringify(v.sale_origin_fees) && JSON.stringify(this.sale_origin_fees) == JSON.stringify(v.sale_origin_fees) && JSON.stringify(this.sale_payouts) == JSON.stringify(v.sale_payouts) && this.sale_amount.equals(v.sale_amount) && this.sale_asset_qty.equals(v.sale_asset_qty) && this.sale_start.equals(v.sale_start) && this.sale_end.equals(v.sale_end) && this.sale_max_fees_base_boint.equals(v.sale_max_fees_base_boint) && this.sale_data_type.equals(v.sale_data_type) && this.sale_data.equals(v.sale_data));
     }
 }
 export const FA2_asset_mich_type: att.MichelineType = att.pair_array_to_mich_type([
@@ -229,44 +245,75 @@ export const bundle_sale_mich_type: att.MichelineType = att.pair_array_to_mich_t
         ], [])
     ], [])
 ], []);
-export const sale_mich_type: att.MichelineType = att.pair_array_to_mich_type([
-    att.prim_annot_to_mich_type("address", ["%sale_asset_contract"]),
+export const sale_arg_mich_type: att.MichelineType = att.pair_array_to_mich_type([
+    att.prim_annot_to_mich_type("address", ["%sale_arg_asset_contract"]),
     att.pair_array_to_mich_type([
-        att.prim_annot_to_mich_type("nat", ["%sale_asset_token_id"]),
+        att.prim_annot_to_mich_type("nat", ["%sale_arg_asset_token_id"]),
         att.pair_array_to_mich_type([
-            att.prim_annot_to_mich_type("address", ["%sale_seller"]),
+            att.prim_annot_to_mich_type("address", ["%sale_arg_seller"]),
             att.pair_array_to_mich_type([
-                att.prim_annot_to_mich_type("int", ["%sale_type"]),
+                att.prim_annot_to_mich_type("int", ["%sale_arg_type"]),
                 att.pair_array_to_mich_type([
-                    att.prim_annot_to_mich_type("bytes", ["%sale_asset"]),
+                    att.prim_annot_to_mich_type("bytes", ["%sale_arg_asset"]),
                     att.pair_array_to_mich_type([
                         att.list_annot_to_mich_type(att.pair_array_to_mich_type([
                             att.prim_annot_to_mich_type("address", ["%part_account"]),
                             att.prim_annot_to_mich_type("nat", ["%part_value"])
-                        ], []), ["%sale_origin_fees"]),
+                        ], []), ["%sale_arg_origin_fees"]),
                         att.pair_array_to_mich_type([
                             att.list_annot_to_mich_type(att.pair_array_to_mich_type([
                                 att.prim_annot_to_mich_type("address", ["%part_account"]),
                                 att.prim_annot_to_mich_type("nat", ["%part_value"])
-                            ], []), ["%sale_payouts"]),
+                            ], []), ["%sale_arg_payouts"]),
                             att.pair_array_to_mich_type([
-                                att.prim_annot_to_mich_type("nat", ["%sale_amount"]),
+                                att.prim_annot_to_mich_type("nat", ["%sale_arg_amount"]),
                                 att.pair_array_to_mich_type([
-                                    att.prim_annot_to_mich_type("nat", ["%sale_asset_qty"]),
+                                    att.prim_annot_to_mich_type("nat", ["%sale_arg_asset_qty"]),
                                     att.pair_array_to_mich_type([
-                                        att.option_annot_to_mich_type(att.prim_annot_to_mich_type("timestamp", []), ["%sale_start"]),
+                                        att.option_annot_to_mich_type(att.prim_annot_to_mich_type("timestamp", []), ["%sale_arg_start"]),
                                         att.pair_array_to_mich_type([
-                                            att.option_annot_to_mich_type(att.prim_annot_to_mich_type("timestamp", []), ["%sale_end"]),
+                                            att.option_annot_to_mich_type(att.prim_annot_to_mich_type("timestamp", []), ["%sale_arg_end"]),
                                             att.pair_array_to_mich_type([
-                                                att.prim_annot_to_mich_type("nat", ["%sale_max_fees_base_boint"]),
+                                                att.prim_annot_to_mich_type("nat", ["%sale_arg_max_fees_base_boint"]),
                                                 att.pair_array_to_mich_type([
-                                                    att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_data_type"]),
-                                                    att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_data"])
+                                                    att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_arg_data_type"]),
+                                                    att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_arg_data"])
                                                 ], [])
                                             ], [])
                                         ], [])
                                     ], [])
                                 ], [])
+                            ], [])
+                        ], [])
+                    ], [])
+                ], [])
+            ], [])
+        ], [])
+    ], [])
+], []);
+export const sale_mich_type: att.MichelineType = att.pair_array_to_mich_type([
+    att.list_annot_to_mich_type(att.pair_array_to_mich_type([
+        att.prim_annot_to_mich_type("address", ["%part_account"]),
+        att.prim_annot_to_mich_type("nat", ["%part_value"])
+    ], []), ["%sale_origin_fees"]),
+    att.pair_array_to_mich_type([
+        att.list_annot_to_mich_type(att.pair_array_to_mich_type([
+            att.prim_annot_to_mich_type("address", ["%part_account"]),
+            att.prim_annot_to_mich_type("nat", ["%part_value"])
+        ], []), ["%sale_payouts"]),
+        att.pair_array_to_mich_type([
+            att.prim_annot_to_mich_type("nat", ["%sale_amount"]),
+            att.pair_array_to_mich_type([
+                att.prim_annot_to_mich_type("nat", ["%sale_asset_qty"]),
+                att.pair_array_to_mich_type([
+                    att.option_annot_to_mich_type(att.prim_annot_to_mich_type("timestamp", []), ["%sale_start"]),
+                    att.pair_array_to_mich_type([
+                        att.option_annot_to_mich_type(att.prim_annot_to_mich_type("timestamp", []), ["%sale_end"]),
+                        att.pair_array_to_mich_type([
+                            att.prim_annot_to_mich_type("nat", ["%sale_max_fees_base_boint"]),
+                            att.pair_array_to_mich_type([
+                                att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_data_type"]),
+                                att.option_annot_to_mich_type(att.prim_annot_to_mich_type("bytes", []), ["%sale_data"])
                             ], [])
                         ], [])
                     ], [])
@@ -348,6 +395,16 @@ export const mich_to_bundle_sale = (v: att.Micheline, collapsed: boolean = false
     }
     return new bundle_sale(att.mich_to_list(fields[0], x => { return mich_to_part(x, collapsed); }), att.mich_to_list(fields[1], x => { return mich_to_part(x, collapsed); }), att.mich_to_nat(fields[2]), att.mich_to_option(fields[3], x => { return att.mich_to_date(x); }), att.mich_to_option(fields[4], x => { return att.mich_to_date(x); }), att.mich_to_nat(fields[5]), att.mich_to_nat(fields[6]), att.mich_to_option(fields[7], x => { return att.mich_to_bytes(x); }), att.mich_to_option(fields[8], x => { return att.mich_to_bytes(x); }));
 };
+export const mich_to_sale_arg = (v: att.Micheline, collapsed: boolean = false): sale_arg => {
+    let fields: att.Micheline[] = [];
+    if (collapsed) {
+        fields = att.mich_to_pairs(v);
+    }
+    else {
+        fields = att.annotated_mich_to_array(v, sale_arg_mich_type);
+    }
+    return new sale_arg(att.mich_to_address(fields[0]), att.mich_to_nat(fields[1]), att.mich_to_address(fields[2]), mich_to_asset_type(fields[3]), att.mich_to_bytes(fields[4]), att.mich_to_list(fields[5], x => { return mich_to_part(x, collapsed); }), att.mich_to_list(fields[6], x => { return mich_to_part(x, collapsed); }), att.mich_to_nat(fields[7]), att.mich_to_nat(fields[8]), att.mich_to_option(fields[9], x => { return att.mich_to_date(x); }), att.mich_to_option(fields[10], x => { return att.mich_to_date(x); }), att.mich_to_nat(fields[11]), att.mich_to_option(fields[12], x => { return att.mich_to_bytes(x); }), att.mich_to_option(fields[13], x => { return att.mich_to_bytes(x); }));
+};
 export const mich_to_sale = (v: att.Micheline, collapsed: boolean = false): sale => {
     let fields: att.Micheline[] = [];
     if (collapsed) {
@@ -356,7 +413,7 @@ export const mich_to_sale = (v: att.Micheline, collapsed: boolean = false): sale
     else {
         fields = att.annotated_mich_to_array(v, sale_mich_type);
     }
-    return new sale(att.mich_to_address(fields[0]), att.mich_to_nat(fields[1]), att.mich_to_address(fields[2]), mich_to_asset_type(fields[3]), att.mich_to_bytes(fields[4]), att.mich_to_list(fields[5], x => { return mich_to_part(x, collapsed); }), att.mich_to_list(fields[6], x => { return mich_to_part(x, collapsed); }), att.mich_to_nat(fields[7]), att.mich_to_nat(fields[8]), att.mich_to_option(fields[9], x => { return att.mich_to_date(x); }), att.mich_to_option(fields[10], x => { return att.mich_to_date(x); }), att.mich_to_nat(fields[11]), att.mich_to_option(fields[12], x => { return att.mich_to_bytes(x); }), att.mich_to_option(fields[13], x => { return att.mich_to_bytes(x); }));
+    return new sale(att.mich_to_list(fields[0], x => { return mich_to_part(x, collapsed); }), att.mich_to_list(fields[1], x => { return mich_to_part(x, collapsed); }), att.mich_to_nat(fields[2]), att.mich_to_nat(fields[3]), att.mich_to_option(fields[4], x => { return att.mich_to_date(x); }), att.mich_to_option(fields[5], x => { return att.mich_to_date(x); }), att.mich_to_nat(fields[6]), att.mich_to_option(fields[7], x => { return att.mich_to_bytes(x); }), att.mich_to_option(fields[8], x => { return att.mich_to_bytes(x); }));
 };
 const declare_ownership_arg_to_mich = (candidate: att.Address): att.Micheline => {
     return candidate.to_mich();
@@ -385,7 +442,7 @@ const set_permits_arg_to_mich = (sp_contract: att.Address): att.Micheline => {
 const set_max_bundle_items_arg_to_mich = (smbi_number: att.Nat): att.Micheline => {
     return smbi_number.to_mich();
 }
-const sell_arg_to_mich = (s_sale: sale, s_seller_pubk: att.Key, s_sig: att.Signature): att.Micheline => {
+const sell_arg_to_mich = (s_sale: sale_arg, s_seller_pubk: att.Key, s_sig: att.Signature): att.Micheline => {
     return att.pair_to_mich([
         s_sale.to_mich(),
         s_seller_pubk.to_mich(),
@@ -497,7 +554,7 @@ export class Feeless_sales {
         }
         throw new Error("Contract not initialised");
     }
-    async sell(s_sale: sale, s_seller_pubk: att.Key, s_sig: att.Signature, params: Partial<ex.Parameters>): Promise<any> {
+    async sell(s_sale: sale_arg, s_seller_pubk: att.Key, s_sig: att.Signature, params: Partial<ex.Parameters>): Promise<any> {
         if (this.address != undefined) {
             return await ex.call(this.address, "sell", sell_arg_to_mich(s_sale, s_seller_pubk, s_sig), params);
         }
@@ -575,7 +632,7 @@ export class Feeless_sales {
         }
         throw new Error("Contract not initialised");
     }
-    async get_sell_param(s_sale: sale, s_seller_pubk: att.Key, s_sig: att.Signature, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_sell_param(s_sale: sale_arg, s_seller_pubk: att.Key, s_sig: att.Signature, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
             return await ex.get_call_param(this.address, "sell", sell_arg_to_mich(s_sale, s_seller_pubk, s_sig), params);
         }
@@ -698,9 +755,12 @@ export class Feeless_sales {
         INVALID_CALLER: att.string_to_mich("\"INVALID_CALLER\""),
         r0: att.string_to_mich("\"INVALID_CALLER\""),
         MISSING_CANDIDATE: att.string_to_mich("\"MISSING_CANDIDATE\""),
+        OPTION_IS_NONE: att.string_to_mich("\"OPTION_IS_NONE\""),
         CANT_UNPACK_FA2_ASSET: att.string_to_mich("\"CANT_UNPACK_FA2_ASSET\""),
         CANT_UNPACK_FA12_ASSET: att.string_to_mich("\"CANT_UNPACK_FA12_ASSET\""),
-        WRONG_XTZ_PAYLOAD: att.string_to_mich("\"WRONG_XTZ_PAYLOAD\"")
+        WRONG_XTZ_PAYLOAD: att.string_to_mich("\"WRONG_XTZ_PAYLOAD\""),
+        SALE_EXISTS_VIEW_FAILED: att.string_to_mich("\"SALE_EXISTS_VIEW_FAILED\""),
+        SALE_EXISTS_F: att.string_to_mich("\"sale_exists f\"")
     };
 }
 export const feeless_sales = new Feeless_sales();
