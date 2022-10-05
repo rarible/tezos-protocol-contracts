@@ -68,6 +68,18 @@ export class transfer_param implements att.ArchetypeType {
         return (this.destination_address.equals(v.destination_address) && this.destination_address.equals(v.destination_address) && this.token_id.equals(v.token_id) && this.token_amount.equals(v.token_amount));
     }
 }
+export class cancel_sale_param implements att.ArchetypeType {
+    constructor(public cs_asset_contract: att.Address, public cs_asset_token_id: att.Nat, public cs_sale_type: asset_type, public cs_sale_asset: att.Bytes, public cs_sale_seller: att.Address) { }
+    toString(): string {
+        return JSON.stringify(this, null, 2);
+    }
+    to_mich(): att.Micheline {
+        return att.pair_to_mich([this.cs_asset_contract.to_mich(), att.pair_to_mich([this.cs_asset_token_id.to_mich(), att.pair_to_mich([this.cs_sale_type.to_mich(), att.pair_to_mich([this.cs_sale_asset.to_mich(), this.cs_sale_seller.to_mich()])])])]);
+    }
+    equals(v: cancel_sale_param): boolean {
+        return (this.cs_asset_contract.equals(v.cs_asset_contract) && this.cs_asset_contract.equals(v.cs_asset_contract) && this.cs_asset_token_id.equals(v.cs_asset_token_id) && this.cs_sale_type == v.cs_sale_type && this.cs_sale_asset.equals(v.cs_sale_asset) && this.cs_sale_seller.equals(v.cs_sale_seller));
+    }
+}
 export class process_transfer_param implements att.ArchetypeType {
     constructor(public ptp_asset_type: asset_type, public ptp_asset: att.Bytes, public ptp_amount: att.Nat, public ptp_origin: att.Address, public ptp_destination: att.Address) { }
     toString(): string {
@@ -178,6 +190,19 @@ export const transfer_param_mich_type: att.MichelineType = att.pair_array_to_mic
     att.pair_array_to_mich_type([
         att.prim_annot_to_mich_type("nat", ["%token_id"]),
         att.prim_annot_to_mich_type("nat", ["%amount"])
+    ], [])
+], []);
+export const cancel_sale_param_mich_type: att.MichelineType = att.pair_array_to_mich_type([
+    att.prim_annot_to_mich_type("address", ["%cs_asset_contract"]),
+    att.pair_array_to_mich_type([
+        att.prim_annot_to_mich_type("nat", ["%cs_asset_token_id"]),
+        att.pair_array_to_mich_type([
+            att.prim_annot_to_mich_type("int", ["%cs_sale_type"]),
+            att.pair_array_to_mich_type([
+                att.prim_annot_to_mich_type("bytes", ["%cs_sale_asset"]),
+                att.prim_annot_to_mich_type("address", ["%cs_sale_seller"])
+            ], [])
+        ], [])
     ], [])
 ], []);
 export const process_transfer_param_mich_type: att.MichelineType = att.pair_array_to_mich_type([
@@ -345,6 +370,16 @@ export const mich_to_transfer_param = (v: att.Micheline, collapsed: boolean = fa
     }
     return new transfer_param(att.mich_to_address(fields[0]), att.mich_to_nat(fields[1]), att.mich_to_nat(fields[2]));
 };
+export const mich_to_cancel_sale_param = (v: att.Micheline, collapsed: boolean = false): cancel_sale_param => {
+    let fields: att.Micheline[] = [];
+    if (collapsed) {
+        fields = att.mich_to_pairs(v);
+    }
+    else {
+        fields = att.annotated_mich_to_array(v, cancel_sale_param_mich_type);
+    }
+    return new cancel_sale_param(att.mich_to_address(fields[0]), att.mich_to_nat(fields[1]), mich_to_asset_type(fields[2]), att.mich_to_bytes(fields[3]), att.mich_to_address(fields[4]));
+};
 export const mich_to_process_transfer_param = (v: att.Micheline, collapsed: boolean = false): process_transfer_param => {
     let fields: att.Micheline[] = [];
     if (collapsed) {
@@ -465,12 +500,11 @@ const buy_arg_to_mich = (b_asset_contract: att.Address, b_asset_token_id: att.Na
         })
     ]);
 }
-const cancel_sale_arg_to_mich = (cs_asset_contract: att.Address, cs_asset_token_id: att.Nat, cs_sale_type: asset_type, cs_sale_asset: att.Bytes): att.Micheline => {
+const cancel_sale_arg_to_mich = (cs_params: cancel_sale_param, cs_seller_pubk: att.Key, cs_sig: att.Signature): att.Micheline => {
     return att.pair_to_mich([
-        cs_asset_contract.to_mich(),
-        cs_asset_token_id.to_mich(),
-        cs_sale_type.to_mich(),
-        cs_sale_asset.to_mich()
+        cs_params.to_mich(),
+        cs_seller_pubk.to_mich(),
+        cs_sig.to_mich()
     ]);
 }
 const default_arg_to_mich = (): att.Micheline => {
@@ -566,9 +600,9 @@ export class Feeless_sales {
         }
         throw new Error("Contract not initialised");
     }
-    async cancel_sale(cs_asset_contract: att.Address, cs_asset_token_id: att.Nat, cs_sale_type: asset_type, cs_sale_asset: att.Bytes, params: Partial<ex.Parameters>): Promise<any> {
+    async cancel_sale(cs_params: cancel_sale_param, cs_seller_pubk: att.Key, cs_sig: att.Signature, params: Partial<ex.Parameters>): Promise<any> {
         if (this.address != undefined) {
-            return await ex.call(this.address, "cancel_sale", cancel_sale_arg_to_mich(cs_asset_contract, cs_asset_token_id, cs_sale_type, cs_sale_asset), params);
+            return await ex.call(this.address, "cancel_sale", cancel_sale_arg_to_mich(cs_params, cs_seller_pubk, cs_sig), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -644,9 +678,9 @@ export class Feeless_sales {
         }
         throw new Error("Contract not initialised");
     }
-    async get_cancel_sale_param(cs_asset_contract: att.Address, cs_asset_token_id: att.Nat, cs_sale_type: asset_type, cs_sale_asset: att.Bytes, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
+    async get_cancel_sale_param(cs_params: cancel_sale_param, cs_seller_pubk: att.Key, cs_sig: att.Signature, params: Partial<ex.Parameters>): Promise<att.CallParameter> {
         if (this.address != undefined) {
-            return await ex.get_call_param(this.address, "cancel_sale", cancel_sale_arg_to_mich(cs_asset_contract, cs_asset_token_id, cs_sale_type, cs_sale_asset), params);
+            return await ex.get_call_param(this.address, "cancel_sale", cancel_sale_arg_to_mich(cs_params, cs_seller_pubk, cs_sig), params);
         }
         throw new Error("Contract not initialised");
     }
@@ -739,6 +773,7 @@ export class Feeless_sales {
         throw new Error("Contract not initialised");
     }
     errors = {
+        r_cs1: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_cs1\"")]),
         r_cs0: att.pair_to_mich([att.string_to_mich("\"INVALID_CONDITION\""), att.string_to_mich("\"r_cs0\"")]),
         SALE_NOT_STARTED: att.string_to_mich("\"SALE_NOT_STARTED\""),
         SALE_CLOSED: att.string_to_mich("\"SALE_CLOSED\""),
@@ -759,8 +794,7 @@ export class Feeless_sales {
         CANT_UNPACK_FA2_ASSET: att.string_to_mich("\"CANT_UNPACK_FA2_ASSET\""),
         CANT_UNPACK_FA12_ASSET: att.string_to_mich("\"CANT_UNPACK_FA12_ASSET\""),
         WRONG_XTZ_PAYLOAD: att.string_to_mich("\"WRONG_XTZ_PAYLOAD\""),
-        SALE_EXISTS_VIEW_FAILED: att.string_to_mich("\"SALE_EXISTS_VIEW_FAILED\""),
-        SALE_EXISTS_F: att.string_to_mich("\"sale_exists f\"")
+        SALE_EXISTS_VIEW_FAILED: att.string_to_mich("\"SALE_EXISTS_VIEW_FAILED\"")
     };
 }
 export const feeless_sales = new Feeless_sales();

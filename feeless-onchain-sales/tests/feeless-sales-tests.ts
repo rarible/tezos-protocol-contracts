@@ -12,13 +12,21 @@ import {
 import {Fa12, ledger_key as ledger_key_fa12} from './binding/fa12';
 import {Royalties} from "./binding/royalties";
 import {
-	asset_type, FA12, FA12_asset_mich_type,
+	asset_type,
+	FA12,
+	FA12_asset_mich_type,
 	FA2,
 	FA2_asset,
 	FA2_asset_mich_type,
 	Feeless_sales,
 	sale,
-	sale_mich_type, XTZ, part as sales_part, sale_arg, sale_arg_mich_type
+	sale_mich_type,
+	XTZ,
+	part as sales_part,
+	sale_arg,
+	sale_arg_mich_type,
+	cancel_sale_param,
+	cancel_sale_param_mich_type
 } from "./binding/feeless_sales";
 import {sales_key, Sales_storage} from "./binding/sales_storage";
 import {transfer_manager, Transfer_manager} from "./binding/transfer_manager";
@@ -71,7 +79,7 @@ const initial_nft_amount = 100;
 const fee = 250;
 const payout_value = 100;
 const max_fees = 10000;
-const sale_amount = 1000000;
+let sale_amount = 1000000;
 const qty = 1;
 
 /* Utils --------------------------------------------------------------- */
@@ -100,6 +108,11 @@ const get_permit_data = (ptps: Bytes, contract: Address, permit_counter: Nat | u
 	return pack(permit_data, permit_data_type);
 }
 
+async function get_permit_counter(owner: Account) {
+	const permit = await permits_contract.get_permits_value(owner.get_address())
+	return permit?.counter
+}
+
 async function get_balance_wrapper(type: asset_type, user: Address, asset_contract?: Fa2 | Fa12, asset_token_id?: Nat): Promise<Nat> {
 	if(type.type() == new FA2().type()){
 		const balance = await (asset_contract as Fa2)?.get_ledger_value(new ledger_key_fa2(user, asset_token_id!))
@@ -122,6 +135,31 @@ async function get_balance_wrapper(type: asset_type, user: Address, asset_contra
 	}
 }
 
+async function submit_and_verify_cancel_order(
+	nft_token_id: Nat,
+	owner: Account,
+	asset_type: asset_type,
+	sender: Account,
+	sale_asset_contract?: Fa2 | Fa12,
+	sale_asset_token_id?: Nat,
+) {
+	const counter = await get_permit_counter(owner)
+	const is_fa2 = sale_asset_contract && sale_asset_token_id
+	const is_fa12 = sale_asset_contract && !sale_asset_token_id
+	const sale_asset = is_fa2 ? pack(new FA2_asset(sale_asset_contract.get_address(),
+			nft_token_id).to_mich(),
+		FA2_asset_mich_type) : is_fa12 ? pack(sale_asset_contract.get_address().to_mich(),
+		FA12_asset_mich_type) : new Bytes("")
+	const cancel_data = new cancel_sale_param(fa2_nft_contract.get_address(), nft_token_id, asset_type, sale_asset, owner.get_address())
+	const packed_sales_data = pack(cancel_data.to_mich(), cancel_sale_param_mich_type)
+	const after_permit_data = await get_permit_data(
+		packed_sales_data,
+		permits_contract.get_address(),
+		counter);
+	const signature = await sign(after_permit_data, owner)
+	await feeless_sales_contract.cancel_sale(cancel_data, owner.get_public_key(), signature, {as: sender})
+}
+
 async function sumbit_and_verify_sale_order(
 	nft_token_id: Nat,
 	owner: Account,
@@ -136,8 +174,7 @@ async function sumbit_and_verify_sale_order(
 	sale_asset_contract?: Fa2 | Fa12,
 	sale_asset_token_id?: Nat,
 ) {
-	const permit = await permits_contract.get_permits_value(owner.get_address())
-	const counter = permit?.counter
+	const counter = await get_permit_counter(owner)
 	const is_fa2 = sale_asset_contract && sale_asset_token_id
 	const is_fa12 = sale_asset_contract && !sale_asset_token_id
 	const sale_asset = is_fa2 ? pack(new FA2_asset(sale_asset_contract.get_address(),
@@ -169,7 +206,7 @@ async function sumbit_and_verify_sale_order(
 		permits_contract.get_address(),
 		counter);
 	const signature = await sign(after_permit_data, owner)
-	await feeless_sales_contract.sell(sale_data, owner.get_public_key(), signature, {as: owner})
+	await feeless_sales_contract.sell(sale_data, owner.get_public_key(), signature, {as: daniel})
 	const post_sale = await sales_storage_contract.get_sales_value(sale_key)
 	assert(post_sale != undefined)
 	assert(post_sale?.sale_amount.equals(sale_order_amount))
@@ -225,8 +262,8 @@ async function sumbit_and_verify_buy_order(
 		asset_type,
 		sale_asset)
 
-	const sale_record = await sales_storage_contract.get_sales_value(sale_key)
-	assert(sale_record != undefined)
+	// const sale_record = await sales_storage_contract.get_sales_value(sale_key)
+	// assert(sale_record != undefined)
 
 	await feeless_sales_contract.buy(fa2_nft_contract.get_address(), nft_token_id, owner.get_address(), asset_type, sale_asset, sale_order_qty, origin_fees, payouts, {as: buyer, amount : (!is_fa12 && !is_fa2 ? new Tez(sale_amount, "mutez") : new Tez(0)) })
 
@@ -1170,5 +1207,156 @@ describe('Buy tests', async () => {
 				[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(), new Nat(payout_value))],
 				fa12_ft_2_contract)
 		});
+	});
+
+	describe('Common buy tests', async () => {
+		it('Buy a non existing sale should fail', async () => {
+			await expect_to_fail(async () => {
+				await sumbit_and_verify_buy_order(
+					new Nat(999),
+					alice,
+					bob,
+					new Nat(qty),
+					new FA12(),
+					[],
+					[],
+					fa12_ft_0_contract)
+			}, feeless_sales_contract.errors.MISSING_SALE);
+		});
+
+		it('Buy with XTZ and wrong amount should fail', async () => {
+			try{
+				const token_id = 99
+
+				await sumbit_and_verify_sale_order(new Nat(token_id),
+					alice,
+					new Nat(sale_amount),
+					new Nat(qty),
+					new Nat(max_fees),
+					new XTZ(),
+					Option.None(),
+					Option.None(),
+					[],
+					[])
+				const sale_asset = new Bytes("")
+
+				const sale_key = new sales_key(fa2_nft_contract.get_address(),
+					new Nat(token_id),
+					alice.get_address(),
+					new XTZ(),
+					sale_asset)
+
+				const sale_record = await sales_storage_contract.get_sales_value(sale_key)
+				assert(sale_record != undefined)
+
+				await feeless_sales_contract.buy(fa2_nft_contract.get_address(), new Nat(token_id), alice.get_address(), new XTZ(), sale_asset, new Nat(qty), [], [], {as: bob, amount : new Tez(0)})
+			} catch (e: any) {
+				assert(e.value.includes("AMOUNT_MISMATCH"))
+			}
+		});
+
+		it('Buy with good start date and end date should succeed', async () => {
+			const token_id = 9
+			set_mockup_now(now)
+			const start_date = new Date(now.getTime() + 1000);
+			const end_date = new Date(now.getTime() + 3000);
+
+			await sumbit_and_verify_sale_order(new Nat(token_id),
+				alice,
+				new Nat(sale_amount),
+				new Nat(qty),
+				new Nat(max_fees),
+				new XTZ(),
+				Option.Some(start_date),
+				Option.Some(end_date),
+				[],
+				[])
+			set_mockup_now(new Date(now.getTime() + 2000))
+			await sumbit_and_verify_buy_order(
+				new Nat(token_id),
+				alice,
+				bob,
+				new Nat(qty),
+				new XTZ(),
+				[],
+				[])
+			set_mockup_now(now)
+		});
+
+		it('Buy with before start date should fail', async () => {
+			await expect_to_fail(async () => {
+				const token_id = 9
+				set_mockup_now(now)
+				const start_date = new Date(now.getTime() + 1000);
+				const end_date = new Date(now.getTime() + 3000);
+
+				await sumbit_and_verify_sale_order(new Nat(token_id),
+					alice,
+					new Nat(sale_amount),
+					new Nat(qty),
+					new Nat(max_fees),
+					new XTZ(),
+					Option.Some(start_date),
+					Option.Some(end_date),
+					[],
+					[])
+				set_mockup_now(new Date(start_date.getTime() - 2000))
+				await sumbit_and_verify_buy_order(
+					new Nat(token_id),
+					alice,
+					bob,
+					new Nat(qty),
+					new XTZ(),
+					[],
+					[])
+				set_mockup_now(now)
+			}, feeless_sales_contract.errors.SALE_NOT_STARTED);
+		});
+
+		it('Buy with after end date should fail', async () => {
+			await expect_to_fail(async () => {
+				const token_id = 9
+				const end_date = new Date(now.getTime() + 3000);
+				set_mockup_now(new Date(end_date.getTime() + 2000))
+				await sumbit_and_verify_buy_order(
+					new Nat(token_id),
+					alice,
+					bob,
+					new Nat(qty),
+					new XTZ(),
+					[],
+					[])
+				set_mockup_now(now)
+			}, feeless_sales_contract.errors.SALE_CLOSED);
+		});
+	});
+});
+
+describe('Cancel tests', async () => {
+	it('Cancel a non existing sale should fail', async () => {
+		await expect_to_fail(async () => {
+			await submit_and_verify_cancel_order(new Nat(1111), bob, new XTZ(), daniel)
+		}, feeless_sales_contract.errors.r_cs1);
+	});
+
+	it('Cancel a sale with invalid signature should fail', async () => {
+		try {
+			const counter = await get_permit_counter(bob)
+			const sale_asset = new Bytes("")
+			const cancel_data = new cancel_sale_param(fa2_nft_contract.get_address(), new Nat(999), new XTZ(), sale_asset, alice.get_address())
+			const packed_sales_data = pack(cancel_data.to_mich(), cancel_sale_param_mich_type)
+			const after_permit_data = await get_permit_data(
+				packed_sales_data,
+				permits_contract.get_address(),
+				counter);
+			const signature = await sign(after_permit_data, alice)
+			feeless_sales_contract.cancel_sale(cancel_data, alice.get_public_key(), signature, {as: bob})
+		} catch (e: any) {
+				assert(e.value.includes("MISSIGNED"))
+			}
+	});
+
+	it('Cancel a valid existing sale with a good signature should succeed', async () => {
+		await submit_and_verify_cancel_order(new Nat(9), alice, new XTZ(), daniel)
 	});
 });

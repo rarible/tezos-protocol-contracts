@@ -128,6 +128,14 @@ record transfer_param {
   token_amount: nat
 } as ((%to, (token_id, amount)))
 
+record cancel_sale_param {
+  cs_asset_contract: address;
+  cs_asset_token_id: nat;
+  cs_sale_type: asset_type;
+  cs_sale_asset: bytes;
+  cs_sale_seller: address;
+}
+
 record process_transfer_param {
   ptp_asset_type: asset_type;
   ptp_asset: bytes;
@@ -312,33 +320,28 @@ entry buy(
 }
 
 entry cancel_sale(
-  cs_asset_contract: address,
-  cs_asset_token_id: nat,
-  cs_sale_type: asset_type,
-  cs_sale_asset: bytes){
+  cs_params: cancel_sale_param,
+  cs_seller_pubk: key,
+  cs_sig: signature){
+    constant{
+      seller_address is key_to_address(cs_seller_pubk);
+      cs_exists ?is call_view<bool>(sales_storage, "sale_exists", (
+            cs_params.cs_asset_contract,
+            cs_params.cs_asset_token_id,
+            cs_params.cs_sale_seller,
+            cs_params.cs_sale_type,
+            cs_params.cs_sale_asset
+        )) otherwise "SALE_EXISTS_VIEW_FAILED";
+    }
     require {
-        r_cs0: sale_exists(cs_asset_contract, cs_asset_token_id, caller, cs_sale_type, cs_sale_asset) = true;
+        r_cs0: seller_address = cs_params.cs_sale_seller;
+        r_cs1: cs_exists = true;
     }
     effect {
-      transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((cs_asset_contract, cs_asset_token_id, caller, cs_sale_type, cs_sale_asset))
+      var packed_data = pack(cs_params);
+      transfer 0tz to permits call check<key * signature * bytes>((cs_seller_pubk, cs_sig, packed_data));
+      transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((cs_params.cs_asset_contract, cs_params.cs_asset_token_id, cs_params.cs_sale_seller, cs_params.cs_sale_type, cs_params.cs_sale_asset))
     }
-}
-
-function sale_exists(
-  se_asset_contract: address,
-  se_asset_token_id: nat,
-  se_seller: address,
-  se_sale_type: asset_type,
-  se_sale_asset: bytes) : bool {
-    fail("sale_exists f");
-    const s_exists ?= call_view<bool>(sales_storage, "sale_exists", (
-            se_asset_contract,
-            se_asset_token_id,
-            se_seller,
-            se_sale_type,
-            se_sale_asset
-        )) : "SALE_EXISTS_VIEW_FAILED";
-    return s_exists
 }
 
 function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option<address> * option<nat>) {
