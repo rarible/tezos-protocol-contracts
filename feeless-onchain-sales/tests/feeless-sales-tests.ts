@@ -229,6 +229,7 @@ async function sumbit_and_verify_buy_order(
 	nft_token_id: Nat,
 	owner: Account,
 	buyer: Account,
+	sale_order_amout: number,
 	sale_order_qty: Nat,
 	asset_type: asset_type,
 	origin_fees: sales_part[],
@@ -256,19 +257,13 @@ async function sumbit_and_verify_buy_order(
 		FA2_asset_mich_type) : is_fa12 ? pack(sale_asset_contract!.get_address().to_mich(),
 		FA12_asset_mich_type) : new Bytes("")
 
-	const sale_key = new sales_key(fa2_nft_contract.get_address(),
-		nft_token_id,
-		owner.get_address(),
-		asset_type,
-		sale_asset)
-
 	// const sale_record = await sales_storage_contract.get_sales_value(sale_key)
 	// assert(sale_record != undefined)
 
-	await feeless_sales_contract.buy(fa2_nft_contract.get_address(), nft_token_id, owner.get_address(), asset_type, sale_asset, sale_order_qty, origin_fees, payouts, {as: buyer, amount : (!is_fa12 && !is_fa2 ? new Tez(sale_amount, "mutez") : new Tez(0)) })
+	await feeless_sales_contract.buy(fa2_nft_contract.get_address(), nft_token_id, owner.get_address(), asset_type, sale_asset, sale_order_qty, origin_fees, payouts, {as: buyer, amount : (!is_fa12 && !is_fa2 ? new Tez(sale_order_amout, "mutez") : new Tez(0)) })
 
-	const post_sale = await sales_storage_contract.get_sales_value(sale_key)
-	assert(post_sale == undefined)
+	// const post_sale = await sales_storage_contract.get_sales_value(sale_key)
+	// assert(post_sale == undefined)
 
 	let royalties_factor: Nat = new Nat(0)
 	let fees_factor: Nat = new Nat(0)
@@ -1101,6 +1096,7 @@ describe('Buy tests', async () => {
 				new Nat(0),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new FA2(),
 				[],
@@ -1114,6 +1110,7 @@ describe('Buy tests', async () => {
 				new Nat(1),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new FA2(),
 				[new sales_part(eddy.get_address(), new Nat(payout_value))],
@@ -1127,6 +1124,7 @@ describe('Buy tests', async () => {
 				new Nat(2),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new FA2(),
 				[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(), new Nat(payout_value))],
@@ -1142,6 +1140,7 @@ describe('Buy tests', async () => {
 				new Nat(3),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new XTZ(),
 				[],
@@ -1153,6 +1152,7 @@ describe('Buy tests', async () => {
 				new Nat(4),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new XTZ(),
 				[new sales_part(eddy.get_address(), new Nat(payout_value))],
@@ -1164,6 +1164,7 @@ describe('Buy tests', async () => {
 				new Nat(5),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new XTZ(),
 				[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(), new Nat(payout_value))],
@@ -1177,6 +1178,7 @@ describe('Buy tests', async () => {
 				new Nat(6),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new FA12(),
 				[],
@@ -1189,6 +1191,7 @@ describe('Buy tests', async () => {
 				new Nat(7),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new FA12(),
 				[new sales_part(eddy.get_address(), new Nat(payout_value))],
@@ -1201,6 +1204,7 @@ describe('Buy tests', async () => {
 				new Nat(8),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new FA12(),
 				[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(), new Nat(payout_value))],
@@ -1216,6 +1220,7 @@ describe('Buy tests', async () => {
 					new Nat(999),
 					alice,
 					bob,
+					sale_amount,
 					new Nat(qty),
 					new FA12(),
 					[],
@@ -1276,6 +1281,7 @@ describe('Buy tests', async () => {
 				new Nat(token_id),
 				alice,
 				bob,
+				sale_amount,
 				new Nat(qty),
 				new XTZ(),
 				[],
@@ -1305,6 +1311,7 @@ describe('Buy tests', async () => {
 					new Nat(token_id),
 					alice,
 					bob,
+					sale_amount,
 					new Nat(qty),
 					new XTZ(),
 					[],
@@ -1322,6 +1329,7 @@ describe('Buy tests', async () => {
 					new Nat(token_id),
 					alice,
 					bob,
+					sale_amount,
 					new Nat(qty),
 					new XTZ(),
 					[],
@@ -1360,3 +1368,41 @@ describe('Cancel tests', async () => {
 		await submit_and_verify_cancel_order(new Nat(9), alice, new XTZ(), daniel)
 	});
 });
+
+// describe('Miscelleanous tests', async () => {
+// 	it('Buy with amount > sale amount should fail', async () => {
+// 		await expect_to_fail(async () => {
+// 			await sumbit_and_verify_sale_order(new Nat(3),
+// 				alice,
+// 				new Nat(sale_amount),
+// 				new Nat(5),
+// 				new Nat(max_fees),
+// 				new XTZ(),
+// 				Option.None(),
+// 				Option.None(),
+// 				[],
+// 				[])
+// 			await sumbit_and_verify_buy_order(
+// 				new Nat(3),
+// 				alice,
+// 				bob,
+// 				sale_amount,
+// 				new Nat(6),
+// 				new XTZ(),
+// 				[],
+// 				[])
+// 		}, feeless_sales_contract.errors.INVALID_BUY_AMOUNT);
+// 	});
+//
+// 	it('Buy multiple items (partial fill) should succeed', async () => {
+// 		await sumbit_and_verify_buy_order(
+// 			new Nat(3),
+// 			alice,
+// 			bob,
+// 			sale_amount * 2,
+// 			new Nat(2),
+// 			new XTZ(),
+// 			[],
+// 			[])
+// 	});
+// });
