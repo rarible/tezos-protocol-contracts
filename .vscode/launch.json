@@ -54,6 +54,24 @@
             "skipFiles": [
                 "<node_internals>/**"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Mocha Feeless Sales Tests",
+            "program": "${workspaceFolder}/feeless-onchain-sales/node_modules/mocha/bin/_mocha",
+            "args": [
+                "--slow",
+                "0",
+                "--timeout",
+                "0",
+                "${workspaceFolder}/feeless-onchain-sales/test"
+            ],
+            "internalConsoleOptions": "openOnSessionStart",
+            "cwd": "${workspaceFolder}/feeless-onchain-sales",
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
         }
     ]
 }
