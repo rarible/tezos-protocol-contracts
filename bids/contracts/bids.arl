@@ -18,8 +18,8 @@ constant MAX_BUNDLE_SIZE                : string = "MAX_BUNDLE_SIZE"
 constant MISSING_BID                    : string = "MISSING_BID"
 constant MISSING_OWNER_CANDIDATE        : string = "MISSING_OWNER_CANDIDATE"
 constant NOT_FOUND                      : string = "NOT_FOUND"
-constant ONLY_BIDDER_CAN_CANCEL_AUCTION : string = "ONLY_BIDDER_CAN_CANCEL_AUCTION"
 constant WRONG_XTZ_PAYLOAD              : string = "WRONG_XTZ_PAYLOAD"
+constant INVALID_NAT                    : string = "INVALID_NAT"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -31,6 +31,9 @@ variable default_bid_duration: duration = 1w
 
 entry declare_ownership(candidate : address) {
   called by owner
+  require {
+    r_dc_0: transferred = 0utz;
+  }
   effect {
     owner_candidate := some(candidate);
   }
@@ -41,7 +44,8 @@ entry claim_ownership() {
     owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
   }
   require {
-    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+    r_co_0: owner_candidate_addr = caller otherwise INVALID_CALLER;
+    r_co_1: transferred = 0utz;
   }
   effect {
     owner := owner_candidate_addr;
@@ -55,6 +59,9 @@ entry claim_ownership() {
 //----------------------------------------------------------------------------
 entry set_bids_storage_contract(sbsc_contract : address) {
   called by owner
+  require {
+    r_sbs_0: transferred = 0utz;
+  }
   effect {
     bids_storage := sbsc_contract;
   }
@@ -62,6 +69,9 @@ entry set_bids_storage_contract(sbsc_contract : address) {
 
 entry set_protocol_fee(spf : nat) {
   called by owner
+  require {
+    r_spf_0: transferred = 0utz;
+  }
   effect {
     protocol_fee := spf;
   }
@@ -76,6 +86,9 @@ entry set_max_bundle_items(smbi_number : nat) {
 
 entry set_transfer_manager(stm_contract : address) {
   called by owner
+  require {
+    r_stm_0: transferred = 0utz;
+  }
   effect {
     transfer_manager := stm_contract;
   }
@@ -83,6 +96,9 @@ entry set_transfer_manager(stm_contract : address) {
 
 entry set_default_bid_duration(dbd : duration) {
   called by owner
+  require {
+    r_sdbd_0: transferred = 0utz;
+  }
   effect {
     default_bid_duration := dbd;
   }
@@ -180,7 +196,17 @@ entry put_bid(
         pb_bid.bid_expiry_date := some((now + default_bid_duration));
       );
 
-      const all_operations: list<process_transfer_param> = [];
+      transfer transferred to bids_storage call set_bid<address * nat * address * asset_type * bytes * bid>(
+        (
+          pb_asset_contract,
+          pb_asset_token_id,
+          caller,
+          pb_bid_type,
+          pb_bid_asset,
+          pb_bid
+        )
+      );
+
       if(is_some(current_bid)) then (
           const current_bid_data ?= current_bid : NOT_FOUND;
           transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
@@ -202,18 +228,6 @@ entry put_bid(
         }]);
       ) else (
         do_require(transferred = (pb_bid.bid_amount * 1utz), (BID_AMOUNT_MISMATCH, transferred, pb_bid.bid_amount * 1utz));
-      );
-
-
-      transfer transferred to bids_storage call set_bid<address * nat * address * asset_type * bytes * bid>(
-        (
-          pb_asset_contract,
-          pb_asset_token_id,
-          caller,
-          pb_bid_type,
-          pb_bid_asset,
-          pb_bid
-        )
       );
     }
 }
@@ -241,7 +255,16 @@ entry put_floor_bid(
         pfb_bid.bid_expiry_date := some((now + default_bid_duration));
       );
 
-      const all_operations: list<process_transfer_param> = [];
+      transfer transferred to bids_storage call set_floor_bid<address * address * asset_type * bytes * bid>(
+        (
+          pfb_asset_contract,
+          caller,
+          pfb_bid_type,
+          pfb_bid_asset,
+          pfb_bid
+        )
+      );
+
       if(is_some(current_bid)) then (
           const current_bid_data ?= current_bid : NOT_FOUND;
           transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
@@ -263,16 +286,6 @@ entry put_floor_bid(
         }]);
       ) else (
         do_require(transferred = (pfb_bid.bid_amount * 1utz), (BID_AMOUNT_MISMATCH, transferred, pfb_bid.bid_amount * 1utz));
-      );
-
-      transfer transferred to bids_storage call set_floor_bid<address * address * asset_type * bytes * bid>(
-        (
-          pfb_asset_contract,
-          caller,
-          pfb_bid_type,
-          pfb_bid_asset,
-          pfb_bid
-        )
       );
     }
 }
@@ -301,7 +314,16 @@ entry put_bundle_bid(
         pbb_bid.bundle_bid_expiry_date := some((now + default_bid_duration));
       );
 
-      const all_operations: list<process_transfer_param> = [];
+      transfer transferred to bids_storage call set_bundle_bid<bytes * address * asset_type * bytes * bundle_bid>(
+        (
+          pbb_bundle,
+          caller,
+          pbb_bid_type,
+          pbb_bid_asset,
+          pbb_bid
+        )
+      );
+
       if(is_some(current_bid)) then (
           const current_bid_data ?= current_bid : NOT_FOUND;
           transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
@@ -324,16 +346,6 @@ entry put_bundle_bid(
       ) else (
         do_require(transferred = (pbb_bid.bundle_bid_amount * 1utz), (BID_AMOUNT_MISMATCH, transferred, pbb_bid.bundle_bid_amount * 1utz));
       );
-
-      transfer transferred to bids_storage call set_bundle_bid<bytes * address * asset_type * bytes * bundle_bid>(
-        (
-          pbb_bundle,
-          caller,
-          pbb_bid_type,
-          pbb_bid_asset,
-          pbb_bid
-        )
-      );
     }
 }
 
@@ -345,10 +357,15 @@ entry accept_bid(
   ab_bid_asset: bytes,
   ab_origin_fees: list<part>,
   ab_payouts: list<part>) {
+    require {
+      r_ab_0: transferred = 0utz;
+    }
     effect {
       const current_bid ?= get_bid(ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset) : MISSING_BID;
 
       do_require(current_bid.bid_expiry_date ? the > now : true, EXPIRED_BID);
+
+      transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset));
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
@@ -370,9 +387,6 @@ entry accept_bid(
           current_bid.bid_payouts.concat(ab_payouts)
         )
       );
-
-
-      transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((ab_asset_contract, ab_asset_token_id, ab_bidder, ab_bid_type, ab_bid_asset))
     }
 }
 
@@ -384,10 +398,15 @@ entry accept_floor_bid(
   afb_bid_asset: bytes,
   afb_origin_fees: list<part>,
   afb_payouts: list<part>){
+    require {
+      r_afb_0: transferred = 0utz;
+    }
     effect {
       const current_bid ?= get_floor_bid(afb_asset_contract, afb_bidder, afb_bid_type, afb_bid_asset) : MISSING_BID;
 
       do_require(current_bid.bid_expiry_date ? the > now : true, EXPIRED_BID);
+
+      transfer 0tz to bids_storage call remove_floor_bid<address * address * asset_type * bytes>((afb_asset_contract, afb_bidder, afb_bid_type, afb_bid_asset));
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
@@ -409,9 +428,6 @@ entry accept_floor_bid(
           current_bid.bid_payouts.concat(afb_payouts)
         )
       );
-
-
-      transfer 0tz to bids_storage call remove_floor_bid<address * address * asset_type * bytes>((afb_asset_contract, afb_bidder, afb_bid_type, afb_bid_asset))
     }
 }
 
@@ -422,11 +438,16 @@ entry accept_bundle_bid(
   abb_bid_asset: bytes,
   abb_origin_fees: list<part>,
   abb_payouts: list<part>){
+    require {
+      r_abb_0: transferred = 0utz;
+    }
     effect {
       const current_bid ?= get_bundle_bid(abb_bundle, abb_bidder, abb_bid_type, abb_bid_asset) : MISSING_BID;
       const unpacked_bundle = verify_and_unpack_bundle(abb_bundle);
 
       do_require(current_bid.bundle_bid_expiry_date ? the > now : true, EXPIRED_BID);
+
+      transfer 0tz to bids_storage call remove_bundle_bid<bytes * address * asset_type * bytes>((abb_bundle, abb_bidder, abb_bid_type, abb_bid_asset));
 
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
@@ -444,9 +465,6 @@ entry accept_bundle_bid(
           current_bid.bundle_bid_payouts.concat(abb_payouts)
         )
       );
-
-
-      transfer 0tz to bids_storage call remove_bundle_bid<bytes * address * asset_type * bytes>((abb_bundle, abb_bidder, abb_bid_type, abb_bid_asset))
     }
 }
 
@@ -455,8 +473,13 @@ entry cancel_bid(
   cb_asset_token_id: nat,
   cb_bid_type: asset_type,
   cb_bid_asset: bytes){
+    require {
+      r_cb_0: transferred = 0utz;
+    }
     effect {
       const current_bid ?= get_bid(cb_asset_contract, cb_asset_token_id, caller, cb_bid_type, cb_bid_asset) : MISSING_BID;
+
+      transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((cb_asset_contract, cb_asset_token_id, caller, cb_bid_type, cb_bid_asset));
 
       transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
         ptp_asset_type = cb_bid_type;
@@ -465,7 +488,6 @@ entry cancel_bid(
         ptp_origin = bids_storage;
         ptp_destination = caller
       }]);
-      transfer 0tz to bids_storage call remove_bid<address * nat * address * asset_type * bytes>((cb_asset_contract, cb_asset_token_id, caller, cb_bid_type, cb_bid_asset))
     }
 }
 
@@ -473,8 +495,13 @@ entry cancel_floor_bid(
   cfb_asset_contract: address,
   cfb_bid_type: asset_type,
   cfb_bid_asset: bytes){
+    require {
+      r_cfb_0: transferred = 0utz;
+    }
     effect {
       const current_bid ?= get_floor_bid(cfb_asset_contract, caller, cfb_bid_type, cfb_bid_asset) : MISSING_BID;
+
+      transfer 0tz to bids_storage call remove_floor_bid<address * address * asset_type * bytes>((cfb_asset_contract, caller, cfb_bid_type, cfb_bid_asset));
 
       transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
         ptp_asset_type = cfb_bid_type;
@@ -483,7 +510,6 @@ entry cancel_floor_bid(
         ptp_origin = bids_storage;
         ptp_destination = caller
       }]);
-      transfer 0tz to bids_storage call remove_floor_bid<address * address * asset_type * bytes>((cfb_asset_contract, caller, cfb_bid_type, cfb_bid_asset))
     }
 }
 
@@ -491,8 +517,13 @@ entry cancel_bundle_bid(
   cbb_bundle: bytes,
   cbb_bid_type: asset_type,
   cbb_bid_asset: bytes){
+    require {
+      r_cbb_0: transferred = 0utz;
+    }
     effect {
       const current_bid ?= get_bundle_bid(cbb_bundle, caller, cbb_bid_type, cbb_bid_asset) : MISSING_BID;
+
+      transfer 0tz to bids_storage call remove_bundle_bid<bytes * address * asset_type * bytes>((cbb_bundle, caller, cbb_bid_type, cbb_bid_asset));
 
       transfer 0tz to bids_storage call process_transfers<list<process_transfer_param>>([{
         ptp_asset_type = cbb_bid_type;
@@ -501,7 +532,6 @@ entry cancel_bundle_bid(
         ptp_origin = bids_storage;
         ptp_destination = caller
       }]);
-      transfer 0tz to bids_storage call remove_bundle_bid<bytes * address * asset_type * bytes>((cbb_bundle, caller, cbb_bid_type, cbb_bid_asset))
     }
 }
 
@@ -670,57 +700,3 @@ function get_bundle_bid(
     ) : NOT_FOUND;
     return res
 }
-
-function bp(bp_value : nat, bp_op_value : nat) : nat {
-  return abs(floor(bp_value * bp_op_value / 10000))
-}
-
-function process_total_amount(cta_amount: nat, cta_fees: nat, cta_order_origin_fees: list<part>) : nat {
- var total = cta_amount + bp(cta_amount, cta_fees);
-  for item in cta_order_origin_fees do
-    total += bp(cta_amount, item.part_value)
-  done;
-  return total
-}
-
-entry process_transfer(pt_transfer: process_transfer_param){
-  called by self_address
-  effect {
-    match pt_transfer.ptp_asset_type with
-    | FA2  -> (
-      match unpack<FA2_asset>(pt_transfer.ptp_asset) with
-      | some(buyAsset) -> (
-          transfer 0tz to buyAsset.fa2_asset_contract call %transfer<list<address * list<transfer_param>>>(
-            [
-                (
-                    pt_transfer.ptp_origin,
-                    [
-                        {
-                            destination_address = pt_transfer.ptp_destination;
-                            token_id = buyAsset.fa2_asset_token_id;
-                            token_amount = pt_transfer.ptp_amount
-                        }
-                    ]
-                )
-            ]
-          )
-        )
-      | none -> fail(CANT_UNPACK_FA2_ASSET)
-      end;
-    )
-    | FA12 -> (
-      match unpack<FA12_asset>(pt_transfer.ptp_asset) with
-        | some(buyAsset) -> (
-            transfer 0tz to buyAsset.fa12_asset_contract call %transfer<address * address * nat>((pt_transfer.ptp_origin, pt_transfer.ptp_destination, pt_transfer.ptp_amount))
-        )
-        | none -> fail(CANT_UNPACK_FA12_ASSET)
-        end
-      )
-    | XTZ -> (
-          transfer (pt_transfer.ptp_amount*1utz) to pt_transfer.ptp_destination;
-      )
-    end;
-  }
-}
-
-entry default() {}

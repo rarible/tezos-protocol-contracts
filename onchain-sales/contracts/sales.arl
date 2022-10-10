@@ -25,6 +25,7 @@ constant SALE_ALREADY_EXISTS     : string = "SALE_ALREADY_EXISTS"
 constant SALE_CLOSED             : string = "SALE_CLOSED"
 constant SALE_NOT_STARTED        : string = "SALE_NOT_STARTED"
 constant WRONG_XTZ_PAYLOAD       : string = "WRONG_XTZ_PAYLOAD"
+constant INVALID_NAT             : string = "INVALID_NAT"
 
 //----------------------------------------------------------------------------
 // Owner role transfer
@@ -36,6 +37,9 @@ variable max_fees_limit : nat = 10000
 
 entry declare_ownership(candidate : address) {
   called by owner
+  require {
+    r_dc_0: transferred = 0utz;
+  }
   effect {
     owner_candidate := some(candidate);
   }
@@ -46,7 +50,8 @@ entry claim_ownership() {
     candidate ?is owner_candidate otherwise MISSING_CANDIDATE
   }
   require {
-    r0: caller = candidate otherwise INVALID_CALLER
+    r_co_0: caller = candidate otherwise INVALID_CALLER;
+    r_co_1: transferred = 0utz;
   }
   effect {
     owner := candidate;
@@ -58,15 +63,12 @@ entry claim_ownership() {
 //----------------------------------------------------------------------------
 // Admin
 //----------------------------------------------------------------------------
-entry set_sales_storage_contract(sesc_contract : address) {
-  called by owner
-  effect {
-    sales_storage := sesc_contract;
-  }
-}
 
 entry set_protocol_fee(spf : nat) {
   called by owner
+  require {
+    r_spf_0: transferred = 0utz;
+  }
   effect {
     protocol_fee := spf;
   }
@@ -74,6 +76,9 @@ entry set_protocol_fee(spf : nat) {
 
 entry set_fees_limit(sfl : nat) {
   called by owner
+  require {
+    r_sfl_0: transferred = 0utz;
+  }
   effect {
     max_fees_limit := sfl;
   }
@@ -81,6 +86,9 @@ entry set_fees_limit(sfl : nat) {
 
 entry set_transfer_manager(stm_contract : address) {
   called by owner
+  require {
+    r_stm_0: transferred = 0utz;
+  }
   effect {
     transfer_manager := stm_contract;
   }
@@ -88,6 +96,9 @@ entry set_transfer_manager(stm_contract : address) {
 
 entry set_sales_storage(sss_contract : address) {
   called by owner
+  require {
+    r_sss_0: transferred = 0utz;
+  }
   effect {
     sales_storage := sss_contract;
   }
@@ -95,6 +106,9 @@ entry set_sales_storage(sss_contract : address) {
 
 entry set_max_bundle_items(smbi_number : nat) {
   called by owner
+  require {
+    r_smb_0: transferred = 0utz;
+  }
   effect {
     max_bundle_items := smbi_number;
   }
@@ -178,6 +192,7 @@ entry sell (
   s_sale_asset: bytes,
   s_sale : sale) {
     require {
+        r_s00: transferred = 0utz;
         r_s0: s_sale.sale_amount > 0;
         r_s1: s_sale.sale_asset_qty > 0;
         r_s2: s_sale.sale_max_fees_base_boint > 0
@@ -221,6 +236,7 @@ entry sell_bundle (
   sb_sale_asset: bytes,
   sb_sale : bundle_sale) {
     require {
+        r_sb00: transferred = 0utz;
         r_sb0: sb_sale.bundle_sale_amount > 0;
         r_sb1: sb_sale.bundle_sale_max_fees_base_boint > 0
               and sb_sale.bundle_sale_max_fees_base_boint <= max_fees_limit
@@ -295,6 +311,22 @@ entry buy(
         do_require(transferred = current_sale.sale_amount * b_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
       );
 
+      if(b_amount = current_sale.sale_asset_qty) then (
+        transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset))
+      ) else (
+        current_sale.sale_asset_qty ?:= int_to_nat(current_sale.sale_asset_qty - b_amount) : INVALID_NAT;
+        transfer 0tz to sales_storage call set_sale<address * nat * address * asset_type * bytes * sale>(
+          (
+            b_asset_contract,
+            b_asset_token_id,
+            b_seller,
+            b_sale_type,
+            b_sale_asset,
+            current_sale
+          )
+        );
+      );
+
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
           [{
@@ -315,21 +347,6 @@ entry buy(
           current_sale.sale_payouts.concat(b_payouts)
         )
       );
-      if(b_amount = current_sale.sale_asset_qty) then (
-        transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset))
-      ) else (
-        current_sale.sale_asset_qty := abs(current_sale.sale_asset_qty - b_amount);
-        transfer 0tz to sales_storage call set_sale<address * nat * address * asset_type * bytes * sale>(
-          (
-            b_asset_contract,
-            b_asset_token_id,
-            b_seller,
-            b_sale_type,
-            b_sale_asset,
-            current_sale
-          )
-        );
-      )
     }
 }
 
@@ -367,27 +384,10 @@ entry buy_bundle(
         do_require(transferred = current_sale.bundle_sale_amount * bb_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.bundle_sale_amount * 1utz))
       );
 
-      transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
-        (
-          unpacked_bundle,
-          bb_seller,
-          caller,
-          current_sale.bundle_sale_amount,
-          bb_sale_type,
-          bb_sale_asset,
-          caller,
-          bb_seller,
-          sales_storage,
-          protocol_fee,
-          current_sale.bundle_sale_origin_fees.concat(bb_origin_fees),
-          current_sale.bundle_sale_payouts.concat(bb_payouts)
-        )
-      );
-
       if(bb_amount = current_sale.bundle_sale_qty) then (
         transfer 0tz to sales_storage call remove_bundle_sale<bytes * address * asset_type * bytes>((bb_bundle, bb_seller, bb_sale_type, bb_sale_asset))
       ) else (
-        current_sale.bundle_sale_qty := abs(current_sale.bundle_sale_qty - bb_amount);
+        current_sale.bundle_sale_qty ?:= int_to_nat(current_sale.bundle_sale_qty - bb_amount) : INVALID_NAT;
         transfer 0tz to sales_storage call set_bundle_sale<bytes * address * asset_type * bytes * bundle_sale>(
           (
             bb_bundle,
@@ -397,6 +397,23 @@ entry buy_bundle(
             current_sale
           )
         );
+      );
+
+      transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
+        (
+          unpacked_bundle,
+          bb_seller,
+          caller,
+          current_sale.bundle_sale_amount * bb_amount,
+          bb_sale_type,
+          bb_sale_asset,
+          caller,
+          bb_seller,
+          sales_storage,
+          protocol_fee,
+          current_sale.bundle_sale_origin_fees.concat(bb_origin_fees),
+          current_sale.bundle_sale_payouts.concat(bb_payouts)
+        )
       );
     }
 }
@@ -408,6 +425,7 @@ entry cancel_sale(
   cs_sale_asset: bytes){
     require {
         r_cs0: sale_exists(cs_asset_contract, cs_asset_token_id, caller, cs_sale_type, cs_sale_asset) = true;
+        r_cs1: transferred = 0utz;
     }
     effect {
       transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((cs_asset_contract, cs_asset_token_id, caller, cs_sale_type, cs_sale_asset))
@@ -420,6 +438,7 @@ entry cancel_bundle_sale(
   cbs_sale_asset: bytes){
     require {
         r_cbs0: bundle_sale_exists(cbs_bundle, caller, cbs_sale_type, cbs_sale_asset) = true;
+        r_cbs1: transferred = 0utz;
     }
     effect {
       transfer 0tz to sales_storage call remove_bundle_sale<bytes * address * asset_type * bytes>((cbs_bundle, caller, cbs_sale_type, cbs_sale_asset))
@@ -551,9 +570,6 @@ function get_bundle_sale(
         ) ? the : none<bundle_sale>)
 }
 
-function bp(bp_value : nat, bp_op_value : nat) : nat {
-  return abs(floor(bp_value * bp_op_value / 10000))
-}
 
 function process_sum_fees(psf_fees: list<part>): nat {
   var total = 0;
@@ -562,6 +578,3 @@ function process_sum_fees(psf_fees: list<part>): nat {
   done;
   return total
 }
-
-
-entry default() {}

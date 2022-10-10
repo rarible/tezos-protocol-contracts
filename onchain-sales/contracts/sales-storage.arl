@@ -47,6 +47,9 @@ variable owner_candidate : option<address> = none
 
 entry declare_ownership(candidate : address) {
   called by owner
+  require {
+    r_dc_0: transferred = 0utz;
+  }
   effect {
     owner_candidate := some(candidate);
   }
@@ -57,7 +60,8 @@ entry claim_ownership() {
     candidate ?is owner_candidate otherwise "MISSING_CANDIDATE"
   }
   require {
-    r0: caller = candidate otherwise "INVALID_CALLER"
+    r_co_0: caller = candidate otherwise "INVALID_CALLER";
+    r_co_1: transferred = 0utz;
   }
   effect {
     owner := candidate;
@@ -70,15 +74,11 @@ entry claim_ownership() {
 //----------------------------------------------------------------------------
 entry set_sales_contract(ssc_contract : address) {
   called by owner
+  require {
+    r_sc_0: transferred = 0utz;
+  }
   effect {
     sales_contract := some(ssc_contract);
-  }
-}
-
-entry set_transfer_manager(stm_contract : address) {
-  called by owner
-  effect {
-    transfer_manager := some(stm_contract);
   }
 }
 
@@ -86,7 +86,6 @@ entry set_transfer_manager(stm_contract : address) {
 // Auction
 //----------------------------------------------------------------------------
 variable sales_contract : option<address> = none
-variable transfer_manager : option<address> = none
 
 record bundle_sale {
   bundle_sale_origin_fees : list<part>;
@@ -259,7 +258,3 @@ view get_bundle_sale(
     return none;
    )
 }
-
-
-
-entry default() {}
