@@ -38,6 +38,9 @@ variable owner_candidate : option<address> = none
 
 entry declare_ownership(candidate : address) {
   called by owner
+  require {
+    r_dc_0: transferred = 0utz;
+  }
   effect {
     owner_candidate := some(candidate);
   }
@@ -48,7 +51,8 @@ entry claim_ownership() {
     owner_candidate_addr ?is owner_candidate otherwise MISSING_OWNER_CANDIDATE;
   }
   require {
-    co1: owner_candidate_addr = caller otherwise INVALID_CALLER
+    r_co_0: owner_candidate_addr = caller otherwise INVALID_CALLER;
+    r_co_1: transferred = 0utz;
   }
   effect {
     owner := owner_candidate_addr;
@@ -61,6 +65,9 @@ entry claim_ownership() {
 //----------------------------------------------------------------------------
 entry set_auction_contract(sac_contract : address) {
   called by owner
+  require {
+    r_sac_0: transferred = 0utz;
+  }
   effect {
     auction_contract := some(sac_contract);
   }
@@ -68,6 +75,9 @@ entry set_auction_contract(sac_contract : address) {
 
 entry set_transfer_manager(stm_contract : address) {
   called by owner
+  require {
+    r_stm_0: transferred = 0utz;
+  }
   effect {
     transfer_manager := some(stm_contract);
   }
@@ -276,6 +286,3 @@ entry process_transfers(pt_transfers: list<process_transfer_param>){
     done
   }
 }
-
-
-entry default() {}
