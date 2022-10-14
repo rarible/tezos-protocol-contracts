@@ -219,6 +219,7 @@ entry put_bid(
       );
 
       if(not is_xtz) then (
+        do_require(transferred = 0 * 1utz, (BID_AMOUNT_MISMATCH, transferred, 0));
         transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pb_bid_type;
             ptp_asset = pb_bid_asset;
@@ -277,6 +278,7 @@ entry put_floor_bid(
       );
 
       if(not is_xtz) then (
+        do_require(transferred = 0 * 1utz, (BID_AMOUNT_MISMATCH, transferred, 0));
         transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pfb_bid_type;
             ptp_asset = pfb_bid_asset;
@@ -336,6 +338,7 @@ entry put_bundle_bid(
       );
 
       if(not is_xtz) then (
+        do_require(transferred = 0 * 1utz, (BID_AMOUNT_MISMATCH, transferred, 0));
         transfer 0tz to transfer_manager call process_transfers<list<process_transfer_param>>([{
             ptp_asset_type = pbb_bid_type;
             ptp_asset = pbb_bid_asset;

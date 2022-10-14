@@ -308,7 +308,9 @@ entry buy(
       var buy_asset_token_id = unpack_result[1];
 
       if(b_sale_type = XTZ) then (
-        do_require(transferred = current_sale.sale_amount * b_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
+        do_require(transferred = current_sale.sale_amount * b_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * b_amount * 1utz))
+      ) else (
+        do_require(transferred = 0 * 1utz, (AMOUNT_MISMATCH, transferred, 0))
       );
 
       if(b_amount = current_sale.sale_asset_qty) then (
@@ -379,9 +381,14 @@ entry buy_bundle(
       end;
 
       var unpacked_bundle = verify_and_unpack_bundle(bb_bundle);
+      for b_item in unpacked_bundle do
+        b_item.bundle_item_qty := b_item.bundle_item_qty * bb_amount
+      done;
 
       if(bb_sale_type = XTZ) then (
-        do_require(transferred = current_sale.bundle_sale_amount * bb_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.bundle_sale_amount * 1utz))
+        do_require(transferred = current_sale.bundle_sale_amount * bb_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.bundle_sale_amount * bb_amount * 1utz))
+      ) else (
+        do_require(transferred = 0 * 1utz, (AMOUNT_MISMATCH, transferred, 0))
       );
 
       if(bb_amount = current_sale.bundle_sale_qty) then (

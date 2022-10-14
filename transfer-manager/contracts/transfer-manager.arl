@@ -95,8 +95,8 @@ function is_authorized() : bool {
 }
 
 function is_amount_correct(iac_amount: nat, iac_ft_asset_type: asset_type) : bool {
-  if iac_ft_asset_type = XTZ
-  then do_require(iac_amount * 1utz = transferred, INVALID_AMOUNT)
+  if iac_ft_asset_type = XTZ and iac_amount * 1utz <> transferred
+  then return false
   else return true
 }
 
