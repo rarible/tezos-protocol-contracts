@@ -176,7 +176,6 @@ entry manage_transfers(
 ){
     require {
       r_mt0 : is_authorized();
-      r_mt1 : is_amount_correct(mt_ft_amount, mt_ft_asset_type);
     }
     effect {
       var buy_asset_contract : option<address> = none;
@@ -189,6 +188,9 @@ entry manage_transfers(
 
       if (transferred > 0tz and mt_ft_asset_type = XTZ) then (
         ft_origin := self_address;
+        do_require(is_amount_correct(mt_ft_amount, mt_ft_asset_type), INVALID_AMOUNT);
+      ) else (
+        do_require(transferred = 0utz, INVALID_AMOUNT);
       );
 
 

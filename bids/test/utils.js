@@ -9,6 +9,10 @@ exports.XTZ = '0';
 exports.FA12 = '1';
 exports.FA2 = '2';
 
+exports.get_expired_formated_date = (start_date) => {
+    return new Date((Math.floor(start_date.getTime() / 1000) + 1) * 1000 + (7 * 24 * 60 * 60 * 1000)).toISOString().split('.')[0]+"Z";
+};
+
 exports.mkBundleItem = (assetContract, assetId, assetQty) => {
     return {
         prim: "Pair",
