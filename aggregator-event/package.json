@@ -19,7 +19,7 @@
     "typescript": "^4.7.4"
   },
   "completium": {
-    "binding_path": "./tests/binding/",
+    "binding_path": "./tests/bindings/",
     "build_path": "./build/",
     "contracts_path": "./contracts/",
     "tests_path": "./tests/"

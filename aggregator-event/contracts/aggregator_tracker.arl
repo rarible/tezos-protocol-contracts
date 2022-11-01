@@ -63,19 +63,8 @@ entry set_metadata(k: string, d : option<bytes>) {
 
 // Events -----------------------------------------------------------
 event aggregator_event {
-  event_source: string;
-  buyer : address;
-  sales: list<sale>
-}
-
-record sale {
-  sale_type: string;
-  sale_marketplace: string;
-  sale_contract: address;
-  sale_token_id: nat;
-  sale_qty: nat;
-  sale_price_per_item: nat;
-}
+  tracker: bytes;
+} as (tracker)
 
 // Entries ----------------------------------------------------------
 entry log_event(agg_event : aggregator_event) {

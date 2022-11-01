@@ -1,41 +1,7 @@
 import * as ex from "@completium/experiment-ts";
 import * as att from "@completium/archetype-ts-types";
 import * as el from "@completium/event-listener";
-export class aggregator_event implements att.ArchetypeType {
-    constructor(public event_type: string, public event_source: string, public buyer: att.Address, public sellers: Array<att.Address>, public items: Array<event_item>) { }
-    toString(): string {
-        return JSON.stringify(this, null, 2);
-    }
-    to_mich(): att.Micheline {
-        return att.pair_to_mich([att.string_to_mich(this.event_type), att.pair_to_mich([att.string_to_mich(this.event_source), att.pair_to_mich([this.buyer.to_mich(), att.pair_to_mich([att.list_to_mich(this.sellers, x => {
-                            return x.to_mich();
-                        }), att.list_to_mich(this.items, x => {
-                            return x.to_mich();
-                        })])])])]);
-    }
-    equals(v: aggregator_event): boolean {
-        return (this.event_type == v.event_type && this.event_type == v.event_type && this.event_source == v.event_source && this.buyer.equals(v.buyer) && JSON.stringify(this.sellers) == JSON.stringify(v.sellers) && JSON.stringify(this.items) == JSON.stringify(v.items));
-    }
-}
-export class event_item implements att.ArchetypeType {
-    constructor(public item_marketplace: string, public item_contract: att.Address, public item_token_id: att.Nat) { }
-    toString(): string {
-        return JSON.stringify(this, null, 2);
-    }
-    to_mich(): att.Micheline {
-        return att.pair_to_mich([att.string_to_mich(this.item_marketplace), att.pair_to_mich([this.item_contract.to_mich(), this.item_token_id.to_mich()])]);
-    }
-    equals(v: event_item): boolean {
-        return (this.item_marketplace == v.item_marketplace && this.item_marketplace == v.item_marketplace && this.item_contract.equals(v.item_contract) && this.item_token_id.equals(v.item_token_id));
-    }
-}
-export const event_item_mich_type: att.MichelineType = att.pair_array_to_mich_type([
-    att.prim_annot_to_mich_type("string", ["%item_marketplace"]),
-    att.pair_array_to_mich_type([
-        att.prim_annot_to_mich_type("address", ["%item_contract"]),
-        att.prim_annot_to_mich_type("nat", ["%item_token_id"])
-    ], [])
-], []);
+export type aggregator_event = att.Bytes;
 const declare_ownership_arg_to_mich = (candidate: att.Address): att.Micheline => {
     return candidate.to_mich();
 }
@@ -203,11 +169,7 @@ export class Aggregator_tracker {
         if (this.address != undefined) {
             el.registerEvent({ source: this.address, filter: tag => { return tag == "aggregator_event"; }, process: (raw: any, data: el.EventData | undefined) => {
                     const event = (x => {
-                        return new aggregator_event((x => { return x; })(x.event_type), (x => { return x; })(x.event_source), (x => { return new att.Address(x); })(x.buyer), (x => { const res: Array<att.Address> = []; for (let i = 0; i < x.length; i++) {
-                            res.push((x => { return new att.Address(x); })(x[i]));
-                        } return res; })(x.sellers), (x => { const res: Array<event_item> = []; for (let i = 0; i < x.length; i++) {
-                            res.push((x => { return new event_item((x => { return x; })(x.item_marketplace), (x => { return new att.Address(x); })(x.item_contract), (x => { return new att.Nat(x); })(x.item_token_id)); })(x[i]));
-                        } return res; })(x.items));
+                        return (x => { return new att.Bytes(x); })(x);
                     })(raw);
                     ep(event, data);
                 } });
