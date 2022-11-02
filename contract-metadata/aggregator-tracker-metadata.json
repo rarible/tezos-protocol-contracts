@@ -1,0 +1,14 @@
+{
+    "name": "Rarible Aggregator Tracker",
+    "description": "Rarible Aggregator Tracker contract monitoring aggregator activity",
+    "version": "1.0.0",
+    "authors": [ "Florian PAUTOT <florian.pautot@gmail.com>" ],
+    "license": {
+      "name": "MIT",
+      "details": "MIT License"
+    },
+    "homepage": "https://github.com/rarible/tezos-protocol-contracts/tree/main/aggregator-tracker",
+    "interfaces": [
+      "TZIP-16"
+    ]
+}

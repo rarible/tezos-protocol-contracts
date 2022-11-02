@@ -20,12 +20,13 @@ exports.env = {
         fa2_ft: 'ipfs://QmVdnJR2FAVWEjXhK57aMRT8GJHBETTGXJXu9yS1CWhg91',
         fa12_ft: 'ipfs://QmS6H5pc3AyWB4CP5vvFjgFHovipUgYqMKhVeEF41CqkTq',
         nft: 'ipfs://QmQZuCnXe1g2WTvzPZXS15U5gfZu8eEMuPepMpaAyUPsAq',
-        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH'
+        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH',
+        aggregator_tracker: 'ipfs://QmbufY1eLhB6vbYJcJwMYQr5dSqTc6A4ur2LS9TA7ahyQi'
       }
     },
-    privatenet: {
+    devnet: {
       quiet: false,
-      endpoint: 'http://localhost:8732',
+      endpoint: 'https://rpc.tzkt.io/ghostnet',
       originator_alias: 'bob',
       owner_address: 'tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6',
       fee_receiver_address: 'tz1aSkwEot3L2kmUvcoxzjMomb9mvBNuzFK6',
@@ -41,12 +42,13 @@ exports.env = {
         fa2_ft: 'ipfs://QmVdnJR2FAVWEjXhK57aMRT8GJHBETTGXJXu9yS1CWhg91',
         fa12_ft: 'ipfs://QmS6H5pc3AyWB4CP5vvFjgFHovipUgYqMKhVeEF41CqkTq',
         nft: 'ipfs://QmQZuCnXe1g2WTvzPZXS15U5gfZu8eEMuPepMpaAyUPsAq',
-        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH'
+        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH',
+        aggregator_tracker: 'ipfs://QmbufY1eLhB6vbYJcJwMYQr5dSqTc6A4ur2LS9TA7ahyQi'
       }
     },
     testnet: {
       quiet: false,
-      endpoint: 'https://rpc.ithacanet.teztnets.xyz',
+      endpoint: 'https://rpc.tzkt.io/ghostnet',
       originator_alias: 'alice',
       owner_address: 'tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb',
       fee_receiver_address: 'tz1VSUr8wwNhLAzempoch5d6hLRiTh8Cjcjb',
@@ -62,15 +64,16 @@ exports.env = {
         fa2_ft: 'ipfs://QmVdnJR2FAVWEjXhK57aMRT8GJHBETTGXJXu9yS1CWhg91',
         fa12_ft: 'ipfs://QmS6H5pc3AyWB4CP5vvFjgFHovipUgYqMKhVeEF41CqkTq',
         nft: 'ipfs://QmQZuCnXe1g2WTvzPZXS15U5gfZu8eEMuPepMpaAyUPsAq',
-        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH'
+        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH',
+        aggregator_tracker: 'ipfs://QmbufY1eLhB6vbYJcJwMYQr5dSqTc6A4ur2LS9TA7ahyQi'
       }
     },
     mainnet: {
       quiet: false,
-      endpoint: 'https://tezos-node.rarible.org',
-      originator_alias: 'completium-deploy',
-      owner_address: 'tz1PyW1EznU9ADpocaauSi41NCPynBuqf1Kc',
-      fee_receiver_address: 'tz1PyW1EznU9ADpocaauSi41NCPynBuqf1Kc',
+      endpoint: 'https://rpc.tzkt.io/mainnet',
+      originator_alias: 'rarible-admin',
+      owner_address: 'tz1KqTpEZ7Yob7QbPE4Hy4Wo8fHG8LhKxZSx',
+      fee_receiver_address: 'tz1gkQ4rNzPTgf1Yn3oBweWHAAvvF9VJv9hh',
       metadata: {
         auctions: 'ipfs://QmP2d2x44dewFvZR1S1jeCqtGuFsezqMLQwYV7E9tE5s2U',
         auctions_storage: 'ipfs://QmNaDQQy1GS7XrCm3hSz8Hkss8LufKhqpY5ZYJSTgoFEpA',
@@ -80,7 +83,8 @@ exports.env = {
         transfer_manager: 'ipfs://QmYhCiJyuxnysNPdFhWHNKgQweZDq8qtMvefAsZAHmgVF8',
         sales: 'ipfs://QmP1TknobiPBUtEtvQcpjudeQgM6YmKjspRmf8zxHB73Gi',
         sales_storage: 'ipfs://QmZn3WK42dwnf57cdukcCGAnzaS8FLT8iPvyHUBjCVTQei',
-        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH'
+        sig_checker: 'ipfs://QmYsqJpf4FWQxjdaSU8FeJGW4P23qeV2hb63w8yyxJYQMH',
+        aggregator_tracker: 'ipfs://QmbufY1eLhB6vbYJcJwMYQr5dSqTc6A4ur2LS9TA7ahyQi'
       }
     }
   },
@@ -132,6 +136,10 @@ exports.env = {
     sig_checker: {
       id: 'sig_checker',
       path: '../signature-checker/contracts/signature-checker.arl',
+    },
+    aggregator_tracker: {
+      id: 'aggregator_tracker',
+      path: '../aggregator-tracker/contracts/aggregator_tracker.arl',
     }
   }
 };
