@@ -5,14 +5,14 @@
     "main": "index.js",
     "scripts": {
         "deploy-mockup": "env STAGE=mockup mocha ./deploy.js --timeout 0 --slow 0",
-        "deploy-privatenet": "env STAGE=privatenet mocha ./deploy.js --timeout 0 --slow 0",
+        "deploy-devnet": "env STAGE=devnet mocha ./deploy.js --timeout 0 --slow 0",
         "deploy-testnet": "env STAGE=testnet mocha ./deploy.js --timeout 0 --slow 0",
         "deploy-mainnet": "env STAGE=mainnet mocha ./deploy.js --timeout 0 --slow 0"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@completium/completium-cli": "^0.4.6",
+        "@completium/completium-cli": "^0.4.39",
         "bignumber.js": "^9.0.2",
         "chai": "^4.3.4",
         "mocha": "^9.1.2"

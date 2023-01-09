@@ -29,6 +29,17 @@ setEndpoint(env.stages[stage].endpoint);
 setQuiet(env.stages[stage].quiet);
 
 describe("Contracts deployment", async () => {
+  it("Deploy Aggregator tracker", async () => {
+    [royalties, _] = await deploy(env.contracts.aggregator_tracker.path, {
+      parameters: {
+        owner: originator.pkh,
+      },
+      named: getName(env.contracts.aggregator_tracker.id),
+      metadata_uri: env.stages[stage].metadata.aggregator_tracker,
+      as: originator.pkh
+    });
+  });
+
   it("Deploy Royalties contract", async () => {
     [royalties, _] = await deploy(env.contracts.royalties.path, {
       parameters: {
