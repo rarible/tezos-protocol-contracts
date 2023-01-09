@@ -24,7 +24,6 @@ constant SALE_CLOSED             : string = "SALE_CLOSED"
 constant SALE_NOT_STARTED        : string = "SALE_NOT_STARTED"
 constant WRONG_XTZ_PAYLOAD       : string = "WRONG_XTZ_PAYLOAD"
 constant INVALID_NAT             : string = "INVALID_NAT"
-
 //----------------------------------------------------------------------------
 // Owner role transfer
 //----------------------------------------------------------------------------
@@ -170,6 +169,17 @@ record sale_arg {
   sale_arg_data       : option<bytes>;
 }
 
+record buy_arg {
+  buy_asset_contract: address;
+  buy_asset_token_id: nat;
+  buy_seller: address;
+  buy_sale_type: asset_type;
+  buy_sale_asset: bytes;
+  buy_amount: nat;
+  buy_origin_fees: list<part>;
+  buy_payouts: list<part>;
+}
+
 record sale {
   sale_origin_fees : list<part>;
   sale_payouts : list<part>;
@@ -220,18 +230,19 @@ entry sell (
 }
 
 entry buy(
-  b_asset_contract: address,
-  b_asset_token_id: nat,
-  b_seller: address,
-  b_sale_type: asset_type,
-  b_sale_asset: bytes,
-  b_amount: nat,
-  b_origin_fees: list<part>,
-  b_payouts: list<part>){
+  b_args: buy_arg,
+  b_buyer_pubk: key,
+  b_sig: signature
+  ){
     effect {
-      var current_sale ?= get_sale(b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset) : MISSING_SALE;
-      do_require(process_sum_fees(current_sale.sale_origin_fees) + process_sum_fees(b_origin_fees) + protocol_fee <= current_sale.sale_max_fees_base_point, FEES_OVER_SELLER_LIMIT);
-      do_require(b_amount > 0 and b_amount <= current_sale.sale_asset_qty, INVALID_BUY_AMOUNT);
+      var current_sale ?= get_sale(b_args.buy_asset_contract, b_args.buy_asset_token_id, b_args.buy_seller, b_args.buy_sale_type, b_args.buy_sale_asset) : MISSING_SALE;
+      do_require(process_sum_fees(current_sale.sale_origin_fees) + process_sum_fees(b_args.buy_origin_fees) + protocol_fee <= current_sale.sale_max_fees_base_point, FEES_OVER_SELLER_LIMIT);
+      do_require(b_args.buy_amount > 0 and b_args.buy_amount <= current_sale.sale_asset_qty, INVALID_BUY_AMOUNT);
+
+      var buyer_address = key_to_address(b_buyer_pubk);
+
+      var packed_data = pack(b_args);
+      transfer 0tz to permits call check<key * signature * bytes>((b_buyer_pubk, b_sig, packed_data));
 
       match current_sale.sale_end with
       | some(end_date) -> begin
@@ -248,28 +259,27 @@ entry buy(
       end;
 
 
-      var unpack_result = verify_and_unpack_asset(b_sale_type, b_sale_asset);
-      var buy_asset_contract = unpack_result[0];
-      var buy_asset_token_id = unpack_result[1];
+      var unpack_result = verify_and_unpack_asset(b_args.buy_sale_type, b_args.buy_sale_asset);
 
-      if(b_sale_type = XTZ) then (
-        do_require(transferred = current_sale.sale_amount * b_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
+
+      if(b_args.buy_sale_type = XTZ) then (
+        do_require(transferred = current_sale.sale_amount * b_args.buy_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
       );
 
-      if(b_amount = current_sale.sale_asset_qty) then (
-        transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((b_asset_contract, b_asset_token_id, b_seller, b_sale_type, b_sale_asset))
+      if(b_args.buy_amount = current_sale.sale_asset_qty) then (
+        transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((b_args.buy_asset_contract, b_args.buy_asset_token_id, b_args.buy_seller, b_args.buy_sale_type, b_args.buy_sale_asset))
       ) else (
-        current_sale.sale_asset_qty ?:= int_to_nat(current_sale.sale_asset_qty - b_amount) : INVALID_NAT;
+        current_sale.sale_asset_qty ?:= int_to_nat(current_sale.sale_asset_qty - b_args.buy_amount) : INVALID_NAT;
         transfer 0tz to sales_storage call set_sale<sale_arg>({
-            sale_arg_asset_contract = b_asset_contract;
-            sale_arg_asset_token_id = b_asset_token_id;
-            sale_arg_seller = b_seller;
-            sale_arg_type = b_sale_type;
-            sale_arg_asset = b_sale_asset;
-            sale_arg_origin_fees = current_sale.sale_origin_fees.concat(b_origin_fees);
-            sale_arg_payouts = current_sale.sale_payouts.concat(b_payouts);
+            sale_arg_asset_contract = b_args.buy_asset_contract;
+            sale_arg_asset_token_id = b_args.buy_asset_token_id;
+            sale_arg_seller = b_args.buy_seller;
+            sale_arg_type = b_args.buy_sale_type;
+            sale_arg_asset = b_args.buy_sale_asset;
+            sale_arg_origin_fees = current_sale.sale_origin_fees.concat(b_args.buy_origin_fees);
+            sale_arg_payouts = current_sale.sale_payouts.concat(b_args.buy_payouts);
             sale_arg_amount = current_sale.sale_amount;
-            sale_arg_asset_qty = b_amount;
+            sale_arg_asset_qty = b_args.buy_amount;
             sale_arg_start = current_sale.sale_start;
             sale_arg_end =  current_sale.sale_end;
             sale_arg_max_fees_base_point = current_sale.sale_max_fees_base_point;
@@ -281,21 +291,21 @@ entry buy(
       transfer transferred to transfer_manager call manage_transfers<list<bundle_item> * address * address * nat * asset_type * bytes * address * address * address * nat * list<part> * list<part>>(
         (
           [{
-            bundle_item_contract = b_asset_contract;
-            bundle_item_id = b_asset_token_id ;
-            bundle_item_qty = b_amount
+            bundle_item_contract = b_args.buy_asset_contract;
+            bundle_item_id = b_args.buy_asset_token_id ;
+            bundle_item_qty = b_args.buy_amount
           }],
-          b_seller,
-          caller,
-          current_sale.sale_amount * b_amount,
-          b_sale_type,
-          b_sale_asset,
-          caller,
-          b_seller,
+          b_args.buy_seller,
+          buyer_address,
+          current_sale.sale_amount * b_args.buy_amount,
+          b_args.buy_sale_type,
+          b_args.buy_sale_asset,
+          buyer_address,
+          b_args.buy_seller,
           sales_storage,
           protocol_fee,
-          current_sale.sale_origin_fees.concat(b_origin_fees),
-          current_sale.sale_payouts.concat(b_payouts)
+          current_sale.sale_origin_fees.concat(b_args.buy_origin_fees),
+          current_sale.sale_payouts.concat(b_args.buy_payouts)
         )
       );
     }
@@ -327,14 +337,14 @@ entry cancel_sale(
 }
 
 function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes) : (option<address> * option<nat>) {
-    var buy_asset_contract: option<address> = none;
-    var buy_asset_token_id: option<nat> = none;
+    var asset_contract: option<address> = none;
+    var asset_token_id: option<nat> = none;
     match ua_asset_type with
       | FA2 -> (
         match unpack<FA2_asset>(ua_asset_data) with
         | some(buyAsset) -> (
-            buy_asset_contract := some(buyAsset.fa2_asset_contract);
-            buy_asset_token_id := some(buyAsset.fa2_asset_token_id);
+            asset_contract := some(buyAsset.fa2_asset_contract);
+            asset_token_id := some(buyAsset.fa2_asset_token_id);
           )
         | none -> fail(CANT_UNPACK_FA2_ASSET)
         end
@@ -342,7 +352,7 @@ function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes
       | FA12 -> (
         match unpack<FA12_asset>(ua_asset_data) with
         | some(buyAsset) -> (
-            buy_asset_contract := some(buyAsset.fa12_asset_contract);
+            asset_contract := some(buyAsset.fa12_asset_contract);
         )
         | none -> fail(CANT_UNPACK_FA12_ASSET)
         end
@@ -353,7 +363,7 @@ function verify_and_unpack_asset(ua_asset_type: asset_type, ua_asset_data: bytes
           )
       )
       end;
-      return ((buy_asset_contract, buy_asset_token_id))
+      return ((asset_contract, asset_token_id))
 }
 
 function get_sale(

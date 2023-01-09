@@ -26,7 +26,7 @@ import {
 	sale_arg,
 	sale_arg_mich_type,
 	cancel_sale_param,
-	cancel_sale_param_mich_type
+	cancel_sale_param_mich_type, buy_arg, buy_arg_mich_type
 } from "./binding/feeless_sales";
 import {sales_key, Sales_storage} from "./binding/sales_storage";
 import {transfer_manager, Transfer_manager} from "./binding/transfer_manager";
@@ -175,11 +175,11 @@ async function sumbit_and_verify_sale_order(
 	sale_asset_token_id?: Nat,
 ) {
 	const counter = await get_permit_counter(owner)
-	const is_fa2 = sale_asset_contract && sale_asset_token_id
-	const is_fa12 = sale_asset_contract && !sale_asset_token_id
-	const sale_asset = is_fa2 ? pack(new FA2_asset(sale_asset_contract.get_address(),
-			nft_token_id).to_mich(),
-		FA2_asset_mich_type) : is_fa12 ? pack(sale_asset_contract.get_address().to_mich(),
+	const is_fa2 = asset_type.type() == new FA2().type()
+	const is_fa12 = asset_type.type() == new FA12().type()
+	const sale_asset = is_fa2 ? pack(new FA2_asset(sale_asset_contract!.get_address(),
+			sale_asset_token_id!).to_mich(),
+		FA2_asset_mich_type) : is_fa12 ? pack(sale_asset_contract!.get_address().to_mich(),
 		FA12_asset_mich_type) : new Bytes("")
 	const sale_key = new sales_key(fa2_nft_contract.get_address(),
 		nft_token_id,
@@ -237,6 +237,8 @@ async function sumbit_and_verify_buy_order(
 	sale_asset_contract?: Fa2 | Fa12,
 	sale_asset_token_id?: Nat,
 ) {
+	const counter = await get_permit_counter(buyer)
+
 	const is_fa2 = asset_type.type() == new FA2().type()
 	const is_fa12 = asset_type.type() == new FA12().type()
 
@@ -257,10 +259,26 @@ async function sumbit_and_verify_buy_order(
 		FA2_asset_mich_type) : is_fa12 ? pack(sale_asset_contract!.get_address().to_mich(),
 		FA12_asset_mich_type) : new Bytes("")
 
+	const buy_data = new buy_arg(
+		fa2_nft_contract.get_address(),
+		nft_token_id,
+		owner.get_address(),
+		asset_type,
+		sale_asset,
+		sale_order_qty,
+		origin_fees,
+		payouts)
+	const packed_buy_data = pack(buy_data.to_mich(), buy_arg_mich_type)
+	const after_permit_data = await get_permit_data(
+		packed_buy_data,
+		permits_contract.get_address(),
+		counter);
+	const signature = await sign(after_permit_data, buyer)
+
 	// const sale_record = await sales_storage_contract.get_sales_value(sale_key)
 	// assert(sale_record != undefined)
 
-	await feeless_sales_contract.buy(fa2_nft_contract.get_address(), nft_token_id, owner.get_address(), asset_type, sale_asset, sale_order_qty, origin_fees, payouts, {as: buyer, amount : (!is_fa12 && !is_fa2 ? new Tez(sale_order_amout, "mutez") : new Tez(0)) })
+	await feeless_sales_contract.buy(buy_data, buyer.get_public_key(), signature, {as: buyer, amount : (!is_fa12 && !is_fa2 ? new Tez(sale_order_amout, "mutez") : new Tez(0)) })
 
 	// const post_sale = await sales_storage_contract.get_sales_value(sale_key)
 	// assert(post_sale == undefined)
@@ -856,45 +874,103 @@ describe('Set feeless sales tests', async () => {
 	describe('Common args test', async () => {
 		it('Set sale with wrong buy asset payload (FA2) should fail', async () => {
 			await expect_to_fail(async () => {
-				await sumbit_and_verify_sale_order(new Nat(8),
-					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
-					new FA2(),
+				const nft_token_id = new Nat(8)
+				const owner = alice
+				const asset_type = new FA2()
+
+				const counter = await get_permit_counter(owner)
+				const sale_asset = new Bytes("")
+				const sale_data = new sale_arg(fa2_nft_contract.get_address(),
+					nft_token_id,
+					owner.get_address(),
+					asset_type,
+					sale_asset,
+					[],
+					[],
+					new Nat(sale_amount),
+					new Nat(qty),
 					Option.None(),
 					Option.None(),
-					[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(),
-						new Nat(payout_value))],
-					[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(),
-						new Nat(payout_value))],
-					fa12_ft_2_contract)
+					new Nat(10000),
+					Option.None(),
+					Option.None())
+				const packed_sales_data = pack(sale_data.to_mich(), sale_arg_mich_type)
+				const after_permit_data = await get_permit_data(
+					packed_sales_data,
+					permits_contract.get_address(),
+					counter);
+				const signature = await sign(after_permit_data, owner)
+				await feeless_sales_contract.sell(sale_data, owner.get_public_key(), signature, {as: daniel})
 			}, feeless_sales_contract.errors.CANT_UNPACK_FA2_ASSET);
 		});
 
 		it('Set sale with wrong buy asset payload (FA12) should fail', async () => {
 			await expect_to_fail(async () => {
-				await sumbit_and_verify_sale_order(new Nat(8),
-					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
-					new FA12(),
+				const nft_token_id = new Nat(8)
+				const owner = alice
+				const asset_type = new FA12()
+
+				const counter = await get_permit_counter(owner)
+
+				const sale_asset = new Bytes("")
+				const sale_data = new sale_arg(fa2_nft_contract.get_address(),
+					nft_token_id,
+					owner.get_address(),
+					asset_type,
+					sale_asset,
+					[],
+					[],
+					new Nat(sale_amount),
+					new Nat(qty),
 					Option.None(),
 					Option.None(),
-					[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(),
-						new Nat(payout_value))],
-					[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(),
-						new Nat(payout_value))],)
+					new Nat(10000),
+					Option.None(),
+					Option.None())
+				const packed_sales_data = pack(sale_data.to_mich(), sale_arg_mich_type)
+				const after_permit_data = await get_permit_data(
+					packed_sales_data,
+					permits_contract.get_address(),
+					counter);
+				const signature = await sign(after_permit_data, owner)
+				await feeless_sales_contract.sell(sale_data, owner.get_public_key(), signature, {as: daniel})
 			}, feeless_sales_contract.errors.CANT_UNPACK_FA12_ASSET);
 		});
 
 		it('Set sale with wrong buy asset payload (XTZ) should fail', async () => {
 			await expect_to_fail(async () => {
-				await sumbit_and_verify_sale_order(new Nat(8),
-					alice, new Nat(sale_amount), new Nat(qty), new Nat(max_fees),
-					new XTZ(),
+				const sale_asset_contract = fa12_ft_2_contract;
+				const nft_token_id = new Nat(8)
+				const sale_asset_token_id = new Nat(8)
+				const owner = alice
+				const asset_type = new XTZ()
+
+				const counter = await get_permit_counter(owner)
+
+				const sale_asset = pack(new FA2_asset(sale_asset_contract!.get_address(),
+						sale_asset_token_id!).to_mich(),
+					FA2_asset_mich_type)
+				const sale_data = new sale_arg(fa2_nft_contract.get_address(),
+					nft_token_id,
+					owner.get_address(),
+					asset_type,
+					sale_asset,
+					[],
+					[],
+					new Nat(sale_amount),
+					new Nat(qty),
 					Option.None(),
 					Option.None(),
-					[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(),
-						new Nat(payout_value))],
-					[new sales_part(eddy.get_address(), new Nat(payout_value)), new sales_part(eddy.get_address(),
-						new Nat(payout_value))],
-					fa12_ft_0_contract)
+					new Nat(10000),
+					Option.None(),
+					Option.None())
+				const packed_sales_data = pack(sale_data.to_mich(), sale_arg_mich_type)
+				const after_permit_data = await get_permit_data(
+					packed_sales_data,
+					permits_contract.get_address(),
+					counter);
+				const signature = await sign(after_permit_data, owner)
+				await feeless_sales_contract.sell(sale_data, owner.get_public_key(), signature, {as: daniel})
 			}, feeless_sales_contract.errors.WRONG_XTZ_PAYLOAD);
 		});
 
@@ -1233,7 +1309,8 @@ describe('Buy tests', async () => {
 			try{
 				const token_id = 99
 
-				await sumbit_and_verify_sale_order(new Nat(token_id),
+				await sumbit_and_verify_sale_order(
+					new Nat(token_id),
 					alice,
 					new Nat(sale_amount),
 					new Nat(qty),
@@ -1254,7 +1331,24 @@ describe('Buy tests', async () => {
 				const sale_record = await sales_storage_contract.get_sales_value(sale_key)
 				assert(sale_record != undefined)
 
-				await feeless_sales_contract.buy(fa2_nft_contract.get_address(), new Nat(token_id), alice.get_address(), new XTZ(), sale_asset, new Nat(qty), [], [], {as: bob, amount : new Tez(0)})
+				const buy_data = new buy_arg(
+					fa2_nft_contract.get_address(),
+					new Nat(token_id),
+					alice.get_address(),
+					new XTZ(),
+					sale_asset,
+					new Nat(qty),
+					[],
+					[])
+				const packed_buy_data = pack(buy_data.to_mich(), buy_arg_mich_type)
+				const counter = await get_permit_counter(bob)
+				const after_permit_data = await get_permit_data(
+					packed_buy_data,
+					permits_contract.get_address(),
+					counter);
+				const signature = await sign(after_permit_data, bob)
+
+				await feeless_sales_contract.buy(buy_data, bob.get_public_key(), signature, {as: bob, amount : new Tez(12) })
 			} catch (e: any) {
 				assert(e.value.includes("AMOUNT_MISMATCH"))
 			}
