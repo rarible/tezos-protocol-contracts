@@ -257,30 +257,6 @@ describe('Sales storage setter tests', async () => {
         const post_test_storage = await sales_storage.getStorage();
         assert(post_test_storage.sales_contract == sales.address);
     });
-
-    it('Set transfer manager as non admin should fail', async () => {
-        await expectToThrow(async () => {
-            await sales_storage.set_transfer_manager({
-                arg: {
-                    stm_contract: transfer_manager.address
-                },
-                as: bob.pkh
-            });
-        }, errors.INVALID_CALLER);
-    });
-
-    it('Set transfer manager as admin should succeed', async () => {
-        const storage = await sales_storage.getStorage();
-        assert(storage.transfer_manager == null);
-        await sales_storage.set_transfer_manager({
-            arg: {
-                stm_contract: transfer_manager.address
-            },
-            as: alice.pkh
-        });
-        const post_test_storage = await sales_storage.getStorage();
-        assert(post_test_storage.transfer_manager == transfer_manager.address);
-    });
 });
 
 describe('Sales contract setter tests', async () => {

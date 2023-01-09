@@ -19,7 +19,8 @@ const {
     mkXTZAsset,
     mkFA12Asset,
     mkBundleItem,
-    mkPackedBundle
+    mkPackedBundle,
+    get_expired_formated_date
 } = require('./utils');
 const assert = require('assert');
 const BigNumber = require('bignumber.js');
@@ -74,6 +75,8 @@ const daniel = getAccount(mockup_mode ? 'bootstrap1' : 'bootstrap1');
 
 //set endpointhead
 //setEndpoint(mockup_mode ? 'mockup' : 'https://hangzhounet.smartpy.io');
+
+const start_date = new Date(Date.now());
 
 describe('Contract deployments', async () => {
 
@@ -1457,6 +1460,9 @@ describe('Tokens setup', async () => {
 describe('Put bid tests', async () => {
     describe('Put bids in Fungible FA2', async () => {
         it('Put bid with Fungible FA2 should succeed (no royalties, no bid payouts, no bid origin fees)', async () => {
+
+            await setMockupNow(start_date);
+
             const storage = await bids_storage.getStorage();
             const bid_asset = mkFungibleFA2Asset(fa2_ft.address, token_id_0.toString());
             var bid = await getValueFromBigMap(
@@ -1506,7 +1512,7 @@ describe('Put bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                         }, {
@@ -1578,7 +1584,7 @@ describe('Put bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -1678,7 +1684,7 @@ describe('Put bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -1754,7 +1760,7 @@ describe('Put bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -1837,7 +1843,7 @@ describe('Put bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -1937,7 +1943,7 @@ describe('Put bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -1998,7 +2004,7 @@ describe('Put bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                         }, {
@@ -2070,7 +2076,7 @@ describe('Put bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -2169,7 +2175,7 @@ describe('Put bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -2369,7 +2375,7 @@ describe('Put bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                        },
@@ -2419,7 +2425,7 @@ describe('Put bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                        },
@@ -2480,7 +2486,7 @@ describe('Put floor bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                         }, {
@@ -2552,7 +2558,7 @@ describe('Put floor bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -2652,7 +2658,7 @@ describe('Put floor bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -2728,7 +2734,7 @@ describe('Put floor bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -2811,7 +2817,7 @@ describe('Put floor bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -2911,7 +2917,7 @@ describe('Put floor bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -2972,7 +2978,7 @@ describe('Put floor bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                        }, {
@@ -3044,7 +3050,7 @@ describe('Put floor bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -3143,7 +3149,7 @@ describe('Put floor bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -3341,7 +3347,7 @@ describe('Put floor bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                         },
@@ -3391,7 +3397,7 @@ describe('Put floor bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                         },
@@ -3457,7 +3463,7 @@ describe('Put bundle bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                         }, {
@@ -3541,7 +3547,7 @@ describe('Put bundle bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -3644,7 +3650,7 @@ describe('Put bundle bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -3714,7 +3720,7 @@ describe('Put bundle bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                     },
@@ -3800,7 +3806,7 @@ describe('Put bundle bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -3903,7 +3909,7 @@ describe('Put bundle bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -3968,7 +3974,7 @@ describe('Put bundle bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                        },
@@ -4053,7 +4059,7 @@ describe('Put bundle bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -4155,7 +4161,7 @@ describe('Put bundle bid tests', async () => {
                       "prim": "Some",
                       "args": [
                         {
-                          "string": "1970-01-08T00:00:01Z"
+                          "string": "${get_expired_formated_date(start_date)}"
                         }
                       ]
                    },
@@ -4480,7 +4486,7 @@ describe('Put bundle bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                        },
@@ -4527,7 +4533,7 @@ describe('Put bundle bid tests', async () => {
                           "prim": "Some",
                           "args": [
                             {
-                              "string": "1970-01-08T00:00:01Z"
+                              "string": "${get_expired_formated_date(start_date)}"
                             }
                           ]
                        },

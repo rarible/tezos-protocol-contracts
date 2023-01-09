@@ -12,8 +12,10 @@ constant TOTAL_AMOUNT_NEGATIVE  : string = "TOTAL_AMOUNT_NEGATIVE"
 constant CANT_UNPACK_FA2_ASSET  : string = "CANT_UNPACK_FA2_ASSET"
 constant CANT_UNPACK_FA12_ASSET : string = "CANT_UNPACK_FA12_ASSET"
 constant NOT_AUTHORIZED         : string = "NOT_AUTHORIZED"
-constant MISSING_CANDIDATE       : string = "MISSING_CANDIDATE"
-constant INVALID_CALLER          : string = "INVALID_CALLER"
+constant MISSING_CANDIDATE      : string = "MISSING_CANDIDATE"
+constant INVALID_CALLER         : string = "INVALID_CALLER"
+constant INVALID_NAT            : string = "INVALID_NAT"
+constant INVALID_AMOUNT         : string = "INVALID_AMOUNT"
 
 variable fee_receivers          : map<address, address> = []
 variable authorized_contracts   : set<address> = []
@@ -86,10 +88,16 @@ entry revoke_contract(ac_contract : address) {
   }
 }
 
-function isAuthorized() : bool {
+function is_authorized() : bool {
   if (authorized_contracts.contains(caller) or caller = self_address)
   then return true
   else fail(NOT_AUTHORIZED)
+}
+
+function is_amount_correct(iac_amount: nat, iac_ft_asset_type: asset_type) : bool {
+  if iac_ft_asset_type = XTZ and iac_amount * 1utz <> transferred
+  then return false
+  else return true
 }
 
 
@@ -167,7 +175,7 @@ entry manage_transfers(
   mt_payouts: list<part>
 ){
     require {
-      r_mt0 : isAuthorized();
+      r_mt0 : is_authorized();
     }
     effect {
       var buy_asset_contract : option<address> = none;
@@ -180,6 +188,9 @@ entry manage_transfers(
 
       if (transferred > 0tz and mt_ft_asset_type = XTZ) then (
         ft_origin := self_address;
+        do_require(is_amount_correct(mt_ft_amount, mt_ft_asset_type), INVALID_AMOUNT);
+      ) else (
+        do_require(transferred = 0utz, INVALID_AMOUNT);
       );
 
 
@@ -204,7 +215,7 @@ entry manage_transfers(
       end;
 
       var protocol_fees = bp(mt_ft_amount, mt_protocol_fees);
-      var total_after_all_fees: nat = abs(mt_ft_amount - protocol_fees);
+      var total_after_all_fees: nat ?= int_to_nat(mt_ft_amount - protocol_fees) : INVALID_NAT;
 
       //Then process the origin fees, and the matching operations
       var all_origin_fees = process_fees(
@@ -217,7 +228,7 @@ entry manage_transfers(
       total_after_all_fees -= all_origin_fees[0];
       ft_operations := all_origin_fees[1];
 
-      var share_per_nft = abs(floor(10000/length(mt_bundle)));
+      var share_per_nft ?= int_to_nat(floor(10000/length(mt_bundle))) : INVALID_NAT;
       for bundle_nft in mt_bundle do
         var price_per_nft = bp(mt_ft_amount, share_per_nft);
         if(price_per_nft > 0) then (
@@ -296,6 +307,10 @@ entry manage_transfers(
         transfer_manager_operations.concat(ft_operations);
       );
 
+      if(length(rarible_custody_operations) > 0) then (
+        transfer 0tz to mt_rarible_custody call process_transfers<list<process_transfer_param>>(rarible_custody_operations);
+      );
+
       for pt_transfer in transfer_manager_operations do
           match pt_transfer.ptp_asset_type with
           | FA2  -> (
@@ -332,15 +347,12 @@ entry manage_transfers(
             )
           end;
       done;
-
-      if(length(rarible_custody_operations) > 0) then (
-        transfer 0tz to mt_rarible_custody call process_transfers<list<process_transfer_param>>(rarible_custody_operations);
-      );
     }
 }
 
 function bp(bp_value : nat, bp_op_value : nat) : nat {
-  return abs(floor(bp_value * bp_op_value / 10000))
+  const res ?= int_to_nat(floor(bp_value * bp_op_value / 10000)) : INVALID_NAT;
+  return res
 }
 
 function process_fees(
@@ -385,21 +397,9 @@ function process_royalties(
     return ((royalties, transactions))
 }
 
-
-
-function merge_operations(mp_parts: list<process_transfer_param>, mp_parts_to_add: list<list<process_transfer_param>>) : list<process_transfer_param> {
-  for part_list in mp_parts_to_add do
-    for l_part in part_list do
-      mp_parts.prepend(l_part)
-    done;
-  done;
-
-  return mp_parts
-}
-
 entry process_transfers(pt_transfers: list<process_transfer_param>){
   require {
-    r_pt0 : isAuthorized();
+    r_pt0 : is_authorized();
   }
   effect {
     for pt_transfer in pt_transfers do

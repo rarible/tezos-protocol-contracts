@@ -29,7 +29,6 @@ constant INVALID_NAT             : string = "INVALID_NAT"
 //----------------------------------------------------------------------------
 
 variable owner_candidate : option<address> = none
-variable max_bundle_items : nat = 10
 variable max_fees_limit : nat = 10000
 
 entry declare_ownership(candidate : address) {
@@ -213,13 +212,12 @@ entry sell (
     effect {
       var seller_address = key_to_address(s_seller_pubk);
       do_require(seller_address = s_sale.sale_arg_seller, INVALID_SELLER);
+
       var unpack_result = verify_and_unpack_asset(s_sale.sale_arg_type, s_sale.sale_arg_asset);
+      transfer 0tz to sales_storage call set_sale<sale_arg>(s_sale);
 
       var packed_data = pack(s_sale);
       transfer 0tz to permits call check<key * signature * bytes>((s_seller_pubk, s_sig, packed_data));
-
-      transfer 0tz to sales_storage call set_sale<sale_arg>(s_sale);
-
       match s_sale.sale_arg_end with
       | some(end_date) -> begin
         do_require(end_date > now, INVALID_SALE_END_DATE);
@@ -260,7 +258,9 @@ entry buy(
       | none -> ()
       end;
 
+
       var unpack_result = verify_and_unpack_asset(b_args.buy_sale_type, b_args.buy_sale_asset);
+
 
       if(b_args.buy_sale_type = XTZ) then (
         do_require(transferred = current_sale.sale_amount * b_args.buy_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
@@ -330,9 +330,9 @@ entry cancel_sale(
         r_cs1: cs_exists = true;
     }
     effect {
+      transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((cs_params.cs_asset_contract, cs_params.cs_asset_token_id, cs_params.cs_sale_seller, cs_params.cs_sale_type, cs_params.cs_sale_asset));
       var packed_data = pack(cs_params);
       transfer 0tz to permits call check<key * signature * bytes>((cs_seller_pubk, cs_sig, packed_data));
-      transfer 0tz to sales_storage call remove_sale<address * nat * address * asset_type * bytes>((cs_params.cs_asset_contract, cs_params.cs_asset_token_id, cs_params.cs_sale_seller, cs_params.cs_sale_type, cs_params.cs_sale_asset));
     }
 }
 
