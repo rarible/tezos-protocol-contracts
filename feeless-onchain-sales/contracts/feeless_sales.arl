@@ -259,9 +259,8 @@ entry buy(
       end;
 
 
-      var unpack_result = verify_and_unpack_asset(b_sale_type, b_sale_asset);
-      var buy_asset_contract = unpack_result[0];
-      var buy_asset_token_id = unpack_result[1];
+      var unpack_result = verify_and_unpack_asset(b_args.buy_sale_type, b_args.buy_sale_asset);
+
 
       if(b_args.buy_sale_type = XTZ) then (
         do_require(transferred = current_sale.sale_amount * b_args.buy_amount * 1utz, (AMOUNT_MISMATCH, transferred, current_sale.sale_amount * 1utz))
